@@ -11,6 +11,7 @@ type AuthResponse = {
 };
 
 import { handleApiError } from "./utils/apiInterceptor";
+import { getApiUrl } from "./config/api";
 
 const headers = { "Content-Type": "application/json" };
 
@@ -47,7 +48,7 @@ async function handleResponse<T>(res: Response): Promise<T> {
 }
 
 export async function login(email: string, password: string): Promise<AuthResponse> {
-  const res = await fetch("/api/auth/login", {
+  const res = await fetch(getApiUrl("/api/auth/login"), {
     method: "POST",
     headers,
     body: JSON.stringify({ email, password }),
@@ -61,7 +62,7 @@ export async function register(
   fullName: string,
   role: AuthUser["role"]
 ): Promise<AuthResponse> {
-  const res = await fetch("/api/auth/register", {
+  const res = await fetch(getApiUrl("/api/auth/register"), {
     method: "POST",
     headers,
     body: JSON.stringify({ email, password, fullName, role }),
@@ -74,7 +75,7 @@ export async function fetchMe(token?: string): Promise<AuthResponse> {
   if (!tokenToUse) {
     throw new Error("No token available");
   }
-  const res = await fetch("/api/auth/me", {
+  const res = await fetch(getApiUrl("/api/auth/me"), {
     headers: { Authorization: `Bearer ${tokenToUse}` },
   });
   return handleResponse<AuthResponse>(res);
@@ -85,7 +86,7 @@ export async function refreshToken(): Promise<AuthResponse> {
   if (!token) {
     throw new Error("No token available");
   }
-  const res = await fetch("/api/auth/refresh", {
+  const res = await fetch(getApiUrl("/api/auth/refresh"), {
     method: "POST",
     headers: getAuthHeaders(),
   });
@@ -139,7 +140,7 @@ export interface ProfileListResponse {
 
 // Investor Profile API Functions
 export async function createProfile(step1Data: any): Promise<{ data: InvestorProfile }> {
-  const res = await fetch("/api/investor-profiles", {
+  const res = await fetch(getApiUrl("/api/investor-profiles"), {
     method: "POST",
     headers: getAuthHeaders(),
     body: JSON.stringify(step1Data),
@@ -149,7 +150,7 @@ export async function createProfile(step1Data: any): Promise<{ data: InvestorPro
 }
 
 export async function getProfile(profileId: string): Promise<{ data: InvestorProfile }> {
-  const res = await fetch(`/api/investor-profiles/${profileId}`, {
+  const res = await fetch(getApiUrl(`/api/investor-profiles/${profileId}`), {
     method: "GET",
     headers: getAuthHeaders(),
   });
@@ -161,7 +162,7 @@ export async function updateProfile(
   profileId: string,
   updates: any
 ): Promise<{ data: InvestorProfile }> {
-  const res = await fetch(`/api/investor-profiles/${profileId}`, {
+  const res = await fetch(getApiUrl(`/api/investor-profiles/${profileId}`), {
     method: "PATCH",
     headers: getAuthHeaders(),
     body: JSON.stringify(updates),
@@ -175,7 +176,7 @@ export async function updateStep(
   stepNumber: number,
   stepData: any
 ): Promise<{ data: InvestorProfile }> {
-  const res = await fetch(`/api/investor-profiles/${profileId}/step${stepNumber}`, {
+  const res = await fetch(getApiUrl(`/api/investor-profiles/${profileId}/step${stepNumber}`), {
     method: "PATCH",
     headers: getAuthHeaders(),
     body: JSON.stringify(stepData),
@@ -185,7 +186,7 @@ export async function updateStep(
 }
 
 export async function submitProfile(profileId: string): Promise<{ data: InvestorProfile }> {
-  const res = await fetch(`/api/investor-profiles/${profileId}/submit`, {
+  const res = await fetch(getApiUrl(`/api/investor-profiles/${profileId}/submit`), {
     method: "POST",
     headers: getAuthHeaders(),
   });
@@ -205,7 +206,7 @@ export async function getProfilesByUser(
     params.append("limit", pagination.limit.toString());
   }
 
-  const res = await fetch(`/api/investor-profiles?${params.toString()}`, {
+  const res = await fetch(getApiUrl(`/api/investor-profiles?${params.toString()}`), {
     method: "GET",
     headers: getAuthHeaders(),
   });
@@ -217,7 +218,7 @@ export async function getProfilesByUser(
 }
 
 export async function getAccountHolders(profileId: string): Promise<{ data: any[] }> {
-  const res = await fetch(`/api/investor-profiles/${profileId}/account-holders`, {
+  const res = await fetch(getApiUrl(`/api/investor-profiles/${profileId}/account-holders`), {
     method: "GET",
     headers: getAuthHeaders(),
   });
@@ -229,7 +230,7 @@ export async function updateAccountHolder(
   holderId: string,
   data: any
 ): Promise<{ data: any }> {
-  const res = await fetch(`/api/investor-profiles/${profileId}/account-holders/${holderId}`, {
+  const res = await fetch(getApiUrl(`/api/investor-profiles/${profileId}/account-holders/${holderId}`), {
     method: "PUT",
     headers: getAuthHeaders(),
     body: JSON.stringify(data),
@@ -241,7 +242,7 @@ export async function createOrUpdateSignature(
   profileId: string,
   signatureData: any
 ): Promise<{ data: any }> {
-  const res = await fetch(`/api/investor-profiles/${profileId}/signatures`, {
+  const res = await fetch(getApiUrl(`/api/investor-profiles/${profileId}/signatures`), {
     method: "POST",
     headers: getAuthHeaders(),
     body: JSON.stringify(signatureData),
@@ -250,7 +251,7 @@ export async function createOrUpdateSignature(
 }
 
 export async function generatePdf(profileId: string): Promise<{ data: { message: string; profileId: string } }> {
-  const res = await fetch(`/api/investor-profiles/${profileId}/generate-pdf`, {
+  const res = await fetch(getApiUrl(`/api/investor-profiles/${profileId}/generate-pdf`), {
     method: "POST",
     headers: getAuthHeaders(),
   });

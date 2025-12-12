@@ -1,5 +1,5 @@
 import express from "express";
-import jwt from "jsonwebtoken";
+import jwt, { SignOptions } from "jsonwebtoken";
 import { z } from "zod";
 import { createUser, findUserByEmail, verifyUser } from "../store";
 import { AuthTokenPayload, UserRecord } from "../types";
@@ -37,7 +37,8 @@ function signToken(user: UserRecord): string {
     email: user.email,
     role: user.role,
   };
-  return jwt.sign(payload, config.jwtSecret, { expiresIn: config.jwtExpiresIn as string | number });
+  const expiresIn = (config.jwtExpiresIn || "1h") as string;
+  return jwt.sign(payload, config.jwtSecret, { expiresIn } as SignOptions);
 }
 
 router.post("/register", authRateLimit, async (req, res, next) => {
