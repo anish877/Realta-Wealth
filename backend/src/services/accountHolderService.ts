@@ -270,13 +270,21 @@ export class AccountHolderService {
   async updateAccountHolder(holderId: string, updates: any) {
     const accountHolder = await this.getAccountHolderById(holderId);
     
-    // Check if profile is in draft status
+    // Check profile status and reset to draft if needed
     const profile = await prisma.investorProfile.findUnique({
       where: { id: accountHolder.profileId },
     });
 
-    if (!profile || profile.status !== "draft") {
-      throw new ConflictError("Cannot update account holder for a profile that is not in draft status");
+    if (!profile) {
+      throw new ConflictError("Profile not found");
+    }
+
+    // Reset status to draft if it was submitted/approved/rejected
+    if (profile.status !== "draft") {
+      await prisma.investorProfile.update({
+        where: { id: accountHolder.profileId },
+        data: { status: "draft" },
+      });
     }
 
     return await prisma.$transaction(async (tx) => {

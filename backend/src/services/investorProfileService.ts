@@ -12,9 +12,34 @@ type ProfileStatus = "draft" | "submitted" | "approved" | "rejected";
 
 export class InvestorProfileService {
   /**
-   * Create a new investor profile
+   * Create a new investor profile or update existing profile
+   * Ensures only one profile exists per user - always updates if profile exists
    */
   async createProfile(userId: string, step1Data: any) {
+    // Check if user already has ANY profile (regardless of status)
+    const existingProfile = await prisma.investorProfile.findFirst({
+      where: {
+        userId,
+      },
+      orderBy: {
+        createdAt: "desc", // Get the most recent profile
+      },
+    });
+
+    // If profile exists, update it instead of creating a new one
+    // Reset status to draft when updating
+    if (existingProfile) {
+      // Reset status to draft if it was submitted/approved/rejected
+      if (existingProfile.status !== "draft") {
+        await prisma.investorProfile.update({
+          where: { id: existingProfile.id },
+          data: { status: "draft" },
+        });
+      }
+      return await this.updateStep1(existingProfile.id, step1Data);
+    }
+
+    // No draft exists, create a new one
     return await prisma.$transaction(
       async (tx) => {
         // Validate Step 1 data
@@ -205,13 +230,13 @@ export class InvestorProfileService {
 
   /**
    * Update profile
+   * Automatically resets status to draft if profile was submitted/approved/rejected
    */
   async updateProfile(profileId: string, updates: any) {
     const profile = await this.getProfileById(profileId, false);
     
-    if (profile.status !== "draft") {
-      throw new ConflictError("Cannot update a profile that is not in draft status");
-    }
+    // Reset status to draft if it was submitted/approved/rejected
+    const statusUpdate = profile.status !== "draft" ? { status: "draft" as const } : {};
 
     return await prisma.investorProfile.update({
       where: { id: profileId },
@@ -223,18 +248,24 @@ export class InvestorProfileService {
         retirementAccount: updates.retirementAccount,
         retailAccount: updates.retailAccount,
         otherAccountTypeText: updates.otherAccountTypeText,
+        ...statusUpdate,
       },
     });
   }
 
   /**
    * Update specific step
+   * Automatically resets status to draft if profile was submitted/approved/rejected
    */
   async updateStep(profileId: string, stepNumber: number, stepData: any) {
     const profile = await this.getProfileById(profileId, false);
     
+    // Reset status to draft if it was submitted/approved/rejected
     if (profile.status !== "draft") {
-      throw new ConflictError("Cannot update a profile that is not in draft status");
+      await prisma.investorProfile.update({
+        where: { id: profileId },
+        data: { status: "draft" },
+      });
     }
 
     switch (stepNumber) {
@@ -689,7 +720,28 @@ export class InvestorProfileService {
   }
 
   /**
-   * Get profiles by user with pagination and filtering
+   * Get the user's profile (only one profile per user)
+   * Returns the most recent profile if multiple exist (shouldn't happen with new logic)
+   */
+  async getProfileByUser(userId: string) {
+    const profile = await prisma.investorProfile.findFirst({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+      include: {
+        accountTypes: true,
+        accountHolders: {
+          where: { holderType: "primary" },
+          select: { name: true },
+        },
+      },
+    });
+
+    return profile;
+  }
+
+  /**
+   * Get profiles by user - returns array with at most one profile
+   * Maintains compatibility with existing API but ensures only one profile per user
    */
   async getProfilesByUser(
     userId: string,
@@ -702,38 +754,33 @@ export class InvestorProfileService {
       limit: PAGINATION.DEFAULT_LIMIT,
     }
   ) {
-    const where: Prisma.InvestorProfileWhereInput = {
-      userId,
-      ...(filters.status && { status: filters.status }),
-      ...(filters.search && {
-        OR: [
-          { customerNames: { contains: filters.search, mode: "insensitive" } },
-          { accountNo: { contains: filters.search, mode: "insensitive" } },
-          { rrName: { contains: filters.search, mode: "insensitive" } },
-        ],
-      }),
-    };
+    // Since each user should only have one profile, we get the single profile
+    const profile = await this.getProfileByUser(userId);
+    
+    // Apply filters if profile exists
+    let filteredProfile = profile;
+    if (profile) {
+      if (filters.status && profile.status !== filters.status) {
+        filteredProfile = null;
+      }
+      if (filters.search && filteredProfile) {
+        const searchLower = filters.search.toLowerCase();
+        const matchesSearch =
+          profile.customerNames?.toLowerCase().includes(searchLower) ||
+          profile.accountNo?.toLowerCase().includes(searchLower) ||
+          profile.rrName?.toLowerCase().includes(searchLower);
+        if (!matchesSearch) {
+          filteredProfile = null;
+        }
+      }
+    }
 
-    const [profiles, total] = await Promise.all([
-      prisma.investorProfile.findMany({
-        where,
-        skip: (pagination.page - 1) * pagination.limit,
-        take: pagination.limit,
-        orderBy: { createdAt: "desc" },
-        include: {
-          accountTypes: true,
-          accountHolders: {
-            where: { holderType: "primary" },
-            select: { name: true },
-          },
-        },
-      }),
-      prisma.investorProfile.count({ where }),
-    ]);
-
+    // Return as array for API compatibility
+    const profiles = filteredProfile ? [filteredProfile] : [];
+    
     return {
       profiles,
-      pagination: calculatePagination(pagination.page, pagination.limit, total),
+      pagination: calculatePagination(1, 1, profiles.length),
     };
   }
 
