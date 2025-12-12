@@ -1,6 +1,5 @@
 import { shouldShowField, fieldVisibilityRules } from '../utils/fieldDependencies';
-
-type FieldValue = string | number | boolean | string[] | Record<string, any>[];
+import type { FieldValue } from '../types/form';
 
 /**
  * ConditionalFieldManager - Utility component for managing field visibility

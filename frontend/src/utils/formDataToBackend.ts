@@ -579,7 +579,7 @@ export function transformStep4(formData: FormData) {
  * Transform Step 5 data
  */
 export function transformStep5(formData: FormData) {
-  const investmentValues = [];
+  const investmentValues: Array<{ investmentType: string; value: number }> = [];
   
   const valueFields = [
     { field: "investment_equities_value", type: "equities" },

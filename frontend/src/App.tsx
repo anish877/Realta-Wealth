@@ -371,7 +371,13 @@ function ProtectedApp() {
   };
 
   const handleStartNew = () => {
-    navigate("/app/profile/new", { replace: true });
+    // If profile exists, navigate to it (will update it)
+    // Otherwise, navigate to new (will create it)
+    if (profiles.length > 0 && profiles[0].id) {
+      navigate(`/app/profile/${profiles[0].id}`, { replace: true });
+    } else {
+      navigate("/app/profile/new", { replace: true });
+    }
   };
 
   const handleBackToHub = () => {
@@ -399,16 +405,11 @@ function ProtectedApp() {
     }
   };
 
-  // Auto-select the latest draft profile when profiles load
+  // Auto-select the user's profile when it loads (only one profile per user)
   useEffect(() => {
     if (profiles.length > 0 && !selectedProfileId) {
-      // Find latest draft profile, or fallback to first profile
-      const draftProfiles = profiles.filter(p => p.status === "draft");
-      const latestDraft = draftProfiles.length > 0 
-        ? draftProfiles.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())[0]
-        : null;
-      
-      setSelectedProfileId(latestDraft?.id || profiles[0].id);
+      // Since there's only one profile per user, select it automatically
+      setSelectedProfileId(profiles[0].id);
     }
   }, [profiles, selectedProfileId]);
 
@@ -453,31 +454,26 @@ function ProtectedApp() {
 
               {profilesError && <div className="text-sm text-red-600">{profilesError}</div>}
 
-              {/* Profile Selector */}
-              {profiles.length > 0 && (
+              {/* Profile Info - Only one profile per user */}
+              {profiles.length > 0 && primaryProfile && (
                 <div className="mt-6 pt-6 border-t border-[rgba(11,92,255,0.1)]">
-                  <label htmlFor="profile-select" className="block text-xs font-semibold text-[var(--muted)] mb-2 uppercase tracking-[0.1em]">
-                    Select Profile
-                  </label>
-                  <select
-                    id="profile-select"
-                    value={selectedProfileId || ""}
-                    onChange={(e) => setSelectedProfileId(e.target.value)}
-                    disabled={profilesLoading}
-                    className="w-full h-11 px-4 rounded-full border border-[rgba(11,92,255,0.2)] bg-white text-[var(--fg)] text-sm font-medium cursor-pointer transition-all duration-150 hover:border-[rgba(11,92,255,0.3)] hover:bg-[rgba(11,92,255,0.02)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 12 12%22%3E%3Cpath fill=%22%230b5cff%22 d=%22M6 9L1 4h10z%22/%3E%3C/svg%3E')] bg-no-repeat bg-[right_16px_center] pr-10"
-                  >
-                    {profiles.map((profile) => (
-                      <option key={profile.id} value={profile.id}>
-                        {profile.rrName || profile.customerNames || `Profile ${profile.id.slice(0, 8)}`} ({profile.status})
-                      </option>
-                    ))}
-                  </select>
+                  <div className="text-xs font-semibold text-[var(--muted)] mb-2 uppercase tracking-[0.1em]">
+                    Your Profile
+                  </div>
+                  <div className="text-sm text-[var(--fg)]">
+                    {primaryProfile.rrName || primaryProfile.customerNames || `Profile ${primaryProfile.id.slice(0, 8)}`}
+                    {primaryProfile.accountNo && (
+                      <span className="text-[var(--muted)] ml-2">• {primaryProfile.accountNo}</span>
+                    )}
+                  </div>
                 </div>
               )}
 
               <div className="flex justify-between items-center mt-4">
                 <div className="text-sm text-[var(--muted)]">
-                  {primaryProfile ? "You have a draft or submitted profile. Continue where you left off." : "No profile yet. Start a new investor profile."}
+                  {primaryProfile 
+                    ? "Continue editing your investor profile or generate a PDF when ready." 
+                    : "Start your investor profile. You can save and continue anytime."}
                 </div>
                 <button
                   type="button"

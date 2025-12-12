@@ -69,7 +69,7 @@ export async function register(
   return handleResponse<AuthResponse>(res);
 }
 
-export async function fetchMe(token?: string) {
+export async function fetchMe(token?: string): Promise<AuthResponse> {
   const tokenToUse = token || getToken();
   if (!tokenToUse) {
     throw new Error("No token available");
@@ -77,7 +77,7 @@ export async function fetchMe(token?: string) {
   const res = await fetch("/api/auth/me", {
     headers: { Authorization: `Bearer ${tokenToUse}` },
   });
-  return handleResponse(res);
+  return handleResponse<AuthResponse>(res);
 }
 
 export async function refreshToken(): Promise<AuthResponse> {

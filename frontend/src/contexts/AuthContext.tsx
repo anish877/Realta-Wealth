@@ -56,7 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Token still valid, verify with server
         try {
           const data = await fetchMe(storedToken);
-          if (data.user) {
+          if (data && data.user) {
             setUser(data.user);
             localStorage.setItem(USER_KEY, JSON.stringify(data.user));
             scheduleTokenRefresh(storedToken);
@@ -92,7 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Verify token is still valid with server
         fetchMe(storedToken)
           .then((data) => {
-            if (data.user) {
+            if (data && data.user) {
               setUser(data.user);
               localStorage.setItem(USER_KEY, JSON.stringify(data.user));
               scheduleTokenRefresh(storedToken);
@@ -194,7 +194,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     try {
       const data = await fetchMe(storedToken);
-      if (data.user) {
+      if (data && data.user) {
         setUser(data.user);
         setToken(storedToken);
         localStorage.setItem(USER_KEY, JSON.stringify(data.user));

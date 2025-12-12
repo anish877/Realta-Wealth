@@ -25,9 +25,7 @@ import { transformProfileToFormData } from "../utils/backendToFormData";
 import { useToast, ToastContainer } from "./Toast";
 import { Button } from "./ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
-
-type FieldValue = string | number | boolean | string[] | Record<string, any>[];
-type FormData = Record<string, FieldValue>;
+import type { FieldValue, FormData } from "../types/form";
 
 type SaveState =
   | { status: "idle"; error?: string }
@@ -114,13 +112,15 @@ export default function InvestorProfileForm() {
   const currentSection = sections[effectiveStep];
 
   // Load profile when profileIdFromUrl changes - this ensures we load saved data when clicking Continue
+  // Note: Since there's only one profile per user, "new" will actually update the existing profile
   useEffect(() => {
     if (profileIdFromUrl && isAuthenticated && profileIdFromUrl !== hasLoadedProfile) {
       // URL has a profileId and we haven't loaded it yet - load it now
       setProfileId(profileIdFromUrl);
       loadProfile(profileIdFromUrl);
-    } else if (!profileIdFromUrl) {
-      // URL doesn't have profileId (new profile) - reset state
+    } else if (!profileIdFromUrl && isAuthenticated) {
+      // URL doesn't have profileId (new profile route) - reset state
+      // The backend will handle updating existing profile when createProfile is called
       setProfileId(null);
       setFormData({});
       setHasLoadedProfile(null);

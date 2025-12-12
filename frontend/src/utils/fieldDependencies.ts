@@ -1,4 +1,4 @@
-type FieldValue = string | number | boolean | string[] | Record<string, any>[];
+import type { FieldValue } from '../types/form';
 
 export type ConditionOperator = 
   | 'equals' 

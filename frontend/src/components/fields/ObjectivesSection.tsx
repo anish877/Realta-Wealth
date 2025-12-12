@@ -17,7 +17,6 @@ interface ObjectivesSectionProps {
   timeHorizonTo: string;
   onTimeHorizonFromChange: (value: string) => void;
   onTimeHorizonToChange: (value: string) => void;
-  onTimeHorizonFromChange: (value: string) => void;
   liquidityNeedsValue: string[];
   onLiquidityNeedsChange: (value: string[]) => void;
 }

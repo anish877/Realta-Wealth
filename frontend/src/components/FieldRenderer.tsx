@@ -22,8 +22,7 @@ import { SignaturesSection } from "./fields/SignaturesSection";
 import { ConditionalFieldManager } from "./ConditionalFieldManager";
 import { AddressFieldGroup } from "./fields/AddressFieldGroup";
 import { PhoneFieldsGroup } from "./fields/PhoneFieldsGroup";
-
-type FieldValue = string | number | boolean | string[] | Record<string, any>[];
+import type { FieldValue } from "../types/form";
 
 interface Field {
   id: string;
@@ -659,8 +658,8 @@ export function FieldRenderer({
 
       // Default group rendering (non-table)
       const currentData = (value as Record<string, any>[]) || [];
-      const initialData = field.repeatable ? [{}, {}] : [{}];
-      const groupData = currentData.length > 0 ? currentData : initialData;
+      const initialData: Record<string, any>[] = field.repeatable ? [{}, {}] : [{}];
+      const groupData: Record<string, any>[] = currentData.length > 0 ? currentData : initialData;
 
       return (
         <FieldGroup
