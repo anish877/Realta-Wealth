@@ -14,7 +14,6 @@ export function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
-  const [role, setRole] = useState<"advisor" | "client" | "admin">("client");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,7 +35,8 @@ export function AuthPage() {
       if (isLogin) {
         await login(email, password);
       } else {
-        await register(email, password, fullName, role);
+        // All signups are client-only for now
+        await register(email, password, fullName, "client");
       }
       // Redirect to return URL or default to /app after successful auth
       navigate(getReturnUrl(), { replace: true });
@@ -48,7 +48,30 @@ export function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 flex items-center justify-center px-4 py-12 relative">
+      {/* Back button */}
+      <button
+        onClick={() => navigate("/")}
+        className="absolute top-6 left-6 flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors duration-150 group z-10"
+        aria-label="Go back"
+      >
+          <svg
+            className="w-5 h-5 transition-transform duration-150 group-hover:-translate-x-0.5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
+          <span className="text-sm font-medium">Back</span>
+      </button>
+
       <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
         {/* Left panel */}
         <div className="hidden lg:block">
@@ -115,8 +138,8 @@ export function AuthPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2" htmlFor="fullName">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-slate-700 mb-1.5" htmlFor="fullName">
                   Full name
                 </label>
                 <Input
@@ -125,12 +148,13 @@ export function AuthPage() {
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="Jane Smith"
                   required
+                  className="h-12 text-base"
                 />
               </div>
             )}
 
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2" htmlFor="email">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-slate-700 mb-1.5" htmlFor="email">
                 Email
               </label>
               <Input
@@ -140,11 +164,12 @@ export function AuthPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 required
+                className="h-12 text-base"
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2" htmlFor="password">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-slate-700 mb-1.5" htmlFor="password">
                 Password
               </label>
               <Input
@@ -154,26 +179,9 @@ export function AuthPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 required
+                className="h-12 text-base"
               />
             </div>
-
-            {!isLogin && (
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2" htmlFor="role">
-                  Role
-                </label>
-                <select
-                  id="role"
-                  value={role}
-                  onChange={(e) => setRole(e.target.value as typeof role)}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-blue-500"
-                >
-                  <option value="client">Client</option>
-                  <option value="advisor">Advisor</option>
-                  <option value="admin">Admin</option>
-                </select>
-              </div>
-            )}
 
             {error && <p className="text-sm text-red-600">{error}</p>}
 
