@@ -1,0 +1,731 @@
+{
+  "document": {
+    "title": "Investor Profile - Brokerage",
+    "source_file": "REI-Investor-Profile-v20240101-1.pdf",
+    "pages": 7,
+    "citation": ":contentReference[oaicite:1]{index=1}"
+  },
+  "schema": [
+    {
+      "sectionId": "step1_account_registration",
+      "title": "STEP 1. ACCOUNT REGISTRATION",
+      "page": 1,
+      "fields": [
+        { "id": "rr_name", "label": "RR Name", "type": "text", "page": 1 },
+        { "id": "rr_no", "label": "RR No.", "type": "text", "page": 1 },
+        { "id": "customer_names", "label": "Customer Name(s)", "type": "text", "page": 1 },
+        { "id": "account_no", "label": "Account No.", "type": "text", "page": 1 },
+        { "id": "retirement_checkbox", "label": "Retirement (Skip to Step 2)", "type": "checkbox", "page": 1 },
+        { "id": "retail_checkbox", "label": "Retail", "type": "checkbox", "page": 1, "notes": "If Retail, additional documentation may be required." },
+
+        {
+          "id": "type_of_account",
+          "label": "Type of Account - left column",
+          "type": "multicheck",
+          "page": 1,
+          "options": [
+            { "key": "individual", "label": "Individual" },
+            { "key": "corporation", "label": "Corporation" },
+            { "key": "corporate_pension_profit_sharing", "label": "Corporate Pension/Profit Sharing" },
+            { "key": "custodial", "label": "Custodial (Complete Custodian Section)" },
+            { "key": "estate", "label": "Estate" },
+            { "key": "joint_tenant", "label": "Joint Tenant (Complete Joint Accounts Section)" },
+            { "key": "limited_liability_company", "label": "Limited Liability/Company" },
+            { "key": "individual_single_member_llc", "label": "Individual Single Member LLC" },
+            { "key": "sole_proprietorship", "label": "Sole Proprietorship" },
+            { "key": "transfer_on_death_individual", "label": "Transfer on Death - Individual (Agreement Date)" },
+            { "key": "transfer_on_death_joint", "label": "Transfer on Death - Joint (Agreement Date)" }
+          ]
+        },
+
+        {
+          "id": "additional_designation_left",
+          "label": "Additional Designation (left)",
+          "type": "multicheck",
+          "page": 1,
+          "options": [
+            { "key": "c_corp", "label": "C Corp" },
+            { "key": "s_corp", "label": "S Corp" },
+            { "key": "ugma", "label": "UGMA" },
+            { "key": "utma", "label": "UTMA" }
+          ]
+        },
+
+        {
+          "id": "trust_block",
+          "label": "Trust block (right column)",
+          "type": "group",
+          "page": 1,
+          "fields": [
+            { "id": "trust_checkbox", "label": "Trust", "type": "checkbox", "page": 1 },
+            { "id": "trust_establishment_date", "label": "Establishment Date", "type": "date", "page": 1 },
+            {
+              "id": "trust_type",
+              "label": "Trust Type",
+              "type": "multicheck",
+              "page": 1,
+              "options": [
+                { "key": "charitable", "label": "Charitable" },
+                { "key": "living", "label": "Living" },
+                { "key": "irrevocable_living", "label": "Irrevocable Living" },
+                { "key": "family", "label": "Family" },
+                { "key": "revocable", "label": "Revocable" },
+                { "key": "irrevocable", "label": "Irrevocable" },
+                { "key": "testamentary", "label": "Testamentary" }
+              ]
+            }
+          ]
+        },
+
+        {
+          "id": "type_of_account_right",
+          "label": "Type of Account - right column other options",
+          "type": "multicheck",
+          "page": 1,
+          "options": [
+            { "key": "nonprofit_organization", "label": "Nonprofit Organization" },
+            { "key": "partnership", "label": "Partnership" },
+            { "key": "exempt_organization", "label": "Exempt Organization" },
+            { "key": "other_account_type", "label": "Other (specify)" }
+          ]
+        },
+
+        { "id": "other_account_type_text", "label": "Other - specify", "type": "text", "page": 1 },
+
+        {
+          "id": "joint_accounts_only",
+          "label": "For Joint Accounts Only",
+          "type": "group",
+          "page": 1,
+          "fields": [
+            { "id": "are_account_holders_married", "label": "Are the account holders married to each other?", "type": "yesno", "page": 1 },
+            { "id": "tenancy_state", "label": "Tenancy State", "type": "text", "page": 1 },
+            { "id": "number_of_tenants", "label": "Number of Tenants", "type": "number", "page": 1 },
+            {
+              "id": "tenancy_clause",
+              "label": "Tenancy Clause options",
+              "type": "multicheck",
+              "page": 1,
+              "options": [
+                { "key": "community_property", "label": "Community Property" },
+                { "key": "tenants_by_entirety", "label": "Tenants by Entirety" },
+                { "key": "community_property_with_rights", "label": "Community Property with Rights of Survivorship" },
+                { "key": "joint_tenants_with_rights_of_survivorship", "label": "Joint Tenants with Rights of Survivorship" },
+                { "key": "tenants_in_common", "label": "Tenants in Common" }
+              ]
+            }
+          ]
+        },
+
+        {
+          "id": "for_custodial_accounts_only",
+          "label": "For Custodial Accounts Only",
+          "type": "group",
+          "page": 1,
+          "fields": [
+            { "id": "state_in_which_gift_was_given_1", "label": "State in Which Gift was Given (1)", "type": "text", "page": 1 },
+            { "id": "date_gift_was_given_1", "label": "Date Gift Was Given (1)", "type": "date", "page": 1 },
+            { "id": "state_in_which_gift_was_given_2", "label": "State in Which Gift was Given (2)", "type": "text", "page": 1 },
+            { "id": "date_gift_was_given_2", "label": "Date Gift Was Given (2)", "type": "date", "page": 1 }
+          ]
+        }
+      ]
+    },
+
+    {
+      "sectionId": "step2_patriot_act",
+      "title": "STEP 2. USA PATRIOT ACT INFORMATION",
+      "page": 2,
+      "fields": [
+        {
+          "id": "initial_source_of_funds",
+          "label": "What is the initial source of funds for this account?",
+          "type": "multicheck",
+          "page": 2,
+          "options": [
+            "Accounts Receivable",
+            "Income From Earnings",
+            "Legal Settlement",
+            "Spouse/Parent",
+            "Accumulated Savings",
+            "Inheritance",
+            "Lottery/Gaming",
+            "Rental Income",
+            "Alimony",
+            "Insurance Proceeds",
+            "Pension/IRA/Retirement Savings",
+            "Sale of Business",
+            "Gift",
+            "Investment Proceeds",
+            "Sale of Real Estate",
+            "Other"
+          ],
+          "other_field_id": "initial_source_of_funds_other_text"
+        },
+        { "id": "initial_source_of_funds_other_text", "label": "Other - specify", "type": "text", "page": 2 }
+      ]
+    },
+
+    {
+      "sectionId": "step3_primary_account_holder",
+      "title": "STEP 3. PRIMARY ACCOUNT HOLDER INFORMATION",
+      "page": 2,
+      "fields": [
+        { "id": "primary_name", "label": "Name", "type": "text", "page": 2 },
+        { "id": "primary_person_entity", "label": "Person / Entity", "type": "radio", "options": ["Person", "Entity"], "page": 2 },
+        { "id": "primary_ssn", "label": "Social Security (SSN)", "type": "text", "page": 2 },
+        { "id": "primary_ein", "label": "Employer Identification Number (EIN)", "type": "text", "page": 2 },
+        { "id": "primary_yes_no_box", "label": "Yes/No (unspecified checkbox near EIN)", "type": "yesno", "page": 2, "notes": "Matches parsed 'Yes No' near EIN." },
+        { "id": "primary_email", "label": "Email", "type": "text", "page": 2 },
+        { "id": "primary_dob", "label": "Date of Birth", "type": "date", "page": 2 },
+        { "id": "primary_specified_adult", "label": "Specified Adult (Yes/No)", "type": "yesno", "page": 2 },
+
+        { "id": "primary_home_phone", "label": "Home Phone", "type": "text", "page": 2 },
+        { "id": "primary_business_phone", "label": "Business Phone", "type": "text", "page": 2 },
+        { "id": "primary_mobile_phone", "label": "Mobile Phone", "type": "text", "page": 2 },
+
+        { "id": "primary_legal_address", "label": "Legal Address (no P.O. Box)", "type": "textarea", "page": 2 },
+        { "id": "primary_city", "label": "City", "type": "text", "page": 2 },
+        { "id": "primary_state_province", "label": "State/Province", "type": "text", "page": 2 },
+        { "id": "primary_zip_postal_code", "label": "Zip/Postal code", "type": "text", "page": 2 },
+        { "id": "primary_country", "label": "Country", "type": "text", "page": 2 },
+
+        { "id": "primary_mailing_address", "label": "Mailing Address (if different from legal address)", "type": "textarea", "page": 2 },
+        { "id": "primary_mailing_city", "label": "Mailing City", "type": "text", "page": 2 },
+        { "id": "primary_mailing_state_province", "label": "Mailing State/Province", "type": "text", "page": 2 },
+        { "id": "primary_mailing_zip_postal_code", "label": "Mailing Zip/Postal code", "type": "text", "page": 2 },
+        { "id": "primary_mailing_country", "label": "Mailing Country", "type": "text", "page": 2 },
+
+        { "id": "primary_citizenship_primary", "label": "Primary Citizenship(s)", "type": "text", "page": 2 },
+        { "id": "primary_citizenship_additional", "label": "Additional Citizenship(s)", "type": "text", "page": 2 },
+
+        {
+          "id": "primary_gender",
+          "label": "Gender",
+          "type": "radio",
+          "page": 2,
+          "options": ["Male", "Female"]
+        },
+
+        {
+          "id": "primary_marital_status",
+          "label": "Marital Status",
+          "type": "multicheck",
+          "page": 2,
+          "options": ["Single", "Married", "Divorced", "Domestic Partner", "Widow(er)"]
+        },
+
+        {
+          "id": "primary_employment_affiliations",
+          "label": "Employment and Industry Affiliations",
+          "type": "multicheck",
+          "page": 2,
+          "options": ["Employed", "Self-Employed", "Retired", "Unemployed", "Student"]
+        },
+
+        { "id": "primary_occupation", "label": "Occupation", "type": "text", "page": 2 },
+        { "id": "primary_years_employed", "label": "Years Employed", "type": "number", "page": 2 },
+        { "id": "primary_type_of_business", "label": "Type of Business", "type": "text", "page": 2 },
+
+        { "id": "primary_employer_name", "label": "Employer Name", "type": "text", "page": 2 },
+        { "id": "primary_employer_address", "label": "Employer's Address", "type": "textarea", "page": 2 },
+        { "id": "primary_employer_city", "label": "Employer City", "type": "text", "page": 2 },
+        { "id": "primary_employer_state_province", "label": "Employer State/Province", "type": "text", "page": 2 },
+        { "id": "primary_employer_zip_postal_code", "label": "Employer Zip/Postal Code", "type": "text", "page": 2 },
+        { "id": "primary_employer_country", "label": "Employer Country", "type": "text", "page": 2 },
+
+        {
+          "id": "primary_general_investment_knowledge",
+          "label": "General Investment Knowledge and Experience",
+          "type": "radio",
+          "page": 2,
+          "options": ["Limited", "Moderate", "Extensive", "None"]
+        },
+
+        {
+          "id": "primary_investment_knowledge_by_type",
+          "label": "Knowledge and Experience by Investment Type (primary)",
+          "type": "group",
+          "page": 2,
+          "fields": [
+            {
+              "id": "commodities_futures_knowledge",
+              "label": "Commodities, Futures - Knowledge",
+              "type": "radio",
+              "options": ["Limited", "Moderate", "Extensive", "None"]
+            },
+            { "id": "commodities_futures_since_year", "label": "Since Year", "type": "text" },
+
+            { "id": "equities_knowledge", "label": "Equities - Knowledge", "type": "radio", "options": ["Limited", "Moderate", "Extensive", "None"] },
+            { "id": "equities_since_year", "label": "Equities - Since Year", "type": "text" },
+
+            { "id": "etf_knowledge", "label": "Exchange Traded Funds - Knowledge", "type": "radio", "options": ["Limited", "Moderate", "Extensive", "None"] },
+            { "id": "etf_since_year", "label": "Exchange Traded Funds - Since Year", "type": "text" },
+
+            { "id": "fixed_annuities_knowledge", "label": "Fixed Annuities - Knowledge", "type": "radio", "options": ["Limited", "Moderate", "Extensive", "None"] },
+            { "id": "fixed_annuities_since_year", "label": "Fixed Annuities - Since Year", "type": "text" },
+
+            { "id": "fixed_insurance_knowledge", "label": "Fixed Insurance - Knowledge", "type": "radio", "options": ["Limited", "Moderate", "Extensive", "None"] },
+            { "id": "fixed_insurance_since_year", "label": "Fixed Insurance - Since Year", "type": "text" }
+          ]
+        }
+      ]
+    },
+
+    {
+      "sectionId": "step3_primary_continued",
+      "title": "STEP 3 (continued) - additional investment types & financial info",
+      "page": 3,
+      "fields": [
+        { "id": "mutual_funds_knowledge", "label": "Mutual Funds - Knowledge", "type": "radio", "options": ["Limited", "Moderate", "Extensive", "None"], "page": 3 },
+        { "id": "mutual_funds_since_year", "label": "Mutual Funds - Since Year", "type": "text", "page": 3 },
+
+        { "id": "options_knowledge", "label": "Options - Knowledge", "type": "radio", "options": ["Limited", "Moderate", "Extensive", "None"], "page": 3 },
+        { "id": "options_since_year", "label": "Options - Since Year", "type": "text", "page": 3 },
+
+        { "id": "precious_metals_knowledge", "label": "Precious Metals - Knowledge", "type": "radio", "options": ["Limited", "Moderate", "Extensive", "None"], "page": 3 },
+        { "id": "precious_metals_since_year", "label": "Precious Metals - Since Year", "type": "text", "page": 3 },
+
+        { "id": "real_estate_knowledge", "label": "Real Estate - Knowledge", "type": "radio", "options": ["Limited", "Moderate", "Extensive", "None"], "page": 3 },
+        { "id": "real_estate_since_year", "label": "Real Estate - Since Year", "type": "text", "page": 3 },
+
+        { "id": "unit_investment_trusts_knowledge", "label": "Unit Investment Trusts - Knowledge", "type": "radio", "options": ["Limited", "Moderate", "Extensive", "None"], "page": 3 },
+        { "id": "unit_investment_trusts_since_year", "label": "Unit Investment Trusts - Since Year", "type": "text", "page": 3 },
+
+        { "id": "variable_annuities_knowledge", "label": "Variable Annuities - Knowledge", "type": "radio", "options": ["Limited", "Moderate", "Extensive", "None"], "page": 3 },
+        { "id": "variable_annuities_since_year", "label": "Variable Annuities - Since Year", "type": "text", "page": 3 },
+
+        { "id": "leveraged_inverse_etfs_knowledge", "label": "Leveraged/Inverse ETFs - Knowledge", "type": "radio", "options": ["Limited", "Moderate", "Extensive", "None"], "page": 3 },
+        { "id": "leveraged_inverse_etfs_since_year", "label": "Leveraged/Inverse ETFs - Since Year", "type": "text", "page": 3 },
+
+        { "id": "complex_products_knowledge", "label": "Complex Products - Knowledge", "type": "radio", "options": ["Limited", "Moderate", "Extensive", "None"], "page": 3 },
+        { "id": "complex_products_since_year", "label": "Complex Products - Since Year", "type": "text", "page": 3 },
+
+        { "id": "alternative_investments_knowledge", "label": "Alternative Investments - Knowledge", "type": "radio", "options": ["Limited", "Moderate", "Extensive", "None"], "page": 3 },
+        { "id": "alternative_investments_since_year", "label": "Alternative Investments - Since Year", "type": "text", "page": 3 },
+
+        { "id": "other_investment_knowledge_label", "label": "Other - Knowledge (label)", "type": "text", "page": 3 },
+        { "id": "other_investment_knowledge_value", "label": "Other - Knowledge selection", "type": "radio", "options": ["Limited", "Moderate", "Extensive", "None"], "page": 3 },
+        { "id": "other_investment_since_year", "label": "Other - Since Year", "type": "text", "page": 3 },
+
+        {
+          "id": "financial_information",
+          "label": "Financial Information",
+          "type": "group",
+          "page": 3,
+          "fields": [
+            { "id": "annual_income_from", "label": "Annual Income - From $", "type": "currency", "page": 3 },
+            { "id": "annual_income_to", "label": "Annual Income - To $", "type": "currency", "page": 3 },
+
+            { "id": "net_worth_from", "label": "Net Worth (excluding primary residence) - From $", "type": "currency", "page": 3 },
+            { "id": "net_worth_to", "label": "Net Worth (excluding primary residence) - To $", "type": "currency", "page": 3 },
+
+            { "id": "liquid_net_worth_from", "label": "Liquid Net Worth - From $", "type": "currency", "page": 3 },
+            { "id": "liquid_net_worth_to", "label": "Liquid Net Worth - To $", "type": "currency", "page": 3 },
+
+            {
+              "id": "tax_bracket",
+              "label": "Tax Bracket",
+              "type": "select",
+              "page": 3,
+              "options": [
+                "0 - 15%",
+                "15.1% - 32%",
+                "32.1% - 50%",
+                "50.1% +"
+              ]
+            }
+          ]
+        },
+
+        {
+          "id": "unexpired_government_identification",
+          "label": "Unexpired Government Identification (Primary)",
+          "type": "group",
+          "page": 3,
+          "repeatable": true,
+          "fields": [
+            { "id": "gov_id_type", "label": "Type of Unexpired Photo ID", "type": "text", "page": 3 },
+            { "id": "gov_id_number", "label": "ID Number", "type": "text", "page": 3 },
+            { "id": "gov_id_country_of_issue", "label": "Country of Issue", "type": "text", "page": 3 },
+            { "id": "gov_id_date_of_issue", "label": "Date of Issue", "type": "date", "page": 3 },
+            { "id": "gov_id_date_of_expiration", "label": "Date of Expiration", "type": "date", "page": 3 }
+          ],
+          "notes": "There are two Government Photo ID blocks (ID #1 and ID #2). Repeatable allows capturing both."
+        },
+
+        { "id": "primary_employee_of_advisory_firm", "label": "Are you an employee of this advisor firm?", "type": "yesno", "page": 3 },
+        { "id": "primary_related_to_employee_advisory", "label": "Are you related to an employee at this advisory firm?", "type": "yesno", "page": 3 },
+        { "id": "primary_employee_name_and_relationship", "label": "Employee Name / Relationship", "type": "text", "page": 3 },
+
+        { "id": "primary_employee_of_broker_dealer", "label": "Are you an employee of a broker-dealer?", "type": "yesno", "page": 3 },
+        { "id": "primary_broker_dealer_name", "label": "Broker Dealer Name", "type": "text", "page": 3 },
+
+        { "id": "primary_related_to_employee_broker_dealer", "label": "Are you related to an employee at a broker-dealer?", "type": "yesno", "page": 3 },
+        { "id": "primary_broker_dealer_employee_name", "label": "Broker Dealer Employee Name", "type": "text", "page": 3 },
+        { "id": "primary_broker_dealer_employee_relationship", "label": "Broker Dealer Employee Relationship", "type": "text", "page": 3 },
+
+        { "id": "primary_maintaining_other_brokerage_accounts", "label": "Are you maintaining any other brokerage accounts?", "type": "yesno", "page": 3 },
+        { "id": "primary_with_what_firms", "label": "With what firm(s) are you maintaining other such accounts?", "type": "text", "page": 3 },
+        { "id": "primary_years_of_investment_experience", "label": "Years of Investment Experience", "type": "number", "page": 3 },
+
+        { "id": "primary_affiliated_with_exchange_or_finra", "label": "Are you or any member of your immediate family affiliated with or employed by a Member of a stock exchange or the Financial Industry Regulatory authority?", "type": "yesno", "page": 3 },
+        { "id": "primary_affiliation_employer_authorization_required", "label": "Employer authorization required - What is the affiliation?", "type": "text", "page": 3 },
+
+        { "id": "primary_senior_officer_or_10pct_shareholder", "label": "Are you a senior officer, director, or 10% or more shareholder of a public company?", "type": "yesno", "page": 3 },
+        { "id": "primary_company_names", "label": "Company Name(s)", "type": "text", "page": 3 }
+      ]
+    },
+
+    {
+      "sectionId": "step4_secondary_account_holder",
+      "title": "STEP 4. SECONDARY ACCOUNT HOLDER INFORMATION",
+      "page": 4,
+      "fields": [
+        { "id": "secondary_name", "label": "Name", "type": "text", "page": 4 },
+        { "id": "secondary_person_entity", "label": "Person / Entity", "type": "radio", "options": ["Person", "Entity"], "page": 4 },
+        { "id": "secondary_ssn", "label": "Social Security (SSN)", "type": "text", "page": 4 },
+        { "id": "secondary_ein", "label": "Employee Identification Number (EIN)", "type": "text", "page": 4 },
+        { "id": "secondary_yes_no_box", "label": "Yes/No (unspecified checkbox near EIN)", "type": "yesno", "page": 4 },
+        { "id": "secondary_email", "label": "Email", "type": "text", "page": 4 },
+        { "id": "secondary_date_of_birth", "label": "Date of Birth", "type": "date", "page": 4 },
+        { "id": "secondary_specified_adult", "label": "Specified Adult (Yes/No)", "type": "yesno", "page": 4 },
+
+        { "id": "secondary_home_phone", "label": "Home Phone", "type": "text", "page": 4 },
+        { "id": "secondary_business_phone", "label": "Business Phone", "type": "text", "page": 4 },
+        { "id": "secondary_mobile_phone", "label": "Mobile Phone", "type": "text", "page": 4 },
+
+        { "id": "secondary_legal_address", "label": "Legal Address (no P.O. Box)", "type": "textarea", "page": 4 },
+        { "id": "secondary_city", "label": "City", "type": "text", "page": 4 },
+        { "id": "secondary_state_province", "label": "State/Province", "type": "text", "page": 4 },
+        { "id": "secondary_zip_postal_code", "label": "Zip/Postal Code", "type": "text", "page": 4 },
+        { "id": "secondary_country", "label": "Country", "type": "text", "page": 4 },
+
+        { "id": "secondary_mailing_address", "label": "Mailing Address (if different from legal address)", "type": "textarea", "page": 4 },
+        { "id": "secondary_mailing_city", "label": "Mailing City", "type": "text", "page": 4 },
+        { "id": "secondary_mailing_state_province", "label": "Mailing State/Province", "type": "text", "page": 4 },
+        { "id": "secondary_mailing_zip_postal_code", "label": "Mailing Zip/Postal Code", "type": "text", "page": 4 },
+        { "id": "secondary_mailing_country", "label": "Mailing Country", "type": "text", "page": 4 },
+
+        { "id": "secondary_primary_citizenship", "label": "Primary Citizenship(s)", "type": "text", "page": 4 },
+
+        {
+          "id": "secondary_gender",
+          "label": "Gender",
+          "type": "radio",
+          "page": 4,
+          "options": ["Male", "Female"]
+        },
+
+        {
+          "id": "secondary_marital_status",
+          "label": "Marital Status",
+          "type": "multicheck",
+          "page": 4,
+          "options": ["Single", "Married", "Divorced", "Domestic Partner", "Widowed"]
+        },
+
+        {
+          "id": "secondary_employment_affiliations",
+          "label": "Employment and Industry Affiliations",
+          "type": "multicheck",
+          "page": 4,
+          "options": ["Employed", "Self-Employed", "Retired", "Unemployed", "Homemaker", "Student"]
+        },
+
+        { "id": "secondary_occupation", "label": "Occupation", "type": "text", "page": 4 },
+        { "id": "secondary_years_employed", "label": "Years Employed", "type": "number", "page": 4 },
+        { "id": "secondary_type_of_business", "label": "Type of Business", "type": "text", "page": 4 },
+
+        { "id": "secondary_employer_name", "label": "Employer Name", "type": "text", "page": 4 },
+        { "id": "secondary_employer_address", "label": "Employer Address", "type": "textarea", "page": 4 },
+        { "id": "secondary_employer_city", "label": "Employer City", "type": "text", "page": 4 },
+        { "id": "secondary_employer_state_province", "label": "Employer State/Province", "type": "text", "page": 4 },
+        { "id": "secondary_employer_zip_postal_code", "label": "Employer Zip/Postal Code", "type": "text", "page": 4 },
+        { "id": "secondary_employer_country", "label": "Employer Country", "type": "text", "page": 4 },
+
+        {
+          "id": "secondary_general_investment_knowledge",
+          "label": "General Investment Knowledge and Experience (secondary)",
+          "type": "radio",
+          "page": 4,
+          "options": ["Limited", "Moderate", "Extensive", "None"]
+        },
+
+        {
+          "id": "secondary_investment_knowledge_by_type",
+          "label": "Knowledge and Experience by Investment Type (secondary)",
+          "type": "group",
+          "page": 4,
+          "fields": [
+            { "id": "secondary_commodities_futures", "label": "Commodities, Futures - Knowledge", "type": "radio", "options": ["Limited", "Moderate", "Extensive", "None"] },
+            { "id": "secondary_commodities_futures_since", "label": "Since Year", "type": "text" },
+
+            { "id": "secondary_equities", "label": "Equities - Knowledge", "type": "radio", "options": ["Limited", "Moderate", "Extensive", "None"] },
+            { "id": "secondary_equities_since", "label": "Since Year", "type": "text" },
+
+            { "id": "secondary_etfs", "label": "Exchange Traded Funds - Knowledge", "type": "radio", "options": ["Limited", "Moderate", "Extensive", "None"] },
+            { "id": "secondary_etfs_since", "label": "Since Year", "type": "text" },
+
+            { "id": "secondary_fixed_annuities", "label": "Fixed Annuities - Knowledge", "type": "radio", "options": ["Limited", "Moderate", "Extensive", "None"] },
+            { "id": "secondary_fixed_annuities_since", "label": "Since Year", "type": "text" },
+
+            { "id": "secondary_fixed_insurance", "label": "Fixed Insurance - Knowledge", "type": "radio", "options": ["Limited", "Moderate", "Extensive", "None"] },
+            { "id": "secondary_fixed_insurance_since", "label": "Since Year", "type": "text" },
+
+            { "id": "secondary_mutual_funds", "label": "Mutual Funds - Knowledge", "type": "radio", "options": ["Limited", "Moderate", "Extensive", "None"] },
+            { "id": "secondary_mutual_funds_since", "label": "Since Year", "type": "text" },
+
+            { "id": "secondary_options", "label": "Options - Knowledge", "type": "radio", "options": ["Limited", "Moderate", "Extensive", "None"] },
+            { "id": "secondary_options_since", "label": "Since Year", "type": "text" },
+
+            { "id": "secondary_precious_metals", "label": "Precious Metals - Knowledge", "type": "radio", "options": ["Limited", "Moderate", "Extensive", "None"] },
+            { "id": "secondary_precious_metals_since", "label": "Since Year", "type": "text" },
+
+            { "id": "secondary_real_estate", "label": "Real Estate - Knowledge", "type": "radio", "options": ["Limited", "Moderate", "Extensive", "None"] },
+            { "id": "secondary_real_estate_since", "label": "Since Year", "type": "text" },
+
+            { "id": "secondary_unit_investment_trusts", "label": "Unit Investment Trusts - Knowledge", "type": "radio", "options": ["Limited", "Moderate", "Extensive", "None"] },
+            { "id": "secondary_unit_investment_trusts_since", "label": "Since Year", "type": "text" },
+
+            { "id": "secondary_variable_annuities", "label": "Variable Annuities - Knowledge", "type": "radio", "options": ["Limited", "Moderate", "Extensive", "None"] },
+            { "id": "secondary_variable_annuities_since", "label": "Since Year", "type": "text" },
+
+            { "id": "secondary_leveraged_inverse_etfs", "label": "Leveraged/Inverse ETFs - Knowledge", "type": "radio", "options": ["Limited", "Moderate", "Extensive", "None"] },
+            { "id": "secondary_leveraged_inverse_etfs_since", "label": "Since Year", "type": "text" },
+
+            { "id": "secondary_complex_products", "label": "Complex Products - Knowledge", "type": "radio", "options": ["Limited", "Moderate", "Extensive", "None"] },
+            { "id": "secondary_complex_products_since", "label": "Since Year", "type": "text" }
+          ]
+        }
+      ]
+    },
+
+    {
+      "sectionId": "step4_secondary_continued",
+      "title": "STEP 4 (continued) - secondary financial",
+      "page": 5,
+      "fields": [
+        { "id": "secondary_alternative_investments_knowledge", "label": "Alternative Investments - Knowledge", "type": "radio", "options": ["Limited", "Moderate", "Extensive", "None"], "page": 5 },
+        { "id": "secondary_other_investments_knowledge", "label": "Other - Knowledge", "type": "radio", "options": ["Limited", "Moderate", "Extensive", "None"], "page": 5 },
+
+        {
+          "id": "secondary_financial_information",
+          "label": "Secondary Financial Information (or combined)",
+          "type": "group",
+          "page": 5,
+          "fields": [
+            { "id": "annual_income_from_2", "label": "Annual Income - From $", "type": "currency", "page": 5 },
+            { "id": "annual_income_to_2", "label": "Annual Income - To $", "type": "currency", "page": 5 },
+
+            { "id": "net_worth_from_2", "label": "Net Worth (excluding primary residence) - From $", "type": "currency", "page": 5 },
+            { "id": "net_worth_to_2", "label": "Net Worth (excluding primary residence) - To $", "type": "currency", "page": 5 },
+
+            { "id": "liquid_net_worth_from_2", "label": "Liquid Net Worth - From $", "type": "currency", "page": 5 },
+            { "id": "liquid_net_worth_to_2", "label": "Liquid Net Worth - To $", "type": "currency", "page": 5 },
+
+            {
+              "id": "tax_bracket_2",
+              "label": "Tax Bracket",
+              "type": "select",
+              "page": 5,
+              "options": [
+                "0 - 15%",
+                "15.1% - 32%",
+                "32.1% - 50%",
+                "50.1% +"
+              ]
+            }
+          ]
+        },
+
+        {
+          "id": "secondary_unexpired_government_identification",
+          "label": "Unexpired Government Identification (Secondary)",
+          "type": "group",
+          "page": 5,
+          "repeatable": true,
+          "fields": [
+            { "id": "gov2_type", "label": "Type of Unexpired Photo ID", "type": "text" },
+            { "id": "gov2_id_number", "label": "ID Number", "type": "text" },
+            { "id": "gov2_date_of_issue", "label": "Date of Issue", "type": "date" },
+            { "id": "gov2_date_of_expiration", "label": "Date of Expiration", "type": "date" }
+          ],
+          "notes": "GOVERNMENT ISSUED UNEXPIRED PHOTO IDENTIFICATION SHOULD BE PROVIDED FOR ALL INDIVIDUALS THAT WERE NOT VERIFIED USING NON-DOCUMENTARY METHODS, AND FOR NON-RESIDENT ALIENS, ALONG WITH AN IRS FORM W-8BEN."
+        },
+
+        { "id": "secondary_employee_of_advisory_firm", "label": "Are you an employee of this advisory firm?", "type": "yesno", "page": 5 },
+        { "id": "secondary_related_to_employee_advisory", "label": "Are you related to an employee at this advisory firm?", "type": "yesno", "page": 5 },
+        { "id": "secondary_employee_name", "label": "Employee Name", "type": "text", "page": 5 },
+
+        { "id": "secondary_employee_of_broker_dealer", "label": "Are you an employee of a broker-dealer?", "type": "yesno", "page": 5 },
+        { "id": "secondary_broker_dealer_name", "label": "Broker-Dealer Name", "type": "text", "page": 5 },
+
+        { "id": "secondary_related_to_employee_broker_dealer", "label": "Are you related to an employee at a broker-dealer?", "type": "yesno", "page": 5 },
+        { "id": "secondary_broker_dealer_employee_name", "label": "Broker-Dealer Employee Name", "type": "text", "page": 5 },
+        { "id": "secondary_broker_dealer_employee_relationship", "label": "Relationship", "type": "text", "page": 5 },
+
+        { "id": "secondary_maintaining_other_brokerage_accounts", "label": "Are you maintaining any other brokerage accounts?", "type": "yesno", "page": 5 },
+        { "id": "secondary_with_what_firms", "label": "With what firm(s) are you maintaining other such accounts?", "type": "text", "page": 5 },
+
+        { "id": "secondary_affiliated_with_exchange_or_finra", "label": "Are you or any member of your immediate family affiliated with or employed by a Member of a stock exchange or the Financial Industry Regulatory authority?", "type": "yesno", "page": 5 },
+        { "id": "secondary_affiliation_details", "label": "Employer authorization required - affiliation details", "type": "text", "page": 5 },
+        { "id": "secondary_years_investment_experience", "label": "Years of Investment Experience", "type": "number", "page": 5 },
+
+        { "id": "secondary_senior_officer_or_10pct_shareholder", "label": "Are you a senior officer, director, or 10% or more shareholder of a public company?", "type": "yesno", "page": 5 },
+        { "id": "secondary_company_names", "label": "Company Name(s)", "type": "text", "page": 5 }
+      ]
+    },
+
+    {
+      "sectionId": "step5_objectives_investment_detail",
+      "title": "STEP 5. OBJECTIVES AND INVESTMENT DETAIL",
+      "page": 5,
+      "fields": [
+        {
+          "id": "risk_exposure",
+          "label": "Risk Exposure",
+          "type": "multicheck",
+          "page": 5,
+          "options": ["Low", "Moderate", "Speculation", "High Risk"]
+        },
+
+        {
+          "id": "account_investment_objectives",
+          "label": "Account Investment Objectives",
+          "type": "multicheck",
+          "page": 5,
+          "options": ["Income", "Long-Term Growth", "Short-Term Growth"]
+        },
+
+        { "id": "other_investments_see_attached", "label": "Other Investments - See Attached Statement of Financial Condition", "type": "checkbox", "page": 5 },
+
+        {
+          "id": "other_investments_table",
+          "label": "Other Investments (table of values)",
+          "type": "group",
+          "page": 5,
+          "repeatable": false,
+          "fields": [
+            { "id": "investment_equities_value", "label": "Equities - Value $", "type": "currency" },
+            { "id": "investment_fixed_annuities_value", "label": "Fixed Annuities - Value $", "type": "currency" },
+
+            { "id": "investment_options_value", "label": "Options - Value $", "type": "currency" },
+            { "id": "investment_precious_metals_value", "label": "Precious Metals - Value $", "type": "currency" },
+
+            { "id": "investment_fixed_income_value", "label": "Fixed Income - Value $", "type": "currency" },
+            { "id": "investment_commodities_futures_value", "label": "Commodities/Futures - Value $", "type": "currency" },
+
+            { "id": "investment_mutual_funds_value", "label": "Mutual Funds - Value $", "type": "currency" },
+            { "id": "investment_other_1_value", "label": "Other - Value $", "type": "currency" },
+
+            { "id": "investment_unit_investment_trusts_value", "label": "Unit Investment Trusts - Value $", "type": "currency" },
+            { "id": "investment_other_2_value", "label": "Other - Value $", "type": "currency" },
+
+            { "id": "investment_etfs_value", "label": "Exchange-Traded Funds - Value $", "type": "currency" },
+            { "id": "investment_other_3_value", "label": "Other - Value $", "type": "currency" },
+
+            { "id": "investment_real_estate_value", "label": "Real Estate - Value $", "type": "currency" },
+            { "id": "investment_insurance_value", "label": "Insurance - Value $", "type": "currency" },
+
+            { "id": "investment_variable_annuities_value", "label": "Variable Annuities - Value $", "type": "currency" }
+          ]
+        },
+
+        {
+          "id": "investment_time_horizon_liquidity",
+          "label": "Investment Time Horizon and Liquidity Needs",
+          "type": "group",
+          "page": 6,
+          "fields": [
+            { "id": "investment_time_horizon_from", "label": "Time Horizon - from (part 1)", "type": "text" },
+            { "id": "investment_time_horizon_to", "label": "Time Horizon - to (part 2)", "type": "text" },
+            { "id": "liquidity_needs", "label": "Liquidity Needs", "type": "multicheck", "options": ["High", "Medium", "Low"] }
+          ]
+        }
+      ]
+    },
+
+    {
+      "sectionId": "step6_trusted_contact",
+      "title": "STEP 6. TRUSTED CONTACT",
+      "page": 6,
+      "fields": [
+        { "id": "trusted_contact_decline_to_provide", "label": "I/We Decline to Provide Trusted Contact", "type": "checkbox", "page": 6 },
+        { "id": "trusted_contact_name", "label": "Trusted Contact - Name", "type": "text", "page": 6, "notes": "If provided, authorizes contacting for exploitation or to confirm contact info." },
+        { "id": "trusted_contact_email", "label": "Trusted Contact - Email", "type": "text", "page": 6 },
+        { "id": "trusted_contact_home_phone", "label": "Trusted Contact - Home Phone", "type": "text", "page": 6 },
+        { "id": "trusted_contact_business_phone", "label": "Trusted Contact - Business Phone", "type": "text", "page": 6 },
+        { "id": "trusted_contact_mobile_phone", "label": "Trusted Contact - Mobile Phone", "type": "text", "page": 6 },
+        { "id": "trusted_contact_mailing_address", "label": "Trusted Contact - Mailing Address", "type": "textarea", "page": 6 },
+        { "id": "trusted_contact_city", "label": "Trusted Contact - City", "type": "text", "page": 6 },
+        { "id": "trusted_contact_state_province", "label": "Trusted Contact - State/Province", "type": "text", "page": 6 },
+        { "id": "trusted_contact_zip_postal_code", "label": "Trusted Contact - Zip/Postal Code", "type": "text", "page": 6 },
+        { "id": "trusted_contact_country", "label": "Trusted Contact - Country", "type": "text", "page": 6 }
+      ]
+    },
+
+    {
+      "sectionId": "step7_signatures",
+      "title": "STEP 7. SIGNATURES & TAXPAYER CERTIFICATION",
+      "page": 6,
+      "fields": [
+        {
+          "id": "taxpayer_certification",
+          "label": "Taxpayer Certification (statements text - informational, not a form field)",
+          "type": "textarea",
+          "page": 6,
+          "notes": "Includes certification statements - present as read-only block the user must acknowledge."
+        },
+
+        { "id": "account_owner_signature", "label": "Account Owner Signature", "type": "signature", "page": 6 },
+        { "id": "account_owner_printed_name", "label": "Account Owner Printed Name", "type": "text", "page": 6 },
+        { "id": "account_owner_date", "label": "Account Owner Date", "type": "date", "page": 6 },
+
+        { "id": "joint_account_owner_signature", "label": "Joint Account Owner Signature", "type": "signature", "page": 6 },
+        { "id": "joint_account_owner_printed_name", "label": "Joint Account Owner Printed Name", "type": "text", "page": 6 },
+        { "id": "joint_account_owner_date", "label": "Joint Account Owner Date", "type": "date", "page": 6 },
+
+        { "id": "financial_professional_signature", "label": "Financial Professional Signature", "type": "signature", "page": 6 },
+        { "id": "financial_professional_printed_name", "label": "Financial Professional Printed Name", "type": "text", "page": 6 },
+        { "id": "financial_professional_date", "label": "Financial Professional Date", "type": "date", "page": 6 },
+
+        { "id": "supervisor_principal_signature", "label": "Supervisor / Principal Signature", "type": "signature", "page": 6 },
+        { "id": "supervisor_principal_printed_name", "label": "Supervisor / Principal Printed Name", "type": "text", "page": 6 },
+        { "id": "supervisor_principal_date", "label": "Supervisor / Principal Date", "type": "date", "page": 6 }
+      ]
+    },
+
+    {
+      "sectionId": "legal_terms",
+      "title": "Agreement: General Terms and Conditions (informational)",
+      "page": 7,
+      "fields": [
+        { "id": "agreement_text", "label": "Agreement full text (read-only)", "type": "textarea", "page": 7, "notes": "Contains full agreement text, arbitration disclosures, and signature acceptance clause. Present to user as read-only with an acknowledge checkbox." },
+        { "id": "agreement_acknowledge", "label": "I acknowledge and accept the Agreement and Arbitration Disclosures", "type": "checkbox", "page": 7 }
+      ]
+    }
+  ],
+  "ui_hints": {
+    "page_layout": {
+      "1": ["step1_account_registration"],
+      "2": ["step2_patriot_act", "step3_primary_account_holder"],
+      "3": ["step3_primary_continued"],
+      "4": ["step4_secondary_account_holder"],
+      "5": ["step4_secondary_continued", "step5_objectives_investment_detail"],
+      "6": ["step6_trusted_contact", "step7_signatures"],
+      "7": ["legal_terms"]
+    },
+    "rendering": {
+      "signature": "use a signature-pad (canvas) or typed acknowledgement with separate signature capture step",
+      "government_id_repeat": "render two government ID sub-forms (ID #1 and ID #2)",
+      "checkbox_groups": "show as grouped checkboxes; allow 'Other' text when 'Other' option selected",
+      "validation": "SSN/EIN formatting, required fields for signatures, required government ID fields if not verified via other methods"
+    },
+    "accessibility": {
+      "labels_associated_with_inputs": true,
+      "use_fieldsets_for_radio_groups": true,
+      "provide_readonly_modal_for_agreement_text": true
+    }
+  }
+}

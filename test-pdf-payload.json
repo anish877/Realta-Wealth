@@ -1,0 +1,482 @@
+{
+  "profileId": "test-profile-123",
+  "profileData": {
+    "id": "test-profile-123",
+    "userId": "test-user-456",
+    "status": "draft",
+    "lastCompletedStep": 7,
+    "stepCompletionStatus": {
+      "1": { "completed": true, "updatedAt": "2025-01-15T10:00:00.000Z" },
+      "2": { "completed": true, "updatedAt": "2025-01-15T10:15:00.000Z" },
+      "3": { "completed": true, "updatedAt": "2025-01-15T10:30:00.000Z" },
+      "4": { "completed": true, "updatedAt": "2025-01-15T10:45:00.000Z" },
+      "5": { "completed": true, "updatedAt": "2025-01-15T11:00:00.000Z" },
+      "6": { "completed": true, "updatedAt": "2025-01-15T11:15:00.000Z" },
+      "7": { "completed": true, "updatedAt": "2025-01-15T11:30:00.000Z" }
+    },
+    "rrName": "John Smith",
+    "rrNo": "RR-12345",
+    "customerNames": "Jane Doe, John Doe",
+    "accountNo": "ACC-789012",
+    "retirementAccount": false,
+    "retailAccount": true,
+    "otherAccountTypeText": null,
+    "createdAt": "2025-01-15T09:00:00.000Z",
+    "updatedAt": "2025-01-15T11:30:00.000Z",
+    "submittedAt": null,
+    "user": {
+      "id": "test-user-456",
+      "email": "jane.doe@example.com",
+      "fullName": "Jane Doe",
+      "role": "client"
+    },
+    "accountTypes": [
+      { "id": "at-1", "profileId": "test-profile-123", "accountType": "joint_tenant" },
+      { "id": "at-2", "profileId": "test-profile-123", "accountType": "individual" }
+    ],
+    "additionalDesignations": [
+      { "id": "ad-1", "profileId": "test-profile-123", "designationType": "s_corp" }
+    ],
+    "trustInformation": {
+      "id": "trust-1",
+      "profileId": "test-profile-123",
+      "establishmentDate": "2020-05-15T00:00:00.000Z",
+      "trustTypes": ["living", "revocable"]
+    },
+    "jointAccountInformation": {
+      "id": "joint-1",
+      "profileId": "test-profile-123",
+      "areAccountHoldersMarried": "Yes",
+      "tenancyState": "California",
+      "numberOfTenants": 2,
+      "tenancyClauses": ["joint_tenants_with_rights_of_survivorship", "community_property"]
+    },
+    "custodialAccountInformation": null,
+    "transferOnDeathInformation": {
+      "id": "tod-1",
+      "profileId": "test-profile-123",
+      "individualAgreementDate": "2021-03-20T00:00:00.000Z",
+      "jointAgreementDate": "2021-03-20T00:00:00.000Z"
+    },
+    "patriotActInformation": {
+      "id": "patriot-1",
+      "profileId": "test-profile-123",
+      "initialSourceOfFunds": ["salary", "savings", "investment_income"],
+      "otherSourceOfFundsText": "Inheritance from family trust"
+    },
+    "accountHolders": [
+      {
+        "id": "holder-primary-1",
+        "profileId": "test-profile-123",
+        "holderType": "primary",
+        "name": "Jane Doe",
+        "email": "jane.doe@example.com",
+        "personEntity": "Person",
+        "ssn": "123-45-6789",
+        "ein": null,
+        "yesNoBox": "Yes",
+        "dateOfBirth": "1985-06-15T00:00:00.000Z",
+        "specifiedAdult": "No",
+        "primaryCitizenship": "United States",
+        "additionalCitizenship": null,
+        "gender": "Female",
+        "generalInvestmentKnowledge": "Moderate",
+        "createdAt": "2025-01-15T10:30:00.000Z",
+        "updatedAt": "2025-01-15T10:30:00.000Z",
+        "addresses": [
+          {
+            "id": "addr-legal-1",
+            "accountHolderId": "holder-primary-1",
+            "addressType": "legal",
+            "address": "123 Main Street",
+            "city": "San Francisco",
+            "stateProvince": "CA",
+            "zipPostalCode": "94102",
+            "country": "United States",
+            "mailingSameAsLegal": false
+          },
+          {
+            "id": "addr-mailing-1",
+            "accountHolderId": "holder-primary-1",
+            "addressType": "mailing",
+            "address": "456 Oak Avenue, Suite 200",
+            "city": "San Francisco",
+            "stateProvince": "CA",
+            "zipPostalCode": "94105",
+            "country": "United States",
+            "mailingSameAsLegal": false
+          }
+        ],
+        "phones": [
+          {
+            "id": "phone-home-1",
+            "accountHolderId": "holder-primary-1",
+            "phoneType": "home",
+            "phoneNumber": "(415) 555-0100"
+          },
+          {
+            "id": "phone-mobile-1",
+            "accountHolderId": "holder-primary-1",
+            "phoneType": "mobile",
+            "phoneNumber": "(415) 555-0101"
+          },
+          {
+            "id": "phone-business-1",
+            "accountHolderId": "holder-primary-1",
+            "phoneType": "business",
+            "phoneNumber": "(415) 555-0102"
+          }
+        ],
+        "maritalStatuses": [
+          {
+            "id": "marital-1",
+            "accountHolderId": "holder-primary-1",
+            "maritalStatus": "Married"
+          }
+        ],
+        "employmentAffiliations": [
+          {
+            "id": "emp-aff-1",
+            "accountHolderId": "holder-primary-1",
+            "affiliation": "Employed"
+          }
+        ],
+        "employment": {
+          "id": "emp-1",
+          "accountHolderId": "holder-primary-1",
+          "occupation": "Software Engineer",
+          "yearsEmployed": 8,
+          "typeOfBusiness": "Technology",
+          "employerName": "Tech Corp Inc.",
+          "employerAddressId": "addr-employer-1",
+          "employerAddress": {
+            "id": "addr-employer-1",
+            "accountHolderId": "holder-primary-1",
+            "addressType": "employer",
+            "address": "789 Tech Boulevard",
+            "city": "San Francisco",
+            "stateProvince": "CA",
+            "zipPostalCode": "94107",
+            "country": "United States",
+            "mailingSameAsLegal": false
+          }
+        },
+        "investmentKnowledge": [
+          {
+            "id": "inv-know-1",
+            "accountHolderId": "holder-primary-1",
+            "investmentType": "mutual_funds",
+            "knowledgeLevel": "Moderate",
+            "sinceYear": "2015",
+            "otherInvestmentLabel": null
+          },
+          {
+            "id": "inv-know-2",
+            "accountHolderId": "holder-primary-1",
+            "investmentType": "equities",
+            "knowledgeLevel": "Moderate",
+            "sinceYear": "2018",
+            "otherInvestmentLabel": null
+          },
+          {
+            "id": "inv-know-3",
+            "accountHolderId": "holder-primary-1",
+            "investmentType": "etf",
+            "knowledgeLevel": "Limited",
+            "sinceYear": "2020",
+            "otherInvestmentLabel": null
+          },
+          {
+            "id": "inv-know-4",
+            "accountHolderId": "holder-primary-1",
+            "investmentType": "other",
+            "knowledgeLevel": "Limited",
+            "sinceYear": "2022",
+            "otherInvestmentLabel": "Cryptocurrency"
+          }
+        ],
+        "financialInformation": {
+          "id": "fin-1",
+          "accountHolderId": "holder-primary-1",
+          "annualIncomeFrom": "150000.00",
+          "annualIncomeTo": "200000.00",
+          "netWorthFrom": "500000.00",
+          "netWorthTo": "1000000.00",
+          "liquidNetWorthFrom": "200000.00",
+          "liquidNetWorthTo": "500000.00",
+          "taxBracket": "thirtytwo_1_to_50"
+        },
+        "governmentIdentifications": [
+          {
+            "id": "gov-id-1",
+            "accountHolderId": "holder-primary-1",
+            "idNumber": 1,
+            "idType": "Driver's License",
+            "idNumberValue": "D1234567",
+            "countryOfIssue": "United States",
+            "dateOfIssue": "2020-01-15T00:00:00.000Z",
+            "dateOfExpiration": "2025-01-15T00:00:00.000Z"
+          },
+          {
+            "id": "gov-id-2",
+            "accountHolderId": "holder-primary-1",
+            "idNumber": 2,
+            "idType": "Passport",
+            "idNumberValue": "P987654321",
+            "countryOfIssue": "United States",
+            "dateOfIssue": "2019-06-01T00:00:00.000Z",
+            "dateOfExpiration": "2029-06-01T00:00:00.000Z"
+          }
+        ],
+        "advisoryFirmInformation": {
+          "id": "advisory-1",
+          "accountHolderId": "holder-primary-1",
+          "employeeOfAdvisoryFirm": "No",
+          "relatedToEmployeeAdvisory": "No",
+          "employeeNameAndRelationship": null
+        },
+        "brokerDealerInformation": {
+          "id": "broker-1",
+          "accountHolderId": "holder-primary-1",
+          "employeeOfBrokerDealer": "No",
+          "brokerDealerName": null,
+          "relatedToEmployeeBrokerDealer": "No",
+          "brokerDealerEmployeeName": null,
+          "brokerDealerEmployeeRelationship": null
+        },
+        "otherBrokerageAccounts": {
+          "id": "other-broker-1",
+          "accountHolderId": "holder-primary-1",
+          "maintainingOtherAccounts": "Yes",
+          "withWhatFirms": "Charles Schwab, Fidelity Investments",
+          "yearsOfInvestmentExperience": 10
+        },
+        "exchangeFinraAffiliation": {
+          "id": "finra-1",
+          "accountHolderId": "holder-primary-1",
+          "affiliatedWithExchangeOrFinra": "No",
+          "affiliationDetails": null
+        },
+        "publicCompanyInformation": {
+          "id": "public-1",
+          "accountHolderId": "holder-primary-1",
+          "seniorOfficerOr10PctShareholder": "No",
+          "companyNames": null
+        }
+      },
+      {
+        "id": "holder-secondary-1",
+        "profileId": "test-profile-123",
+        "holderType": "secondary",
+        "name": "John Doe",
+        "email": "john.doe@example.com",
+        "personEntity": "Person",
+        "ssn": "987-65-4321",
+        "ein": null,
+        "yesNoBox": "Yes",
+        "dateOfBirth": "1983-03-20T00:00:00.000Z",
+        "specifiedAdult": "No",
+        "primaryCitizenship": "United States",
+        "additionalCitizenship": null,
+        "gender": "Male",
+        "generalInvestmentKnowledge": "Extensive",
+        "createdAt": "2025-01-15T10:45:00.000Z",
+        "updatedAt": "2025-01-15T10:45:00.000Z",
+        "addresses": [
+          {
+            "id": "addr-legal-2",
+            "accountHolderId": "holder-secondary-1",
+            "addressType": "legal",
+            "address": "123 Main Street",
+            "city": "San Francisco",
+            "stateProvince": "CA",
+            "zipPostalCode": "94102",
+            "country": "United States",
+            "mailingSameAsLegal": true
+          }
+        ],
+        "phones": [
+          {
+            "id": "phone-mobile-2",
+            "accountHolderId": "holder-secondary-1",
+            "phoneType": "mobile",
+            "phoneNumber": "(415) 555-0200"
+          }
+        ],
+        "maritalStatuses": [
+          {
+            "id": "marital-2",
+            "accountHolderId": "holder-secondary-1",
+            "maritalStatus": "Married"
+          }
+        ],
+        "employmentAffiliations": [
+          {
+            "id": "emp-aff-2",
+            "accountHolderId": "holder-secondary-1",
+            "affiliation": "SelfEmployed"
+          }
+        ],
+        "employment": {
+          "id": "emp-2",
+          "accountHolderId": "holder-secondary-1",
+          "occupation": "Financial Advisor",
+          "yearsEmployed": 12,
+          "typeOfBusiness": "Financial Services",
+          "employerName": "Independent Financial Planning",
+          "employerAddressId": "addr-employer-2",
+          "employerAddress": {
+            "id": "addr-employer-2",
+            "accountHolderId": "holder-secondary-1",
+            "addressType": "employer",
+            "address": "321 Finance Plaza",
+            "city": "San Francisco",
+            "stateProvince": "CA",
+            "zipPostalCode": "94108",
+            "country": "United States",
+            "mailingSameAsLegal": false
+          }
+        },
+        "investmentKnowledge": [
+          {
+            "id": "inv-know-5",
+            "accountHolderId": "holder-secondary-1",
+            "investmentType": "equities",
+            "knowledgeLevel": "Extensive",
+            "sinceYear": "2010",
+            "otherInvestmentLabel": null
+          },
+          {
+            "id": "inv-know-6",
+            "accountHolderId": "holder-secondary-1",
+            "investmentType": "options",
+            "knowledgeLevel": "Moderate",
+            "sinceYear": "2015",
+            "otherInvestmentLabel": null
+          }
+        ],
+        "financialInformation": {
+          "id": "fin-2",
+          "accountHolderId": "holder-secondary-1",
+          "annualIncomeFrom": "200000.00",
+          "annualIncomeTo": "300000.00",
+          "netWorthFrom": "1000000.00",
+          "netWorthTo": "2000000.00",
+          "liquidNetWorthFrom": "500000.00",
+          "liquidNetWorthTo": "1000000.00",
+          "taxBracket": "fifty_1_plus"
+        },
+        "governmentIdentifications": [
+          {
+            "id": "gov-id-3",
+            "accountHolderId": "holder-secondary-1",
+            "idNumber": 1,
+            "idType": "Driver's License",
+            "idNumberValue": "D7654321",
+            "countryOfIssue": "United States",
+            "dateOfIssue": "2019-03-20T00:00:00.000Z",
+            "dateOfExpiration": "2024-03-20T00:00:00.000Z"
+          }
+        ],
+        "advisoryFirmInformation": null,
+        "brokerDealerInformation": null,
+        "otherBrokerageAccounts": {
+          "id": "other-broker-2",
+          "accountHolderId": "holder-secondary-1",
+          "maintainingOtherAccounts": "Yes",
+          "withWhatFirms": "TD Ameritrade",
+          "yearsOfInvestmentExperience": 15
+        },
+        "exchangeFinraAffiliation": null,
+        "publicCompanyInformation": null
+      }
+    ],
+    "investmentObjectives": {
+      "id": "obj-1",
+      "profileId": "test-profile-123",
+      "riskExposure": ["Moderate", "HighRisk"],
+      "accountInvestmentObjectives": ["LongTermGrowth", "Income"],
+      "seeAttachedStatement": false,
+      "timeHorizonFrom": "5",
+      "timeHorizonTo": "10",
+      "liquidityNeeds": ["Medium", "Low"]
+    },
+    "investmentValues": [
+      {
+        "id": "inv-val-1",
+        "profileId": "test-profile-123",
+        "investmentType": "mutual_funds",
+        "value": "150000.00"
+      },
+      {
+        "id": "inv-val-2",
+        "profileId": "test-profile-123",
+        "investmentType": "equities",
+        "value": "200000.00"
+      },
+      {
+        "id": "inv-val-3",
+        "profileId": "test-profile-123",
+        "investmentType": "etf",
+        "value": "75000.00"
+      },
+      {
+        "id": "inv-val-4",
+        "profileId": "test-profile-123",
+        "investmentType": "real_estate",
+        "value": "500000.00"
+      }
+    ],
+    "trustedContact": {
+      "id": "trusted-1",
+      "profileId": "test-profile-123",
+      "declineToProvide": false,
+      "name": "Robert Smith",
+      "email": "robert.smith@example.com",
+      "homePhone": "(415) 555-0300",
+      "businessPhone": "(415) 555-0301",
+      "mobilePhone": "(415) 555-0302",
+      "mailingAddress": "789 Contact Street",
+      "city": "San Francisco",
+      "stateProvince": "CA",
+      "zipPostalCode": "94110",
+      "country": "United States"
+    },
+    "signatures": [
+      {
+        "id": "sig-1",
+        "profileId": "test-profile-123",
+        "signatureType": "account_owner",
+        "signatureData": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+        "printedName": "Jane Doe",
+        "signatureDate": "2025-01-15T11:30:00.000Z"
+      },
+      {
+        "id": "sig-2",
+        "profileId": "test-profile-123",
+        "signatureType": "joint_account_owner",
+        "signatureData": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+        "printedName": "John Doe",
+        "signatureDate": "2025-01-15T11:30:00.000Z"
+      },
+      {
+        "id": "sig-3",
+        "profileId": "test-profile-123",
+        "signatureType": "financial_professional",
+        "signatureData": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+        "printedName": "Michael Advisor",
+        "signatureDate": "2025-01-15T11:30:00.000Z"
+      },
+      {
+        "id": "sig-4",
+        "profileId": "test-profile-123",
+        "signatureType": "supervisor_principal",
+        "signatureData": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+        "printedName": "Sarah Supervisor",
+        "signatureDate": "2025-01-15T11:30:00.000Z"
+      }
+    ]
+  },
+  "timestamp": "2025-01-15T12:00:00.000Z"
+}
+

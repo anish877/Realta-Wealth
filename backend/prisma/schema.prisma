@@ -1,0 +1,620 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum Role {
+  advisor
+  client
+  admin
+}
+
+enum PersonEntity {
+  Person
+  Entity
+}
+
+enum Gender {
+  Male
+  Female
+}
+
+enum YesNo {
+  Yes
+  No
+}
+
+enum AccountType {
+  individual
+  corporation
+  corporate_pension_profit_sharing
+  custodial
+  estate
+  joint_tenant
+  limited_liability_company
+  individual_single_member_llc
+  sole_proprietorship
+  transfer_on_death_individual
+  transfer_on_death_joint
+  nonprofit_organization
+  partnership
+  exempt_organization
+  trust
+  other
+}
+
+enum AdditionalDesignationType {
+  c_corp
+  s_corp
+  ugma
+  utma
+  partnership
+}
+
+enum TrustType {
+  charitable
+  living
+  irrevocable_living
+  family
+  revocable
+  irrevocable
+  testamentary
+}
+
+enum TenancyClause {
+  community_property
+  tenants_by_entirety
+  community_property_with_rights
+  joint_tenants_with_rights_of_survivorship
+  tenants_in_common
+}
+
+enum MaritalStatus {
+  Single
+  Married
+  Divorced
+  DomesticPartner
+  Widow
+  Widowed
+}
+
+enum EmploymentAffiliation {
+  Employed
+  SelfEmployed
+  Retired
+  Unemployed
+  Student
+  Homemaker
+}
+
+enum InvestmentKnowledgeLevel {
+  Limited
+  Moderate
+  Extensive
+  None
+}
+
+enum InvestmentType {
+  commodities_futures
+  equities
+  etf
+  fixed_annuities
+  fixed_insurance
+  mutual_funds
+  options
+  precious_metals
+  real_estate
+  unit_investment_trusts
+  variable_annuities
+  leveraged_inverse_etfs
+  complex_products
+  alternative_investments
+  other
+}
+
+enum TaxBracket {
+  zero_to_15
+  fifteen_1_to_32
+  thirtytwo_1_to_50
+  fifty_1_plus
+}
+
+enum RiskExposure {
+  Low
+  Moderate
+  Speculation
+  HighRisk
+}
+
+enum AccountInvestmentObjective {
+  Income
+  LongTermGrowth
+  ShortTermGrowth
+}
+
+enum LiquidityNeed {
+  High
+  Medium
+  Low
+}
+
+enum AddressType {
+  legal
+  mailing
+  employer
+}
+
+enum PhoneType {
+  home
+  business
+  mobile
+}
+
+enum SignatureType {
+  account_owner
+  joint_account_owner
+  financial_professional
+  supervisor_principal
+}
+
+enum ProfileStatus {
+  draft
+  submitted
+  approved
+  rejected
+}
+
+enum AccountHolderType {
+  primary
+  secondary
+}
+
+// ============================================
+// MODELS
+// ============================================
+
+model User {
+  id           String            @id @default(uuid())
+  email        String            @unique
+  passwordHash String            @map("password_hash")
+  fullName     String            @map("full_name")
+  role         Role
+  createdAt    DateTime          @default(now()) @map("created_at")
+  updatedAt    DateTime          @updatedAt @map("updated_at")
+  
+  investorProfiles InvestorProfile[]
+  
+  @@map("users")
+}
+
+model InvestorProfile {
+  id              String            @id @default(uuid())
+  userId          String            @map("user_id")
+  status          ProfileStatus     @default(draft)
+  lastCompletedStep Int              @default(0) @map("last_completed_step")
+  stepCompletionStatus Json?         @map("step_completion_status")
+  
+  // Step 1: Account Registration
+  rrName          String?           @map("rr_name")
+  rrNo            String?           @map("rr_no")
+  customerNames   String?           @map("customer_names")
+  accountNo       String?           @map("account_no")
+  retirementAccount Boolean         @default(false) @map("retirement_account")
+  retailAccount   Boolean           @default(false) @map("retail_account")
+  otherAccountTypeText String?      @map("other_account_type_text")
+  
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+  submittedAt     DateTime?         @map("submitted_at")
+  
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  accountTypes    InvestorProfileAccountType[]
+  additionalDesignations InvestorProfileAdditionalDesignation[]
+  trustInformation TrustInformation?
+  jointAccountInformation JointAccountInformation?
+  custodialAccountInformation CustodialAccountInformation?
+  transferOnDeathInformation TransferOnDeathInformation?
+  patriotActInformation PatriotActInformation?
+  accountHolders  AccountHolder[]
+  investmentObjectives InvestmentObjectives?
+  investmentValues InvestmentValue[]
+  trustedContact TrustedContact?
+  signatures     Signature[]
+  
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("investor_profiles")
+}
+
+// Step 1: Many-to-Many Relationships
+
+model InvestorProfileAccountType {
+  id            String          @id @default(uuid())
+  profileId     String          @map("profile_id")
+  accountType   AccountType     @map("account_type")
+  
+  profile       InvestorProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  
+  @@unique([profileId, accountType])
+  @@index([profileId])
+  @@map("investor_profile_account_types")
+}
+
+model InvestorProfileAdditionalDesignation {
+  id              String                @id @default(uuid())
+  profileId       String                @map("profile_id")
+  designationType AdditionalDesignationType @map("designation_type")
+  
+  profile         InvestorProfile       @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  
+  @@unique([profileId, designationType])
+  @@index([profileId])
+  @@map("investor_profile_additional_designations")
+}
+
+// Step 1: Conditional Tables
+
+model TrustInformation {
+  id                String            @id @default(uuid())
+  profileId         String            @unique @map("profile_id")
+  establishmentDate DateTime?         @map("establishment_date")
+  trustTypes        TrustType[]       @map("trust_types")
+  
+  profile           InvestorProfile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  
+  @@map("trust_information")
+}
+
+model JointAccountInformation {
+  id                String            @id @default(uuid())
+  profileId         String            @unique @map("profile_id")
+  areAccountHoldersMarried YesNo?     @map("are_account_holders_married")
+  tenancyState      String?           @map("tenancy_state")
+  numberOfTenants   Int?               @map("number_of_tenants")
+  tenancyClauses    TenancyClause[]   @map("tenancy_clauses")
+  
+  profile           InvestorProfile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  
+  @@map("joint_account_information")
+}
+
+model CustodialAccountInformation {
+  id                String            @id @default(uuid())
+  profileId         String            @unique @map("profile_id")
+  stateGiftGiven1   String?           @map("state_gift_given_1")
+  dateGiftGiven1    DateTime?        @map("date_gift_given_1")
+  stateGiftGiven2   String?           @map("state_gift_given_2")
+  dateGiftGiven2    DateTime?        @map("date_gift_given_2")
+  
+  profile           InvestorProfile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  
+  @@map("custodial_account_information")
+}
+
+model TransferOnDeathInformation {
+  id                    String            @id @default(uuid())
+  profileId             String            @unique @map("profile_id")
+  individualAgreementDate DateTime?      @map("individual_agreement_date")
+  jointAgreementDate   DateTime?         @map("joint_agreement_date")
+  
+  profile               InvestorProfile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  
+  @@map("transfer_on_death_information")
+}
+
+// Step 2: Patriot Act Information
+
+model PatriotActInformation {
+  id                      String            @id @default(uuid())
+  profileId               String            @unique @map("profile_id")
+  initialSourceOfFunds    String[]         @map("initial_source_of_funds")
+  otherSourceOfFundsText  String?          @map("other_source_of_funds_text")
+  
+  profile                 InvestorProfile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  
+  @@map("patriot_act_information")
+}
+
+// Step 3 & 4: Account Holder
+
+model AccountHolder {
+  id                        String            @id @default(uuid())
+  profileId                 String            @map("profile_id")
+  holderType                AccountHolderType  @map("holder_type")
+  
+  name                      String?
+  email                     String?
+  personEntity              PersonEntity?     @map("person_entity")
+  ssn                       String?
+  ein                       String?
+  yesNoBox                  YesNo?            @map("yes_no_box")
+  dateOfBirth               DateTime?         @map("date_of_birth")
+  specifiedAdult            YesNo?            @map("specified_adult")
+  primaryCitizenship        String?           @map("primary_citizenship")
+  additionalCitizenship    String?           @map("additional_citizenship")
+  gender                    Gender?
+  generalInvestmentKnowledge InvestmentKnowledgeLevel? @map("general_investment_knowledge")
+  
+  createdAt                 DateTime          @default(now()) @map("created_at")
+  updatedAt                 DateTime          @updatedAt @map("updated_at")
+  
+  profile                   InvestorProfile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  
+  addresses                 AccountHolderAddress[]
+  phones                    AccountHolderPhone[]
+  maritalStatuses           AccountHolderMaritalStatus[]
+  employmentAffiliations    AccountHolderEmploymentAffiliation[]
+  employment                AccountHolderEmployment?
+  investmentKnowledge       AccountHolderInvestmentKnowledge[]
+  financialInformation      AccountHolderFinancialInformation?
+  governmentIdentifications GovernmentIdentification[]
+  advisoryFirmInformation   AdvisoryFirmInformation?
+  brokerDealerInformation   BrokerDealerInformation?
+  otherBrokerageAccounts    OtherBrokerageAccounts?
+  exchangeFinraAffiliation  ExchangeFinraAffiliation?
+  publicCompanyInformation  PublicCompanyInformation?
+  
+  @@index([profileId])
+  @@index([holderType])
+  @@map("account_holders")
+}
+
+model AccountHolderAddress {
+  id                String            @id @default(uuid())
+  accountHolderId    String              @map("account_holder_id")
+  addressType       AddressType         @map("address_type")
+  address           String?
+  city              String?
+  stateProvince     String?             @map("state_province")
+  zipPostalCode     String?             @map("zip_postal_code")
+  country           String?
+  mailingSameAsLegal Boolean?            @default(false) @map("mailing_same_as_legal")
+  
+  accountHolder     AccountHolder       @relation(fields: [accountHolderId], references: [id], onDelete: Cascade)
+  employment        AccountHolderEmployment? @relation
+  
+  @@index([accountHolderId])
+  @@index([addressType])
+  @@map("account_holder_addresses")
+}
+
+model AccountHolderPhone {
+  id              String            @id @default(uuid())
+  accountHolderId String            @map("account_holder_id")
+  phoneType       PhoneType         @map("phone_type")
+  phoneNumber     String?
+  
+  accountHolder   AccountHolder     @relation(fields: [accountHolderId], references: [id], onDelete: Cascade)
+  
+  @@index([accountHolderId])
+  @@map("account_holder_phones")
+}
+
+model AccountHolderMaritalStatus {
+  id              String            @id @default(uuid())
+  accountHolderId String            @map("account_holder_id")
+  maritalStatus   MaritalStatus    @map("marital_status")
+  
+  accountHolder   AccountHolder     @relation(fields: [accountHolderId], references: [id], onDelete: Cascade)
+  
+  @@unique([accountHolderId, maritalStatus])
+  @@index([accountHolderId])
+  @@map("account_holder_marital_statuses")
+}
+
+model AccountHolderEmploymentAffiliation {
+  id                String                @id @default(uuid())
+  accountHolderId   String                @map("account_holder_id")
+  affiliation       EmploymentAffiliation
+  
+  accountHolder     AccountHolder         @relation(fields: [accountHolderId], references: [id], onDelete: Cascade)
+  
+  @@unique([accountHolderId, affiliation])
+  @@index([accountHolderId])
+  @@map("account_holder_employment_affiliations")
+}
+
+model AccountHolderEmployment {
+  id                String            @id @default(uuid())
+  accountHolderId   String            @unique @map("account_holder_id")
+  occupation        String?
+  yearsEmployed     Int?              @map("years_employed")
+  typeOfBusiness    String?           @map("type_of_business")
+  employerName      String?           @map("employer_name")
+  employerAddressId String?           @unique @map("employer_address_id")
+  
+  accountHolder     AccountHolder     @relation(fields: [accountHolderId], references: [id], onDelete: Cascade)
+  employerAddress   AccountHolderAddress? @relation(fields: [employerAddressId], references: [id], onDelete: SetNull)
+  
+  @@map("account_holder_employment")
+}
+
+model AccountHolderInvestmentKnowledge {
+  id                String                    @id @default(uuid())
+  accountHolderId   String                    @map("account_holder_id")
+  investmentType    InvestmentType            @map("investment_type")
+  knowledgeLevel    InvestmentKnowledgeLevel  @map("knowledge_level")
+  sinceYear         String?
+  otherInvestmentLabel String?                 @map("other_investment_label")
+  
+  accountHolder     AccountHolder             @relation(fields: [accountHolderId], references: [id], onDelete: Cascade)
+  
+  @@unique([accountHolderId, investmentType])
+  @@index([accountHolderId])
+  @@index([investmentType])
+  @@map("account_holder_investment_knowledge")
+}
+
+model AccountHolderFinancialInformation {
+  id                String            @id @default(uuid())
+  accountHolderId   String            @unique @map("account_holder_id")
+  annualIncomeFrom  Decimal?          @map("annual_income_from") @db.Decimal(19, 2)
+  annualIncomeTo    Decimal?          @map("annual_income_to") @db.Decimal(19, 2)
+  netWorthFrom      Decimal?          @map("net_worth_from") @db.Decimal(19, 2)
+  netWorthTo        Decimal?          @map("net_worth_to") @db.Decimal(19, 2)
+  liquidNetWorthFrom Decimal?         @map("liquid_net_worth_from") @db.Decimal(19, 2)
+  liquidNetWorthTo  Decimal?          @map("liquid_net_worth_to") @db.Decimal(19, 2)
+  taxBracket        TaxBracket?      @map("tax_bracket")
+  
+  accountHolder     AccountHolder     @relation(fields: [accountHolderId], references: [id], onDelete: Cascade)
+  
+  @@map("account_holder_financial_information")
+}
+
+model GovernmentIdentification {
+  id                String            @id @default(uuid())
+  accountHolderId   String            @map("account_holder_id")
+  idNumber          Int               @map("id_number") // 1 or 2 to distinguish instances
+  idType            String?           @map("id_type")
+  idNumberValue     String?           @map("id_number_value")
+  countryOfIssue    String?           @map("country_of_issue")
+  dateOfIssue       DateTime?         @map("date_of_issue")
+  dateOfExpiration  DateTime?         @map("date_of_expiration")
+  
+  accountHolder     AccountHolder     @relation(fields: [accountHolderId], references: [id], onDelete: Cascade)
+  
+  @@unique([accountHolderId, idNumber])
+  @@index([accountHolderId])
+  @@map("government_identifications")
+}
+
+model AdvisoryFirmInformation {
+  id                        String            @id @default(uuid())
+  accountHolderId           String            @unique @map("account_holder_id")
+  employeeOfAdvisoryFirm    YesNo?           @map("employee_of_advisory_firm")
+  relatedToEmployeeAdvisory YesNo?           @map("related_to_employee_advisory")
+  employeeNameAndRelationship String?         @map("employee_name_and_relationship")
+  
+  accountHolder             AccountHolder     @relation(fields: [accountHolderId], references: [id], onDelete: Cascade)
+  
+  @@map("advisory_firm_information")
+}
+
+model BrokerDealerInformation {
+  id                              String            @id @default(uuid())
+  accountHolderId                 String            @unique @map("account_holder_id")
+  employeeOfBrokerDealer         YesNo?           @map("employee_of_broker_dealer")
+  brokerDealerName                String?          @map("broker_dealer_name")
+  relatedToEmployeeBrokerDealer  YesNo?           @map("related_to_employee_broker_dealer")
+  brokerDealerEmployeeName       String?          @map("broker_dealer_employee_name")
+  brokerDealerEmployeeRelationship String?         @map("broker_dealer_employee_relationship")
+  
+  accountHolder                   AccountHolder     @relation(fields: [accountHolderId], references: [id], onDelete: Cascade)
+  
+  @@map("broker_dealer_information")
+}
+
+model OtherBrokerageAccounts {
+  id                        String            @id @default(uuid())
+  accountHolderId           String            @unique @map("account_holder_id")
+  maintainingOtherAccounts YesNo?            @map("maintaining_other_accounts")
+  withWhatFirms            String?          @map("with_what_firms")
+  yearsOfInvestmentExperience Int?          @map("years_of_investment_experience")
+  
+  accountHolder             AccountHolder     @relation(fields: [accountHolderId], references: [id], onDelete: Cascade)
+  
+  @@map("other_brokerage_accounts")
+}
+
+model ExchangeFinraAffiliation {
+  id                String            @id @default(uuid())
+  accountHolderId   String            @unique @map("account_holder_id")
+  affiliatedWithExchangeOrFinra YesNo? @map("affiliated_with_exchange_or_finra")
+  affiliationDetails String?         @map("affiliation_details")
+  
+  accountHolder     AccountHolder     @relation(fields: [accountHolderId], references: [id], onDelete: Cascade)
+  
+  @@map("exchange_finra_affiliation")
+}
+
+model PublicCompanyInformation {
+  id                        String            @id @default(uuid())
+  accountHolderId           String            @unique @map("account_holder_id")
+  seniorOfficerOr10PctShareholder YesNo?      @map("senior_officer_or_10pct_shareholder")
+  companyNames              String?           @map("company_names")
+  
+  accountHolder             AccountHolder     @relation(fields: [accountHolderId], references: [id], onDelete: Cascade)
+  
+  @@map("public_company_information")
+}
+
+// Step 5: Investment Objectives
+
+model InvestmentObjectives {
+  id                        String                    @id @default(uuid())
+  profileId                 String                    @unique @map("profile_id")
+  riskExposure              RiskExposure[]            @map("risk_exposure")
+  accountInvestmentObjectives AccountInvestmentObjective[] @map("account_investment_objectives")
+  seeAttachedStatement      Boolean                   @default(false) @map("see_attached_statement")
+  timeHorizonFrom           String?                   @map("time_horizon_from")
+  timeHorizonTo             String?                   @map("time_horizon_to")
+  liquidityNeeds            LiquidityNeed[]          @map("liquidity_needs")
+  
+  profile                   InvestorProfile           @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  
+  @@map("investment_objectives")
+}
+
+model InvestmentValue {
+  id                String            @id @default(uuid())
+  profileId         String            @map("profile_id")
+  investmentType    InvestmentType    @map("investment_type")
+  value             Decimal           @db.Decimal(19, 2)
+  
+  profile           InvestorProfile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  
+  @@unique([profileId, investmentType])
+  @@index([profileId])
+  @@index([investmentType])
+  @@map("investment_values")
+}
+
+// Step 6: Trusted Contact
+
+model TrustedContact {
+  id                String            @id @default(uuid())
+  profileId         String            @unique @map("profile_id")
+  declineToProvide  Boolean           @default(false) @map("decline_to_provide")
+  name              String?
+  email             String?
+  homePhone         String?           @map("home_phone")
+  businessPhone     String?           @map("business_phone")
+  mobilePhone       String?           @map("mobile_phone")
+  mailingAddress    String?           @map("mailing_address")
+  city              String?
+  stateProvince     String?           @map("state_province")
+  zipPostalCode     String?           @map("zip_postal_code")
+  country           String?
+  
+  profile           InvestorProfile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  
+  @@map("trusted_contacts")
+}
+
+// Step 7: Signatures
+
+model Signature {
+  id                String            @id @default(uuid())
+  profileId         String            @map("profile_id")
+  signatureType     SignatureType     @map("signature_type")
+  signatureData     String            @map("signature_data") // base64 encoded image
+  printedName       String            @map("printed_name")
+  signatureDate     DateTime          @map("signature_date")
+  
+  profile           InvestorProfile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  
+  @@unique([profileId, signatureType])
+  @@index([profileId])
+  @@index([signatureType])
+  @@map("signatures")
+}
