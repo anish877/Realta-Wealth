@@ -17,6 +17,29 @@ import {
   arrayFieldSchema,
   requiredArrayFieldSchema,
   enumFieldSchema,
+  rrNameFieldSchema,
+  customerNameFieldSchema,
+  accountNumberFieldSchemaEnhanced,
+  rrNumberFieldSchema,
+  numberOfTenantsFieldSchema,
+  stateProvinceFieldSchema,
+  sinceYearFieldSchema,
+  yearsEmployedFieldSchema,
+  yearsExperienceFieldSchema,
+  occupationFieldSchemaEnhanced,
+  businessTypeFieldSchema,
+  employerNameFieldSchema,
+  addressFieldSchema,
+  cityFieldSchema,
+  zipPostalCodeFieldSchema,
+  countryFieldSchema,
+  citizenshipFieldSchema,
+  governmentIdTypeFieldSchema,
+  governmentIdNumberFieldSchema,
+  relationshipFieldSchema,
+  companyNameFieldSchema,
+  signatureFieldSchema,
+  generalTextFieldSchema,
 } from "./formFieldValidators";
 
 /**
@@ -75,40 +98,40 @@ export const tenancyClauseSchema = z.enum([
 
 export const step1Schema = z
   .object({
-    rr_name: textFieldSchema.optional(),
-    rr_no: textFieldSchema.optional(),
-    customer_names: textFieldSchema.optional(),
-    account_no: accountNumberFieldSchema.optional(),
+    rr_name: rrNameFieldSchema.optional(),
+    rr_no: rrNumberFieldSchema,
+    customer_names: customerNameFieldSchema.optional(),
+    account_no: accountNumberFieldSchemaEnhanced.optional(),
     retirement_checkbox: booleanFieldSchema,
     retail_checkbox: booleanFieldSchema,
     type_of_account: arrayFieldSchema(accountTypeSchema).optional(),
     additional_designation_left: arrayFieldSchema(additionalDesignationSchema).optional(),
-    other_account_type_text: textFieldSchema.optional(),
+    other_account_type_text: generalTextFieldSchema.max(100, "Other account type must be no more than 100 characters").optional(),
     trust_checkbox: booleanFieldSchema.optional(),
-    trust_establishment_date: dateFieldSchema().optional(),
+    trust_establishment_date: dateFieldSchema({ notFuture: true, minYear: 1900 }).optional(),
     trust_type: arrayFieldSchema(trustTypeSchema).optional(),
     are_account_holders_married: enumFieldSchema(["Yes", "No"] as const).optional(),
-    tenancy_state: textFieldSchema.optional(),
-    number_of_tenants: numberFieldSchema.optional(),
+    tenancy_state: stateProvinceFieldSchema.optional(),
+    number_of_tenants: numberOfTenantsFieldSchema.optional(),
     tenancy_clause: arrayFieldSchema(tenancyClauseSchema).optional(),
-    state_in_which_gift_was_given_1: textFieldSchema.optional(),
-    date_gift_was_given_1: dateFieldSchema().optional(),
-    state_in_which_gift_was_given_2: textFieldSchema.optional(),
-    date_gift_was_given_2: dateFieldSchema().optional(),
-    transfer_on_death_individual_agreement_date: dateFieldSchema().optional(),
-    transfer_on_death_joint_agreement_date: dateFieldSchema().optional(),
+    state_in_which_gift_was_given_1: stateProvinceFieldSchema.optional(),
+    date_gift_was_given_1: dateFieldSchema({ notFuture: true, minYear: 1900 }).optional(),
+    state_in_which_gift_was_given_2: stateProvinceFieldSchema.optional(),
+    date_gift_was_given_2: dateFieldSchema({ notFuture: true, minYear: 1900 }).optional(),
+    transfer_on_death_individual_agreement_date: dateFieldSchema({ notFuture: true, minYear: 1900 }).optional(),
+    transfer_on_death_joint_agreement_date: dateFieldSchema({ notFuture: true, minYear: 1900 }).optional(),
   })
   .superRefine((data, ctx) => {
     // RR Name and Customer Names required unless Retirement is checked
     if (!data.retirement_checkbox) {
-      if (!data.rr_name || data.rr_name.trim() === "") {
+      if (!data.rr_name || (typeof data.rr_name === "string" && data.rr_name.trim() === "")) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "RR Name is required (unless Retirement account is selected)",
           path: ["rr_name"],
         });
       }
-      if (!data.customer_names || data.customer_names.trim() === "") {
+      if (!data.customer_names || (typeof data.customer_names === "string" && data.customer_names.trim() === "")) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Customer Name(s) is required (unless Retirement account is selected)",
@@ -118,7 +141,7 @@ export const step1Schema = z
     }
 
     // Other account type text required if "other" is selected
-    if (data.type_of_account?.includes("other") && (!data.other_account_type_text || data.other_account_type_text.trim() === "")) {
+    if (Array.isArray(data.type_of_account) && data.type_of_account.includes("other") && (!data.other_account_type_text || (typeof data.other_account_type_text === "string" && data.other_account_type_text.trim() === ""))) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Please specify the other account type",
@@ -128,24 +151,63 @@ export const step1Schema = z
 
     // Trust information required if trust checkbox is checked
     if (data.trust_checkbox) {
-      if (!data.trust_type || data.trust_type.length === 0) {
+      if (!Array.isArray(data.trust_type) || data.trust_type.length === 0) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Trust type is required when Trust is selected",
           path: ["trust_type"],
         });
       }
+      if (!data.trust_establishment_date) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Trust establishment date is required when Trust is selected",
+          path: ["trust_establishment_date"],
+        });
+      }
     }
 
     // Joint account information required if joint account type is selected
     if (
-      data.type_of_account?.some((type) => type === "joint_tenant" || type === "transfer_on_death_joint")
+      Array.isArray(data.type_of_account) && data.type_of_account.some((type: string) => type === "joint_tenant" || type === "transfer_on_death_joint")
     ) {
       if (!data.are_account_holders_married) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Marital status is required for joint accounts",
           path: ["are_account_holders_married"],
+        });
+      }
+      if (!data.tenancy_state || (typeof data.tenancy_state === "string" && data.tenancy_state.trim() === "")) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Tenancy state is required for joint accounts",
+          path: ["tenancy_state"],
+        });
+      }
+      if (!data.number_of_tenants) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Number of tenants is required for joint accounts",
+          path: ["number_of_tenants"],
+        });
+      }
+    }
+
+    // Custodial account fields required if custodial account type is selected
+    if (Array.isArray(data.type_of_account) && data.type_of_account.includes("custodial")) {
+      if (!data.state_in_which_gift_was_given_1 || (typeof data.state_in_which_gift_was_given_1 === "string" && data.state_in_which_gift_was_given_1.trim() === "")) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "State in which gift was given (1) is required for custodial accounts",
+          path: ["state_in_which_gift_was_given_1"],
+        });
+      }
+      if (!data.date_gift_was_given_1) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Date gift was given (1) is required for custodial accounts",
+          path: ["date_gift_was_given_1"],
         });
       }
     }
@@ -158,7 +220,7 @@ export const step1Schema = z
 export const step2Schema = z
   .object({
     initial_source_of_funds: arrayFieldSchema(z.string()).optional(),
-    initial_source_of_funds_other_text: textFieldSchema.optional(),
+    initial_source_of_funds_other_text: generalTextFieldSchema.max(200, "Other source of funds must be no more than 200 characters").optional(),
   })
   .superRefine((data, ctx) => {
     // At least one source of funds is required
@@ -171,8 +233,8 @@ export const step2Schema = z
     }
 
     // Other text required if "Other" is selected
-    if (data.initial_source_of_funds?.includes("Other")) {
-      if (!data.initial_source_of_funds_other_text || data.initial_source_of_funds_other_text.trim() === "") {
+    if (Array.isArray(data.initial_source_of_funds) && data.initial_source_of_funds.includes("Other")) {
+      if (!data.initial_source_of_funds_other_text || (typeof data.initial_source_of_funds_other_text === "string" && data.initial_source_of_funds_other_text.trim() === "")) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Please specify the other source of funds",
@@ -246,12 +308,12 @@ export const yesNoSchema = z.enum(["Yes", "No"]);
 const baseAccountHolderSchema = z
   .object({
     // Basic info
-    name: textFieldSchema.optional(),
+    name: rrNameFieldSchema.optional(), // Using nameFieldSchema for name validation
     person_entity: personEntitySchema.optional(),
     ssn: ssnFieldSchema.optional(),
     ein: einFieldSchema.optional(),
     yes_no_box: yesNoSchema.optional(),
-    email: emailFieldSchema.optional(),
+    email: emailFieldSchema.max(254, "Email must be no more than 254 characters").optional(),
     dob: dateFieldSchema({ notFuture: true, minAge: 18, maxAge: 120 }).optional(),
     specified_adult: yesNoSchema.optional(),
 
@@ -261,33 +323,33 @@ const baseAccountHolderSchema = z
     mobile_phone: phoneFieldSchema.optional(),
 
     // Addresses
-    legal_address: textFieldSchema.optional(),
-    city: textFieldSchema.optional(),
-    state_province: stateFieldSchema.optional(),
-    zip_postal_code: zipCodeFieldSchema.optional(),
-    country: textFieldSchema.optional(),
+    legal_address: addressFieldSchema.optional(), // No P.O. Box validation
+    city: cityFieldSchema.optional(),
+    state_province: stateProvinceFieldSchema.optional(),
+    zip_postal_code: zipPostalCodeFieldSchema.optional(),
+    country: countryFieldSchema.optional(),
     mailing_same_as_legal: booleanFieldSchema.optional(),
-    mailing_address: textFieldSchema.optional(),
-    mailing_city: textFieldSchema.optional(),
-    mailing_state_province: stateFieldSchema.optional(),
-    mailing_zip_postal_code: zipCodeFieldSchema.optional(),
-    mailing_country: textFieldSchema.optional(),
+    mailing_address: generalTextFieldSchema.max(200, "Mailing address must be no more than 200 characters").optional(),
+    mailing_city: cityFieldSchema.optional(),
+    mailing_state_province: stateProvinceFieldSchema.optional(),
+    mailing_zip_postal_code: zipPostalCodeFieldSchema.optional(),
+    mailing_country: countryFieldSchema.optional(),
 
     // Additional info
-    citizenship_primary: textFieldSchema.optional(),
-    citizenship_additional: textFieldSchema.optional(),
+    citizenship_primary: citizenshipFieldSchema.optional(),
+    citizenship_additional: citizenshipFieldSchema.optional(),
     gender: genderSchema.optional(),
     marital_status: arrayFieldSchema(maritalStatusSchema).optional(),
     employment_affiliations: arrayFieldSchema(employmentAffiliationSchema).optional(),
-    occupation: textFieldSchema.optional(),
-    years_employed: numberFieldSchema.optional(),
-    type_of_business: textFieldSchema.optional(),
-    employer_name: textFieldSchema.optional(),
-    employer_address: textFieldSchema.optional(),
-    employer_city: textFieldSchema.optional(),
-    employer_state_province: stateFieldSchema.optional(),
-    employer_zip_postal_code: zipCodeFieldSchema.optional(),
-    employer_country: textFieldSchema.optional(),
+    occupation: occupationFieldSchemaEnhanced.optional(),
+    years_employed: yearsEmployedFieldSchema.optional(),
+    type_of_business: businessTypeFieldSchema.optional(),
+    employer_name: employerNameFieldSchema.optional(),
+    employer_address: generalTextFieldSchema.max(200, "Employer address must be no more than 200 characters").optional(),
+    employer_city: cityFieldSchema.optional(),
+    employer_state_province: stateProvinceFieldSchema.optional(),
+    employer_zip_postal_code: zipPostalCodeFieldSchema.optional(),
+    employer_country: countryFieldSchema.optional(),
 
     // Investment knowledge
     general_investment_knowledge: investmentKnowledgeLevelSchema.optional(),
@@ -302,32 +364,32 @@ const baseAccountHolderSchema = z
     tax_bracket: taxBracketSchema.optional(),
 
     // Government ID
-    gov_id_type: textFieldSchema.optional(),
-    gov_id_number: textFieldSchema.optional(),
-    gov_id_country_of_issue: textFieldSchema.optional(),
-    gov_id_date_of_issue: dateFieldSchema().optional(),
-    gov_id_date_of_expiration: dateFieldSchema().optional(),
+    gov_id_type: governmentIdTypeFieldSchema.optional(),
+    gov_id_number: governmentIdNumberFieldSchema.optional(),
+    gov_id_country_of_issue: countryFieldSchema.optional(),
+    gov_id_date_of_issue: dateFieldSchema({ notFuture: true, minYear: 1900 }).optional(),
+    gov_id_date_of_expiration: dateFieldSchema({ notPast: true, maxDaysFuture: 7300 }).optional(), // Max 20 years
 
     // Affiliations
     employee_of_advisory_firm: yesNoSchema.optional(),
     related_to_employee_advisory: yesNoSchema.optional(),
-    employee_name_and_relationship: textFieldSchema.optional(),
+    employee_name_and_relationship: generalTextFieldSchema.max(200, "Employee name and relationship must be no more than 200 characters").optional(),
     employee_of_broker_dealer: yesNoSchema.optional(),
-    broker_dealer_name: textFieldSchema.optional(),
+    broker_dealer_name: employerNameFieldSchema.optional(),
     related_to_employee_broker_dealer: yesNoSchema.optional(),
-    broker_dealer_employee_name: textFieldSchema.optional(),
-    broker_dealer_employee_relationship: textFieldSchema.optional(),
+    broker_dealer_employee_name: rrNameFieldSchema.optional(),
+    broker_dealer_employee_relationship: relationshipFieldSchema.optional(),
     maintaining_other_brokerage_accounts: yesNoSchema.optional(),
-    with_what_firms: textFieldSchema.optional(),
-    years_of_investment_experience: numberFieldSchema.optional(),
+    with_what_firms: generalTextFieldSchema.max(200, "Firm names must be no more than 200 characters").optional(),
+    years_of_investment_experience: yearsExperienceFieldSchema.optional(),
     affiliated_with_exchange_or_finra: yesNoSchema.optional(),
-    affiliation_employer_authorization_required: textFieldSchema.optional(),
+    affiliation_employer_authorization_required: generalTextFieldSchema.max(200, "Affiliation details must be no more than 200 characters").optional(),
     senior_officer_or_10pct_shareholder: yesNoSchema.optional(),
-    company_names: textFieldSchema.optional(),
+    company_names: companyNameFieldSchema.optional(),
   })
   .superRefine((data, ctx) => {
     // Name is required
-    if (!data.name || data.name.trim() === "") {
+    if (!data.name || (typeof data.name === "string" && data.name.trim() === "")) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Name is required",
@@ -346,7 +408,7 @@ const baseAccountHolderSchema = z
 
     // SSN required if Person
     if (data.person_entity === "Person") {
-      if (!data.ssn || data.ssn.trim() === "") {
+      if (!data.ssn || (typeof data.ssn === "string" && data.ssn.trim() === "")) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "SSN is required for Person",
@@ -357,7 +419,7 @@ const baseAccountHolderSchema = z
 
     // EIN required if Entity
     if (data.person_entity === "Entity") {
-      if (!data.ein || data.ein.trim() === "") {
+      if (!data.ein || (typeof data.ein === "string" && data.ein.trim() === "")) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "EIN is required for Entity",
@@ -367,7 +429,7 @@ const baseAccountHolderSchema = z
     }
 
     // Email format validation if provided
-    if (data.email && data.email.trim() !== "") {
+    if (data.email && typeof data.email === "string" && data.email.trim() !== "") {
       const emailResult = emailFieldSchema.safeParse(data.email);
       if (!emailResult.success) {
         ctx.addIssue({
@@ -378,13 +440,212 @@ const baseAccountHolderSchema = z
       }
     }
 
-    // Mailing address required if "same as legal" is false
+    // DOB is required
+    if (!data.dob) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Date of birth is required",
+        path: ["dob"],
+      });
+    }
+
+    // Legal address fields are required
+    if (!data.legal_address || (typeof data.legal_address === "string" && data.legal_address.trim() === "")) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Legal address is required",
+        path: ["legal_address"],
+      });
+    }
+    if (!data.city || (typeof data.city === "string" && data.city.trim() === "")) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "City is required",
+        path: ["city"],
+      });
+    }
+    if (!data.state_province || (typeof data.state_province === "string" && data.state_province.trim() === "")) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "State/Province is required",
+        path: ["state_province"],
+      });
+    }
+    if (!data.zip_postal_code || (typeof data.zip_postal_code === "string" && data.zip_postal_code.trim() === "")) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Zip/Postal code is required",
+        path: ["zip_postal_code"],
+      });
+    }
+    if (!data.country || (typeof data.country === "string" && data.country.trim() === "")) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Country is required",
+        path: ["country"],
+      });
+    }
+
+    // Mailing address components all required together if "same as legal" is false
     if (data.mailing_same_as_legal === false) {
-      if (!data.mailing_address || data.mailing_address.trim() === "") {
+      if (!data.mailing_address || (typeof data.mailing_address === "string" && data.mailing_address.trim() === "")) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Mailing address is required when different from legal address",
           path: ["mailing_address"],
+        });
+      }
+      if (!data.mailing_city || (typeof data.mailing_city === "string" && data.mailing_city.trim() === "")) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Mailing city is required when different from legal address",
+          path: ["mailing_city"],
+        });
+      }
+      if (!data.mailing_state_province || (typeof data.mailing_state_province === "string" && data.mailing_state_province.trim() === "")) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Mailing state/province is required when different from legal address",
+          path: ["mailing_state_province"],
+        });
+      }
+      if (!data.mailing_zip_postal_code || (typeof data.mailing_zip_postal_code === "string" && data.mailing_zip_postal_code.trim() === "")) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Mailing zip/postal code is required when different from legal address",
+          path: ["mailing_zip_postal_code"],
+        });
+      }
+      if (!data.mailing_country || (typeof data.mailing_country === "string" && data.mailing_country.trim() === "")) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Mailing country is required when different from legal address",
+          path: ["mailing_country"],
+        });
+      }
+    }
+
+    // Government ID validation - all fields required together
+    if (data.gov_id_type || data.gov_id_number || data.gov_id_country_of_issue || data.gov_id_date_of_issue || data.gov_id_date_of_expiration) {
+      if (!data.gov_id_type || (typeof data.gov_id_type === "string" && data.gov_id_type.trim() === "")) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Government ID type is required",
+          path: ["gov_id_type"],
+        });
+      }
+      if (!data.gov_id_number || (typeof data.gov_id_number === "string" && data.gov_id_number.trim() === "")) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Government ID number is required",
+          path: ["gov_id_number"],
+        });
+      }
+      if (!data.gov_id_country_of_issue || (typeof data.gov_id_country_of_issue === "string" && data.gov_id_country_of_issue.trim() === "")) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Country of issue is required",
+          path: ["gov_id_country_of_issue"],
+        });
+      }
+      if (!data.gov_id_date_of_issue) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Date of issue is required",
+          path: ["gov_id_date_of_issue"],
+        });
+      }
+      if (!data.gov_id_date_of_expiration) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Date of expiration is required",
+          path: ["gov_id_date_of_expiration"],
+        });
+      }
+
+      // Government ID expiration must be after issue date
+      if (data.gov_id_date_of_issue && data.gov_id_date_of_expiration && typeof data.gov_id_date_of_issue === "string" && typeof data.gov_id_date_of_expiration === "string") {
+        const issueDate = new Date(data.gov_id_date_of_issue);
+        const expDate = new Date(data.gov_id_date_of_expiration);
+        if (!isNaN(issueDate.getTime()) && !isNaN(expDate.getTime()) && expDate <= issueDate) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Expiration date must be after issue date",
+            path: ["gov_id_date_of_expiration"],
+          });
+        }
+      }
+    }
+
+    // Employee/relationship fields required if related_to_employee_advisory is "Yes"
+    if (data.related_to_employee_advisory === "Yes") {
+      if (!data.employee_name_and_relationship || (typeof data.employee_name_and_relationship === "string" && data.employee_name_and_relationship.trim() === "")) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Employee name and relationship is required",
+          path: ["employee_name_and_relationship"],
+        });
+      }
+    }
+
+    // Broker dealer fields required if employee_of_broker_dealer is "Yes"
+    if (data.employee_of_broker_dealer === "Yes") {
+      if (!data.broker_dealer_name || (typeof data.broker_dealer_name === "string" && data.broker_dealer_name.trim() === "")) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Broker dealer name is required",
+          path: ["broker_dealer_name"],
+        });
+      }
+    }
+
+    // Broker dealer employee fields required if related_to_employee_broker_dealer is "Yes"
+    if (data.related_to_employee_broker_dealer === "Yes") {
+      if (!data.broker_dealer_employee_name || (typeof data.broker_dealer_employee_name === "string" && data.broker_dealer_employee_name.trim() === "")) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Broker dealer employee name is required",
+          path: ["broker_dealer_employee_name"],
+        });
+      }
+      if (!data.broker_dealer_employee_relationship || (typeof data.broker_dealer_employee_relationship === "string" && data.broker_dealer_employee_relationship.trim() === "")) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Broker dealer employee relationship is required",
+          path: ["broker_dealer_employee_relationship"],
+        });
+      }
+    }
+
+    // With what firms required if maintaining_other_brokerage_accounts is "Yes"
+    if (data.maintaining_other_brokerage_accounts === "Yes") {
+      if (!data.with_what_firms || (typeof data.with_what_firms === "string" && data.with_what_firms.trim() === "")) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Firm names are required when maintaining other brokerage accounts",
+          path: ["with_what_firms"],
+        });
+      }
+    }
+
+    // Affiliation details required if affiliated_with_exchange_or_finra is "Yes"
+    if (data.affiliated_with_exchange_or_finra === "Yes") {
+      if (!data.affiliation_employer_authorization_required || (typeof data.affiliation_employer_authorization_required === "string" && data.affiliation_employer_authorization_required.trim() === "")) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Affiliation details are required",
+          path: ["affiliation_employer_authorization_required"],
+        });
+      }
+    }
+
+    // Company names required if senior_officer_or_10pct_shareholder is "Yes"
+    if (data.senior_officer_or_10pct_shareholder === "Yes") {
+      if (!data.company_names || (typeof data.company_names === "string" && data.company_names.trim() === "")) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Company name(s) are required",
+          path: ["company_names"],
         });
       }
     }
@@ -466,19 +727,48 @@ export const accountInvestmentObjectiveSchema = z.enum([
 
 export const liquidityNeedSchema = z.enum(["High", "Medium", "Low"]);
 
-export const step5Schema = z.object({
-  risk_exposure: arrayFieldSchema(riskExposureSchema).optional(),
-  account_investment_objectives: arrayFieldSchema(accountInvestmentObjectiveSchema).optional(),
-  other_investments_see_attached: booleanFieldSchema,
-  investment_time_horizon_liquidity: z
-    .object({
-      from: dateFieldSchema().optional(),
-      to: dateFieldSchema().optional(),
-    })
-    .optional(),
-  liquidity_needs: arrayFieldSchema(liquidityNeedSchema).optional(),
-  other_investments_table: z.record(z.any()).optional(),
-});
+export const step5Schema = z
+  .object({
+    risk_exposure: arrayFieldSchema(riskExposureSchema).optional(),
+    account_investment_objectives: arrayFieldSchema(accountInvestmentObjectiveSchema).optional(),
+    other_investments_see_attached: booleanFieldSchema,
+    investment_time_horizon_from: generalTextFieldSchema.max(100).optional(),
+    investment_time_horizon_to: generalTextFieldSchema.max(100).optional(),
+    liquidity_needs: arrayFieldSchema(liquidityNeedSchema).optional(),
+    // Investment value fields - all currency with reasonable max
+    investment_equities_value: currencyFieldSchema().optional(),
+    investment_fixed_annuities_value: currencyFieldSchema().optional(),
+    investment_options_value: currencyFieldSchema().optional(),
+    investment_precious_metals_value: currencyFieldSchema().optional(),
+    investment_fixed_income_value: currencyFieldSchema().optional(),
+    investment_commodities_futures_value: currencyFieldSchema().optional(),
+    investment_mutual_funds_value: currencyFieldSchema().optional(),
+    investment_other_1_value: currencyFieldSchema().optional(),
+    investment_unit_investment_trusts_value: currencyFieldSchema().optional(),
+    investment_other_2_value: currencyFieldSchema().optional(),
+    investment_etfs_value: currencyFieldSchema().optional(),
+    investment_other_3_value: currencyFieldSchema().optional(),
+    investment_real_estate_value: currencyFieldSchema().optional(),
+    investment_insurance_value: currencyFieldSchema().optional(),
+    investment_variable_annuities_value: currencyFieldSchema().optional(),
+  })
+  .superRefine((data, ctx) => {
+    // Investment time horizon validation - if dates, validate range
+    if (data.investment_time_horizon_from && data.investment_time_horizon_to) {
+      // Try to parse as dates
+      const fromDate = new Date(data.investment_time_horizon_from);
+      const toDate = new Date(data.investment_time_horizon_to);
+      if (!isNaN(fromDate.getTime()) && !isNaN(toDate.getTime())) {
+        if (toDate < fromDate) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "End time horizon must be after or equal to start time horizon",
+            path: ["investment_time_horizon_to"],
+          });
+        }
+      }
+    }
+  });
 
 // ============================================
 // STEP 6: Trusted Contact
@@ -487,28 +777,28 @@ export const step5Schema = z.object({
 export const step6Schema = z
   .object({
     trusted_contact_decline_to_provide: booleanFieldSchema,
-    trusted_contact_name: textFieldSchema.optional(),
-    trusted_contact_email: emailFieldSchema.optional(),
+    trusted_contact_name: rrNameFieldSchema.optional(),
+    trusted_contact_email: emailFieldSchema.max(254, "Email must be no more than 254 characters").optional(),
     trusted_contact_home_phone: phoneFieldSchema.optional(),
     trusted_contact_business_phone: phoneFieldSchema.optional(),
     trusted_contact_mobile_phone: phoneFieldSchema.optional(),
-    trusted_contact_mailing_address: textFieldSchema.optional(),
-    trusted_contact_city: textFieldSchema.optional(),
-    trusted_contact_state_province: stateFieldSchema.optional(),
-    trusted_contact_zip_postal_code: zipCodeFieldSchema.optional(),
-    trusted_contact_country: textFieldSchema.optional(),
+    trusted_contact_mailing_address: generalTextFieldSchema.max(200, "Mailing address must be no more than 200 characters").optional(),
+    trusted_contact_city: cityFieldSchema.optional(),
+    trusted_contact_state_province: stateProvinceFieldSchema.optional(),
+    trusted_contact_zip_postal_code: zipPostalCodeFieldSchema.optional(),
+    trusted_contact_country: countryFieldSchema.optional(),
   })
   .superRefine((data, ctx) => {
     // If not declined, name and email are required
     if (!data.trusted_contact_decline_to_provide) {
-      if (!data.trusted_contact_name || data.trusted_contact_name.trim() === "") {
+      if (!data.trusted_contact_name || (typeof data.trusted_contact_name === "string" && data.trusted_contact_name.trim() === "")) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Trusted contact name is required",
           path: ["trusted_contact_name"],
         });
       }
-      if (!data.trusted_contact_email || data.trusted_contact_email.trim() === "") {
+      if (!data.trusted_contact_email || (typeof data.trusted_contact_email === "string" && data.trusted_contact_email.trim() === "")) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Trusted contact email is required",
@@ -538,18 +828,18 @@ export const signatureSchema = z.object({
 
 export const step7Schema = z
   .object({
-    account_owner_signature: textFieldSchema.optional(),
-    account_owner_printed_name: textFieldSchema.optional(),
-    account_owner_date: dateFieldSchema().optional(),
-    joint_account_owner_signature: textFieldSchema.optional(),
-    joint_account_owner_printed_name: textFieldSchema.optional(),
-    joint_account_owner_date: dateFieldSchema().optional(),
-    financial_professional_signature: textFieldSchema.optional(),
-    financial_professional_printed_name: textFieldSchema.optional(),
-    financial_professional_date: dateFieldSchema().optional(),
-    supervisor_principal_signature: textFieldSchema.optional(),
-    supervisor_principal_printed_name: textFieldSchema.optional(),
-    supervisor_principal_date: dateFieldSchema().optional(),
+    account_owner_signature: signatureFieldSchema.optional(),
+    account_owner_printed_name: rrNameFieldSchema.optional(),
+    account_owner_date: dateFieldSchema({ notFuture: true, maxDaysAgo: 30 }).optional(),
+    joint_account_owner_signature: signatureFieldSchema.optional(),
+    joint_account_owner_printed_name: rrNameFieldSchema.optional(),
+    joint_account_owner_date: dateFieldSchema({ notFuture: true, maxDaysAgo: 30 }).optional(),
+    financial_professional_signature: signatureFieldSchema.optional(),
+    financial_professional_printed_name: rrNameFieldSchema.optional(),
+    financial_professional_date: dateFieldSchema({ notFuture: true, maxDaysAgo: 30 }).optional(),
+    supervisor_principal_signature: signatureFieldSchema.optional(),
+    supervisor_principal_printed_name: rrNameFieldSchema.optional(),
+    supervisor_principal_date: dateFieldSchema({ notFuture: true, maxDaysAgo: 30 }).optional(),
   })
   .superRefine((data, ctx) => {
     // At least one signature is required
@@ -578,14 +868,14 @@ export const step7Schema = z
 
     // Validate individual signatures if they have any part filled
     if (data.account_owner_signature || data.account_owner_printed_name || data.account_owner_date) {
-      if (!data.account_owner_signature || data.account_owner_signature.trim() === "") {
+      if (!data.account_owner_signature || (typeof data.account_owner_signature === "string" && data.account_owner_signature.trim() === "")) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Account owner signature is required",
           path: ["account_owner_signature"],
         });
       }
-      if (!data.account_owner_printed_name || data.account_owner_printed_name.trim() === "") {
+      if (!data.account_owner_printed_name || (typeof data.account_owner_printed_name === "string" && data.account_owner_printed_name.trim() === "")) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Account owner printed name is required",
