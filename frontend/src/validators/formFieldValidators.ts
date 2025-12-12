@@ -91,7 +91,7 @@ export const requiredTextFieldSchema = z.string().min(1, "This field is required
 /**
  * Number field validator
  */
-export const numberFieldSchema = z.union([z.string(), z.number()]).transform((val: string) => {
+export const numberFieldSchema = z.union([z.string(), z.number()]).transform((val: string | number) => {
   if (typeof val === "string") {
     const parsed = parseFloat(val);
     return isNaN(parsed) ? 0 : parsed;

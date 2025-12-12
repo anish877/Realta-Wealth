@@ -13,6 +13,7 @@ interface TextFieldProps {
   required?: boolean;
   error?: string;
   isValid?: boolean;
+  onBlur?: () => void;
 }
 
 export function TextField({
@@ -26,6 +27,7 @@ export function TextField({
   required = false,
   error,
   isValid,
+  onBlur,
 }: TextFieldProps) {
   const [isFocused, setIsFocused] = useState(false);
   const hasValue = value && value.length > 0;
@@ -40,7 +42,10 @@ export function TextField({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
+          onBlur={() => {
+            setIsFocused(false);
+            onBlur?.();
+          }}
           placeholder={showLabel ? undefined : placeholder || `Enter ${label.toLowerCase()}`}
           disabled={disabled}
           required={required}

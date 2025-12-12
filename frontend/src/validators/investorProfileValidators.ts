@@ -391,12 +391,14 @@ const baseAccountHolderSchema = z
 
     // Financial range validation: "To" must be >= "From"
     if (data.annual_income_from !== undefined && data.annual_income_to !== undefined) {
-      const from = typeof data.annual_income_from === "string" 
-        ? parseFloat(data.annual_income_from.replace(/[$,\s]/g, "")) 
-        : data.annual_income_from;
-      const to = typeof data.annual_income_to === "string"
-        ? parseFloat(data.annual_income_to.replace(/[$,\s]/g, ""))
-        : data.annual_income_to;
+      const fromValue = data.annual_income_from;
+      const toValue = data.annual_income_to;
+      const from = typeof fromValue === "string" 
+        ? parseFloat(fromValue.replace(/[$,\s]/g, "")) 
+        : (typeof fromValue === "number" ? fromValue : 0);
+      const to = typeof toValue === "string"
+        ? parseFloat(toValue.replace(/[$,\s]/g, ""))
+        : (typeof toValue === "number" ? toValue : 0);
       if (to < from) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -407,12 +409,14 @@ const baseAccountHolderSchema = z
     }
 
     if (data.net_worth_from !== undefined && data.net_worth_to !== undefined) {
-      const from = typeof data.net_worth_from === "string"
-        ? parseFloat(data.net_worth_from.replace(/[$,\s]/g, ""))
-        : data.net_worth_from;
-      const to = typeof data.net_worth_to === "string"
-        ? parseFloat(data.net_worth_to.replace(/[$,\s]/g, ""))
-        : data.net_worth_to;
+      const fromValue = data.net_worth_from;
+      const toValue = data.net_worth_to;
+      const from = typeof fromValue === "string"
+        ? parseFloat(fromValue.replace(/[$,\s]/g, ""))
+        : (typeof fromValue === "number" ? fromValue : 0);
+      const to = typeof toValue === "string"
+        ? parseFloat(toValue.replace(/[$,\s]/g, ""))
+        : (typeof toValue === "number" ? toValue : 0);
       if (to < from) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -423,12 +427,14 @@ const baseAccountHolderSchema = z
     }
 
     if (data.liquid_net_worth_from !== undefined && data.liquid_net_worth_to !== undefined) {
-      const from = typeof data.liquid_net_worth_from === "string"
-        ? parseFloat(data.liquid_net_worth_from.replace(/[$,\s]/g, ""))
-        : data.liquid_net_worth_from;
-      const to = typeof data.liquid_net_worth_to === "string"
-        ? parseFloat(data.liquid_net_worth_to.replace(/[$,\s]/g, ""))
-        : data.liquid_net_worth_to;
+      const fromValue = data.liquid_net_worth_from;
+      const toValue = data.liquid_net_worth_to;
+      const from = typeof fromValue === "string"
+        ? parseFloat(fromValue.replace(/[$,\s]/g, ""))
+        : (typeof fromValue === "number" ? fromValue : 0);
+      const to = typeof toValue === "string"
+        ? parseFloat(toValue.replace(/[$,\s]/g, ""))
+        : (typeof toValue === "number" ? toValue : 0);
       if (to < from) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -600,26 +606,8 @@ export const step7Schema = z
 // Complete Form Schema
 // ============================================
 
-export const investorProfileFormSchema = z.object({
-  // Step 1
-  ...step1Schema.shape,
-
-  // Step 2
-  ...step2Schema.shape,
-
-  // Step 3 (primary fields with "primary_" prefix)
-  // Step 4 (secondary fields with "secondary_" prefix)
-  // These are handled separately in validation
-
-  // Step 5
-  ...step5Schema.shape,
-
-  // Step 6
-  ...step6Schema.shape,
-
-  // Step 7
-  ...step7Schema.shape,
-});
+// Note: We don't merge schemas here because they use superRefine (ZodEffects)
+// Each step is validated separately using validateStep function
 
 // Helper function to validate a specific step
 export function validateStep(stepNumber: number, formData: Record<string, any>): { isValid: boolean; errors: Record<string, string> } {

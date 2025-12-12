@@ -84,7 +84,7 @@ export const phoneSchema = z
  * Date validation: Valid date, optionally not in the future
  */
 export const dateSchema = (options?: { notFuture?: boolean; notPast?: boolean; minAge?: number; maxAge?: number }) => {
-  let schema = z.string().refine(
+  let schema: z.ZodTypeAny = z.string().refine(
     (val) => {
       if (!val) return true; // Optional
       const date = new Date(val);
@@ -157,7 +157,7 @@ export const dateSchema = (options?: { notFuture?: boolean; notPast?: boolean; m
  * Currency validation: Non-negative number with optional min/max
  */
 export const currencySchema = (options?: { min?: number; max?: number }) => {
-  let schema = z
+  let schema: z.ZodTypeAny = z
     .union([z.string(), z.number()])
     .transform((val) => {
       if (typeof val === "string") {
