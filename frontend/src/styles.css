@@ -419,6 +419,24 @@ body {
 .app-accent-lines .vline:nth-child(5)::after{ animation-delay: 600ms; }
 .app-accent-lines .vline:nth-child(6)::after{ animation-delay: 720ms; }
 
+@keyframes drawX {
+  0% { transform: scaleX(0); opacity: 0; }
+  60% { opacity: .9; }
+  100% { transform: scaleX(1); opacity: .75; }
+}
+
+@keyframes drawY {
+  0% { transform: scaleY(0); opacity: 0; }
+  60% { opacity: .9; }
+  100% { transform: scaleY(1); opacity: .75; }
+}
+
+@keyframes shimmer {
+  0% { opacity: .0; }
+  30% { opacity: .25; }
+  100% { opacity: 0; }
+}
+
 .app-header {
   position: sticky;
   top: 0;
