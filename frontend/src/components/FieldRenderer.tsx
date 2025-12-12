@@ -46,6 +46,8 @@ interface FieldRendererProps {
   formData?: Record<string, FieldValue>;
   updateField?: (fieldId: string, value: FieldValue) => void;
   disabled?: boolean;
+  error?: string;
+  onBlur?: () => void;
 }
 
 export function FieldRenderer({
@@ -58,6 +60,8 @@ export function FieldRenderer({
   formData = {},
   updateField,
   disabled = false,
+  error,
+  onBlur,
 }: FieldRendererProps) {
   const fieldId = prefix ? `${prefix}.${field.id}` : field.id;
   
@@ -297,6 +301,8 @@ export function FieldRenderer({
           label={field.label}
           value={(value as string) || ""}
           onChange={(val) => onChange(val)}
+          onBlur={onBlur}
+          error={error}
           disabled={disabled}
         />
       );
@@ -309,9 +315,11 @@ export function FieldRenderer({
           label={field.label}
           value={(value as string) || ""}
           onChange={(val) => onChange(val)}
+          onBlur={onBlur}
           readOnly={isReadOnly}
           rows={isReadOnly ? 8 : 3}
           disabled={disabled}
+          error={error}
         />
       );
 
@@ -322,7 +330,9 @@ export function FieldRenderer({
           label={field.label}
           value={(value as number) || ""}
           onChange={(val) => onChange(val)}
+          onBlur={onBlur}
           disabled={disabled}
+          error={error}
         />
       );
 
@@ -333,7 +343,9 @@ export function FieldRenderer({
           label={field.label}
           value={(value as string) || ""}
           onChange={(val) => onChange(val)}
+          onBlur={onBlur}
           disabled={disabled}
+          error={error}
         />
       );
 
@@ -344,7 +356,9 @@ export function FieldRenderer({
           label={field.label}
           value={(value as string) || ""}
           onChange={(val) => onChange(val)}
+          onBlur={onBlur}
           disabled={disabled}
+          error={error}
         />
       );
 

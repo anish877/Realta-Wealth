@@ -1,5 +1,6 @@
 import { Textarea } from "../ui/textarea";
 import { Label } from "../ui/label";
+import { ValidationError } from "../ValidationError";
 
 interface TextareaFieldProps {
   id: string;
@@ -10,6 +11,8 @@ interface TextareaFieldProps {
   readOnly?: boolean;
   rows?: number;
   disabled?: boolean;
+  error?: string;
+  onBlur?: () => void;
 }
 
 export function TextareaField({
@@ -21,6 +24,8 @@ export function TextareaField({
   readOnly = false,
   rows = 3,
   disabled = false,
+  error,
+  onBlur,
 }: TextareaFieldProps) {
   return (
     <div className="mb-6">
@@ -31,12 +36,14 @@ export function TextareaField({
         id={id}
         value={value}
         onChange={(e) => !readOnly && !disabled && onChange(e.target.value)}
+        onBlur={onBlur}
         readOnly={readOnly || disabled}
         rows={rows}
         placeholder={placeholder || `Enter ${label.toLowerCase()}`}
-        className={readOnly || disabled ? "opacity-75 cursor-not-allowed" : ""}
+        className={`${readOnly || disabled ? "opacity-75 cursor-not-allowed" : ""} ${error ? "border-red-500" : ""}`}
         disabled={disabled}
       />
+      <ValidationError error={error} fieldId={id} />
     </div>
   );
 }

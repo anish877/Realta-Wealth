@@ -26,6 +26,8 @@ import { useToast, ToastContainer } from "./Toast";
 import { Button } from "./ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
 import type { FieldValue, FormData } from "../types/form";
+import { useFormValidation } from "../hooks/useFormValidation";
+import { StepErrorSummary } from "./ValidationError";
 
 type SaveState =
   | { status: "idle"; error?: string }
@@ -110,6 +112,17 @@ export default function InvestorProfileForm() {
   // Map current step to actual section index
   const effectiveStep = currentStep >= sections.length ? sections.length - 1 : currentStep;
   const currentSection = sections[effectiveStep];
+
+  // Get current step number for validation
+  const currentStepNumber = getStepNumberFromSection(currentSection?.sectionId);
+
+  // Form validation hook
+  const validation = useFormValidation({
+    formData,
+    currentStep: currentStepNumber || undefined,
+    validateOnBlur: true,
+    validateOnChange: false,
+  });
 
   // Load profile when profileIdFromUrl changes - this ensures we load saved data when clicking Continue
   // Note: Since there's only one profile per user, "new" will actually update the existing profile
@@ -252,55 +265,27 @@ export default function InvestorProfileForm() {
     }
   }, [currentSection, saveStep]);
 
-  const validateCurrentStep = (): { isValid: boolean; errors: string[] } => {
-    const stepNumber = getStepNumberFromSection(currentSection?.sectionId);
-    const errors: string[] = [];
-
-    if (!stepNumber) {
+  // Validate current step using Zod
+  const validateCurrentStep = useCallback((): { isValid: boolean; errors: string[] } => {
+    if (!currentStepNumber) {
       return { isValid: true, errors: [] };
     }
 
-    // Basic validation for each step
-    switch (stepNumber) {
-      case 1:
-        if (!formData.rr_name && !formData.retirement_checkbox) {
-          errors.push("RR Name is required (unless Retirement account is selected)");
-        }
-        if (!formData.customer_names && !formData.retirement_checkbox) {
-          errors.push("Customer Name(s) is required (unless Retirement account is selected)");
-        }
-        break;
-      case 2:
-        if (!formData.initial_source_of_funds || (formData.initial_source_of_funds as string[]).length === 0) {
-          errors.push("At least one source of funds is required");
-        }
-        break;
-      case 3:
-        if (!formData.primary_name) {
-          errors.push("Primary Account Holder name is required");
-        }
-        if (!formData.primary_person_entity) {
-          errors.push("Person/Entity selection is required");
-        }
-        if (formData.primary_person_entity === "Person" && !formData.primary_ssn) {
-          errors.push("SSN is required for Person");
-        }
-        if (formData.primary_person_entity === "Entity" && !formData.primary_ein) {
-          errors.push("EIN is required for Entity");
-        }
-        break;
-      case 7:
-        if (!formData.account_owner_signature || !formData.account_owner_printed_name) {
-          errors.push("Account Owner signature and printed name are required");
-        }
-        break;
-    }
+    const result = validation.validateStep(currentStepNumber);
+    const errorMessages = Object.values(result.errors);
 
-    return { isValid: errors.length === 0, errors };
-  };
+    return {
+      isValid: result.isValid,
+      errors: errorMessages,
+    };
+  }, [currentStepNumber, validation]);
 
   const updateField = (fieldId: string, value: FieldValue) => {
     setFormData((prev) => ({ ...prev, [fieldId]: value }));
+    // Validate field on change if it's been touched
+    if (validation.touched.has(fieldId)) {
+      validation.validateField(fieldId, value);
+    }
   };
 
   const updateArrayField = (fieldId: string, option: string, checked: boolean) => {
@@ -324,6 +309,19 @@ export default function InvestorProfileForm() {
   const progress = ((effectiveStep + 1) / totalSteps) * 100;
 
   const handleNext = () => {
+    // Validate current step before allowing navigation
+    if (currentStepNumber) {
+      const validationResult = validation.validateStep(currentStepNumber);
+      if (!validationResult.isValid) {
+        // Mark all fields as touched to show errors
+        Object.keys(validationResult.errors).forEach((fieldId) => {
+          validation.setTouched(fieldId, true);
+        });
+        showToast("Please fix the errors before continuing", "error");
+        return;
+      }
+    }
+
     if (effectiveStep < totalSteps - 1) {
       setCurrentStep(effectiveStep + 1);
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -898,6 +896,11 @@ export default function InvestorProfileForm() {
             </div>
           )}
           <div className="space-y-6">
+            {/* Step-level error summary */}
+            {currentStepNumber && Object.keys(validation.errors).length > 0 && (
+              <StepErrorSummary errors={validation.errors} />
+            )}
+            
             {currentSection.fields.map((field) => {
               // Skip rendering individual fields that are part of AccountTypeSection
               if (
@@ -1057,18 +1060,20 @@ export default function InvestorProfileForm() {
               
               // Render always-enabled fields (Retirement checkbox and header fields) with explicit disabled={false}
               if (isAlwaysEnabled) {
-                return (
-                  <FieldRenderer
-                    key={field.id}
-                    field={field}
-                    value={formData[field.id] || ""}
-                    onChange={(value) => updateField(field.id, value)}
-                    onRepeatableAdd={addRepeatableGroup}
-                    formData={formData}
-                    updateField={updateField}
-                    disabled={false}
-                  />
-                );
+              return (
+                <FieldRenderer
+                  key={field.id}
+                  field={field}
+                  value={formData[field.id] || ""}
+                  onChange={(value) => updateField(field.id, value)}
+                  onBlur={() => validation.setTouched(field.id, true)}
+                  onRepeatableAdd={addRepeatableGroup}
+                  formData={formData}
+                  updateField={updateField}
+                  disabled={false}
+                  error={validation.getFieldError(field.id)}
+                />
+              );
               }
               
               return (
@@ -1077,10 +1082,12 @@ export default function InvestorProfileForm() {
                   field={field}
                   value={formData[field.id] || ""}
                   onChange={(value) => updateField(field.id, value)}
+                  onBlur={() => validation.setTouched(field.id, true)}
                   onRepeatableAdd={addRepeatableGroup}
                   formData={formData}
                   updateField={updateField}
                   disabled={isDisabled}
+                  error={validation.getFieldError(field.id)}
                 />
               );
             })}
