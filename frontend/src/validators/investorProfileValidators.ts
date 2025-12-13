@@ -693,13 +693,15 @@ const baseAccountHolderSchema = z
       }
     }
 
-    // DOB is required
-    if (!data.dob) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Date of birth is required",
-        path: ["dob"],
-      });
+    // DOB is required only if Person is selected
+    if (data.person_entity === "Person") {
+      if (!data.dob || (typeof data.dob === "string" && data.dob.trim() === "")) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Date of birth is required for Person",
+          path: ["dob"],
+        });
+      }
     }
 
     // Legal address fields are required
