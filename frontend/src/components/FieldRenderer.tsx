@@ -81,7 +81,12 @@ export function FieldRenderer({
     const prefix = isPrimary ? "primary" : "secondary";
     const addressType = isMailing ? "mailing" : isEmployer ? "employer" : "legal";
     
-    const addressPrefix = `${prefix}_${addressType}`;
+    // For legal address, the component fields (city, state, etc.) don't have "_legal" prefix
+    // They are: primary_city, primary_state_province, etc. (not primary_legal_city)
+    // For mailing and employer, they do have the prefix: primary_mailing_city, primary_employer_city
+    const addressPrefix = addressType === "legal" ? prefix : `${prefix}_${addressType}`;
+    const addressFieldName = addressType === "legal" ? `${prefix}_legal_address` : `${prefix}_${addressType}_address`;
+    
     const sameAsLegalFieldId = isMailing ? `${prefix}_mailing_same_as_legal` : undefined;
     const mailingSameAsLegal = sameAsLegalFieldId ? (formData[sameAsLegalFieldId] as boolean) || false : false;
     
@@ -90,7 +95,7 @@ export function FieldRenderer({
         prefix={addressPrefix}
         label={isMailing ? "Mailing Address" : isEmployer ? "Employer Address" : "Legal Address"}
         values={{
-          address: (formData[`${addressPrefix}_address`] as string) || "",
+          address: (formData[addressFieldName] as string) || "",
           city: (formData[`${addressPrefix}_city`] as string) || "",
           stateProvince: (formData[`${addressPrefix}_state_province`] as string) || "",
           zipPostalCode: (formData[`${addressPrefix}_zip_postal_code`] as string) || "",
@@ -98,7 +103,7 @@ export function FieldRenderer({
         }}
         onChange={(fieldName, val) => {
           const fieldMap: Record<string, string> = {
-            address: `${addressPrefix}_address`,
+            address: addressFieldName,
             city: `${addressPrefix}_city`,
             stateProvince: `${addressPrefix}_state_province`,
             zipPostalCode: `${addressPrefix}_zip_postal_code`,
