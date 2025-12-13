@@ -354,6 +354,20 @@
           ],
           "notes": "There are two Government Photo ID blocks (ID #1 and ID #2). Repeatable allows capturing both."
         },
+        {
+          "id": "unexpired_government_identification_2",
+          "label": "Unexpired Government Identification #2 (Primary)",
+          "type": "group",
+          "page": 3,
+          "fields": [
+            { "id": "gov2_type", "label": "Type of Unexpired Photo ID", "type": "text", "page": 3 },
+            { "id": "gov2_id_number", "label": "ID Number", "type": "text", "page": 3 },
+            { "id": "gov2_country_of_issue", "label": "Country of Issue", "type": "text", "page": 3 },
+            { "id": "gov2_date_of_issue", "label": "Date of Issue", "type": "date", "page": 3 },
+            { "id": "gov2_date_of_expiration", "label": "Date of Expiration", "type": "date", "page": 3 }
+          ],
+          "notes": "Second Government Photo ID block (ID #2)."
+        },
 
         { "id": "primary_employee_of_advisory_firm", "label": "Are you an employee of this advisor firm?", "type": "yesno", "page": 3 },
         { "id": "primary_related_to_employee_advisory", "label": "Are you related to an employee at this advisory firm?", "type": "yesno", "page": 3 },

@@ -989,29 +989,27 @@ export default function InvestorProfileForm() {
                 return null;
               }
               
-              // Skip rendering individual address fields (handled as AddressFieldGroup)
+              // Skip rendering individual address component fields (handled as AddressFieldGroup)
+              // Note: We keep primary_legal_address, primary_mailing_address, secondary_legal_address, 
+              // secondary_mailing_address, and employer_address fields so AddressFieldGroup can render
               if (
                 (currentSection.sectionId === "step3_primary_account_holder" ||
                  currentSection.sectionId === "step3_primary_continued" ||
                  currentSection.sectionId === "step4_secondary_account_holder" ||
                  currentSection.sectionId === "step4_secondary_continued") &&
-                (field.id === "primary_legal_address" ||
-                  field.id === "primary_city" ||
+                (field.id === "primary_city" ||
                   field.id === "primary_state_province" ||
                   field.id === "primary_zip_postal_code" ||
                   field.id === "primary_country" ||
                   field.id === "primary_mailing_same_as_legal" ||
-                  field.id === "primary_mailing_address" ||
                   field.id === "primary_mailing_city" ||
                   field.id === "primary_mailing_state_province" ||
                   field.id === "primary_mailing_zip_postal_code" ||
                   field.id === "primary_mailing_country" ||
-                  field.id === "primary_employer_address" ||
                   field.id === "primary_employer_city" ||
                   field.id === "primary_employer_state_province" ||
                   field.id === "primary_employer_zip_postal_code" ||
                   field.id === "primary_employer_country" ||
-                  field.id === "secondary_legal_address" ||
                   field.id === "secondary_city" ||
                   field.id === "secondary_state_province" ||
                   field.id === "secondary_zip_postal_code" ||
@@ -1022,7 +1020,6 @@ export default function InvestorProfileForm() {
                   field.id === "secondary_mailing_state_province" ||
                   field.id === "secondary_mailing_zip_postal_code" ||
                   field.id === "secondary_mailing_country" ||
-                  field.id === "secondary_employer_address" ||
                   field.id === "secondary_employer_city" ||
                   field.id === "secondary_employer_state_province" ||
                   field.id === "secondary_employer_zip_postal_code" ||
