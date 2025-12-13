@@ -205,8 +205,8 @@ export function AccountTypeSection({
     // Transfer on Death Individual/Joint - Agreement Date
     if (accountType === "transfer_on_death_individual" || accountType === "transfer_on_death_joint") {
       const dateFieldId = accountType === "transfer_on_death_individual" 
-        ? "transfer_on_death_individual_date" 
-        : "transfer_on_death_joint_date";
+        ? "transfer_on_death_individual_agreement_date" 
+        : "transfer_on_death_joint_agreement_date";
       const dateValue = formData[dateFieldId] || "";
       return (
         <div className="py-2">

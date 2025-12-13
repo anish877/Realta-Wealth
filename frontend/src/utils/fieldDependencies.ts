@@ -167,11 +167,11 @@ export const fieldVisibilityRules: FieldVisibilityRule[] = [
   },
   // Transfer on Death agreement dates
   {
-    fieldId: 'transfer_on_death_individual_date',
+    fieldId: 'transfer_on_death_individual_agreement_date',
     showWhen: [{ field: 'type_of_account', operator: 'includes', value: 'transfer_on_death_individual' }],
   },
   {
-    fieldId: 'transfer_on_death_joint_date',
+    fieldId: 'transfer_on_death_joint_agreement_date',
     showWhen: [{ field: 'type_of_account', operator: 'includes', value: 'transfer_on_death_joint' }],
   },
   

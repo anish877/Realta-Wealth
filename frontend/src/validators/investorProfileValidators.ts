@@ -96,15 +96,28 @@ export const tenancyClauseSchema = z.enum([
   "tenants_in_common",
 ]);
 
+// Right column account type schema
+export const accountTypeRightSchema = z.enum([
+  "trust",
+  "nonprofit_organization",
+  "partnership",
+  "exempt_organization",
+  "other_account_type",
+]);
+
 export const step1Schema = z
   .object({
     rr_name: rrNameFieldSchema.optional(),
     rr_no: rrNumberFieldSchema,
     customer_names: customerNameFieldSchema.optional(),
-    account_no: accountNumberFieldSchemaEnhanced.optional(),
+    account_no: z.string().trim().max(50, "Account number must be no more than 50 characters").refine(
+      (val) => !val || /^[a-zA-Z0-9]+$/.test(val),
+      { message: "Account number must be alphanumeric" }
+    ).optional(),
     retirement_checkbox: booleanFieldSchema,
     retail_checkbox: booleanFieldSchema,
     type_of_account: arrayFieldSchema(accountTypeSchema).optional(),
+    type_of_account_right: arrayFieldSchema(accountTypeRightSchema).optional(),
     additional_designation_left: arrayFieldSchema(additionalDesignationSchema).optional(),
     other_account_type_text: generalTextFieldSchema.max(100, "Other account type must be no more than 100 characters").optional(),
     trust_checkbox: booleanFieldSchema.optional(),
@@ -122,6 +135,17 @@ export const step1Schema = z
     transfer_on_death_joint_agreement_date: dateFieldSchema({ notFuture: true, minYear: 1900 }).optional(),
   })
   .superRefine((data, ctx) => {
+    // At least one account type must be selected (from either column)
+    const hasLeftAccountType = Array.isArray(data.type_of_account) && data.type_of_account.length > 0;
+    const hasRightAccountType = Array.isArray(data.type_of_account_right) && data.type_of_account_right.length > 0;
+    if (!hasLeftAccountType && !hasRightAccountType) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "At least one account type must be selected",
+        path: ["type_of_account"],
+      });
+    }
+
     // RR Name and Customer Names required unless Retirement is checked
     if (!data.retirement_checkbox) {
       if (!data.rr_name || (typeof data.rr_name === "string" && data.rr_name.trim() === "")) {
@@ -130,6 +154,16 @@ export const step1Schema = z
           message: "RR Name is required (unless Retirement account is selected)",
           path: ["rr_name"],
         });
+      }
+      // RR Number required when RR Name is provided
+      if (data.rr_name && (typeof data.rr_name === "string" && data.rr_name.trim() !== "")) {
+        if (!data.rr_no || (typeof data.rr_no === "string" && data.rr_no.trim() === "")) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "RR Number is required when RR Name is provided",
+            path: ["rr_no"],
+          });
+        }
       }
       if (!data.customer_names || (typeof data.customer_names === "string" && data.customer_names.trim() === "")) {
         ctx.addIssue({
@@ -140,8 +174,8 @@ export const step1Schema = z
       }
     }
 
-    // Other account type text required if "other" is selected
-    if (Array.isArray(data.type_of_account) && data.type_of_account.includes("other") && (!data.other_account_type_text || (typeof data.other_account_type_text === "string" && data.other_account_type_text.trim() === ""))) {
+    // Other account type text required if "other_account_type" is selected in right column
+    if (Array.isArray(data.type_of_account_right) && data.type_of_account_right.includes("other_account_type") && (!data.other_account_type_text || (typeof data.other_account_type_text === "string" && data.other_account_type_text.trim() === ""))) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Please specify the other account type",
@@ -149,8 +183,9 @@ export const step1Schema = z
       });
     }
 
-    // Trust information required if trust checkbox is checked
-    if (data.trust_checkbox) {
+    // Trust information required if trust checkbox is checked OR trust is in type_of_account_right
+    const hasTrust = data.trust_checkbox === true || (Array.isArray(data.type_of_account_right) && data.type_of_account_right.includes("trust"));
+    if (hasTrust) {
       if (!Array.isArray(data.trust_type) || data.trust_type.length === 0) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -167,10 +202,51 @@ export const step1Schema = z
       }
     }
 
+    // Additional Designation validation based on account type
+    if (Array.isArray(data.type_of_account)) {
+      // Corporation requires C Corp or S Corp
+      if (data.type_of_account.includes("corporation")) {
+        if (!Array.isArray(data.additional_designation_left) || 
+            (!data.additional_designation_left.includes("c_corp") && !data.additional_designation_left.includes("s_corp"))) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "C Corp or S Corp designation is required for Corporation accounts",
+            path: ["additional_designation_left"],
+          });
+        }
+      }
+      
+      // Custodial requires UGMA or UTMA
+      if (data.type_of_account.includes("custodial")) {
+        if (!Array.isArray(data.additional_designation_left) || 
+            (!data.additional_designation_left.includes("ugma") && !data.additional_designation_left.includes("utma"))) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "UGMA or UTMA designation is required for Custodial accounts",
+            path: ["additional_designation_left"],
+          });
+        }
+      }
+      
+      // Limited Liability Company requires C Corp, S Corp, or Partnership
+      if (data.type_of_account.includes("limited_liability_company")) {
+        if (!Array.isArray(data.additional_designation_left) || 
+            (!data.additional_designation_left.includes("c_corp") && 
+             !data.additional_designation_left.includes("s_corp") && 
+             !data.additional_designation_left.includes("partnership"))) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "C Corp, S Corp, or Partnership designation is required for Limited Liability Company accounts",
+            path: ["additional_designation_left"],
+          });
+        }
+      }
+    }
+
     // Joint account information required if joint account type is selected
-    if (
-      Array.isArray(data.type_of_account) && data.type_of_account.some((type: string) => type === "joint_tenant" || type === "transfer_on_death_joint")
-    ) {
+    const hasJointAccount = Array.isArray(data.type_of_account) && 
+      (data.type_of_account.includes("joint_tenant") || data.type_of_account.includes("transfer_on_death_joint"));
+    if (hasJointAccount) {
       if (!data.are_account_holders_married) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -192,6 +268,13 @@ export const step1Schema = z
           path: ["number_of_tenants"],
         });
       }
+      if (!Array.isArray(data.tenancy_clause) || data.tenancy_clause.length === 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "At least one tenancy clause is required for joint accounts",
+          path: ["tenancy_clause"],
+        });
+      }
     }
 
     // Custodial account fields required if custodial account type is selected
@@ -210,6 +293,41 @@ export const step1Schema = z
           path: ["date_gift_was_given_1"],
         });
       }
+      if (!data.state_in_which_gift_was_given_2 || (typeof data.state_in_which_gift_was_given_2 === "string" && data.state_in_which_gift_was_given_2.trim() === "")) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "State in which gift was given (2) is required for custodial accounts",
+          path: ["state_in_which_gift_was_given_2"],
+        });
+      }
+      if (!data.date_gift_was_given_2) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Date gift was given (2) is required for custodial accounts",
+          path: ["date_gift_was_given_2"],
+        });
+      }
+    }
+
+    // Transfer on Death agreement dates required when those account types are selected
+    if (Array.isArray(data.type_of_account) && data.type_of_account.includes("transfer_on_death_individual")) {
+      if (!data.transfer_on_death_individual_agreement_date) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Transfer on Death Individual agreement date is required",
+          path: ["transfer_on_death_individual_agreement_date"],
+        });
+      }
+    }
+    
+    if (Array.isArray(data.type_of_account) && data.type_of_account.includes("transfer_on_death_joint")) {
+      if (!data.transfer_on_death_joint_agreement_date) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Transfer on Death Joint agreement date is required",
+          path: ["transfer_on_death_joint_agreement_date"],
+        });
+      }
     }
   });
 
@@ -217,27 +335,73 @@ export const step1Schema = z
 // STEP 2: Patriot Act Information
 // ============================================
 
+export const initialSourceOfFundsSchema = z.enum([
+  "Accounts Receivable",
+  "Income From Earnings",
+  "Legal Settlement",
+  "Spouse/Parent",
+  "Accumulated Savings",
+  "Inheritance",
+  "Lottery/Gaming",
+  "Rental Income",
+  "Alimony",
+  "Insurance Proceeds",
+  "Pension/IRA/Retirement Savings",
+  "Sale of Business",
+  "Gift",
+  "Investment Proceeds",
+  "Sale of Real Estate",
+  "Other",
+]);
+
 export const step2Schema = z
   .object({
-    initial_source_of_funds: arrayFieldSchema(z.string()).optional(),
-    initial_source_of_funds_other_text: generalTextFieldSchema.max(200, "Other source of funds must be no more than 200 characters").optional(),
+    initial_source_of_funds: arrayFieldSchema(initialSourceOfFundsSchema).optional(),
+    initial_source_of_funds_other_text: generalTextFieldSchema.min(2, "Other source of funds must be at least 2 characters").max(200, "Other source of funds must be no more than 200 characters").optional(),
   })
   .superRefine((data, ctx) => {
     // At least one source of funds is required
-    if (!data.initial_source_of_funds || data.initial_source_of_funds.length === 0) {
+    if (!Array.isArray(data.initial_source_of_funds) || data.initial_source_of_funds.length === 0) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "At least one source of funds is required",
         path: ["initial_source_of_funds"],
       });
+      return; // Early return if no sources selected
     }
 
+    // Validate each item in the array is a valid enum value
+    data.initial_source_of_funds.forEach((item, index) => {
+      if (!item || typeof item !== "string" || item.trim() === "") {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Source of funds cannot be empty",
+          path: ["initial_source_of_funds", index],
+        });
+      } else {
+        const result = initialSourceOfFundsSchema.safeParse(item);
+        if (!result.success) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `Invalid source of funds option: ${item}`,
+            path: ["initial_source_of_funds", index],
+          });
+        }
+      }
+    });
+
     // Other text required if "Other" is selected
-    if (Array.isArray(data.initial_source_of_funds) && data.initial_source_of_funds.includes("Other")) {
+    if (data.initial_source_of_funds.includes("Other")) {
       if (!data.initial_source_of_funds_other_text || (typeof data.initial_source_of_funds_other_text === "string" && data.initial_source_of_funds_other_text.trim() === "")) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Please specify the other source of funds",
+          path: ["initial_source_of_funds_other_text"],
+        });
+      } else if (typeof data.initial_source_of_funds_other_text === "string" && data.initial_source_of_funds_other_text.trim().length < 2) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Other source of funds must be at least 2 characters",
           path: ["initial_source_of_funds_other_text"],
         });
       }
@@ -259,11 +423,13 @@ export const maritalStatusSchema = z.enum([
   "Domestic Partner",
   "Widow",
   "Widowed",
+  "Widow(er)", // Support both formats from JSON schema
 ]);
 
 export const employmentAffiliationSchema = z.enum([
   "Employed",
   "SelfEmployed",
+  "Self-Employed", // Support both formats from JSON schema
   "Retired",
   "Unemployed",
   "Student",
@@ -363,12 +529,99 @@ const baseAccountHolderSchema = z
     liquid_net_worth_to: currencyFieldSchema().optional(),
     tax_bracket: taxBracketSchema.optional(),
 
-    // Government ID
+    // Government ID - First ID
     gov_id_type: governmentIdTypeFieldSchema.optional(),
     gov_id_number: governmentIdNumberFieldSchema.optional(),
     gov_id_country_of_issue: countryFieldSchema.optional(),
     gov_id_date_of_issue: dateFieldSchema({ notFuture: true, minYear: 1900 }).optional(),
     gov_id_date_of_expiration: dateFieldSchema({ notPast: true, maxDaysFuture: 7300 }).optional(), // Max 20 years
+
+    // Government ID - Second ID (repeatable)
+    gov2_type: governmentIdTypeFieldSchema.optional(),
+    gov2_id_number: governmentIdNumberFieldSchema.optional(),
+    gov2_country_of_issue: countryFieldSchema.optional(),
+    gov2_date_of_issue: dateFieldSchema({ notFuture: true, minYear: 1900 }).optional(),
+    gov2_date_of_expiration: dateFieldSchema({ notPast: true, maxDaysFuture: 7300 }).optional(), // Max 20 years
+
+    // Investment Knowledge - All 15 types + Other
+    commodities_futures_knowledge: investmentKnowledgeLevelSchema.optional(),
+    commodities_futures_since_year: yearFieldSchema({ minYear: 1900, maxYear: new Date().getFullYear() }).optional(),
+    equities_knowledge: investmentKnowledgeLevelSchema.optional(),
+    equities_since_year: yearFieldSchema({ minYear: 1900, maxYear: new Date().getFullYear() }).optional(),
+    etf_knowledge: investmentKnowledgeLevelSchema.optional(),
+    etf_since_year: yearFieldSchema({ minYear: 1900, maxYear: new Date().getFullYear() }).optional(),
+    fixed_annuities_knowledge: investmentKnowledgeLevelSchema.optional(),
+    fixed_annuities_since_year: yearFieldSchema({ minYear: 1900, maxYear: new Date().getFullYear() }).optional(),
+    fixed_insurance_knowledge: investmentKnowledgeLevelSchema.optional(),
+    fixed_insurance_since_year: yearFieldSchema({ minYear: 1900, maxYear: new Date().getFullYear() }).optional(),
+    mutual_funds_knowledge: investmentKnowledgeLevelSchema.optional(),
+    mutual_funds_since_year: yearFieldSchema({ minYear: 1900, maxYear: new Date().getFullYear() }).optional(),
+    options_knowledge: investmentKnowledgeLevelSchema.optional(),
+    options_since_year: yearFieldSchema({ minYear: 1900, maxYear: new Date().getFullYear() }).optional(),
+    precious_metals_knowledge: investmentKnowledgeLevelSchema.optional(),
+    precious_metals_since_year: yearFieldSchema({ minYear: 1900, maxYear: new Date().getFullYear() }).optional(),
+    real_estate_knowledge: investmentKnowledgeLevelSchema.optional(),
+    real_estate_since_year: yearFieldSchema({ minYear: 1900, maxYear: new Date().getFullYear() }).optional(),
+    unit_investment_trusts_knowledge: investmentKnowledgeLevelSchema.optional(),
+    unit_investment_trusts_since_year: yearFieldSchema({ minYear: 1900, maxYear: new Date().getFullYear() }).optional(),
+    variable_annuities_knowledge: investmentKnowledgeLevelSchema.optional(),
+    variable_annuities_since_year: yearFieldSchema({ minYear: 1900, maxYear: new Date().getFullYear() }).optional(),
+    leveraged_inverse_etfs_knowledge: investmentKnowledgeLevelSchema.optional(),
+    leveraged_inverse_etfs_since_year: yearFieldSchema({ minYear: 1900, maxYear: new Date().getFullYear() }).optional(),
+    complex_products_knowledge: investmentKnowledgeLevelSchema.optional(),
+    complex_products_since_year: yearFieldSchema({ minYear: 1900, maxYear: new Date().getFullYear() }).optional(),
+    alternative_investments_knowledge: investmentKnowledgeLevelSchema.optional(),
+    alternative_investments_since_year: yearFieldSchema({ minYear: 1900, maxYear: new Date().getFullYear() }).optional(),
+    other_investment_knowledge_value: investmentKnowledgeLevelSchema.optional(),
+    other_investment_knowledge_label: generalTextFieldSchema.max(200, "Other investment label must be no more than 200 characters").optional(),
+    other_investment_since_year: yearFieldSchema({ minYear: 1900, maxYear: new Date().getFullYear() }).optional(),
+
+    // Secondary Account Holder - Investment Knowledge (different field naming)
+    secondary_commodities_futures: investmentKnowledgeLevelSchema.optional(),
+    secondary_commodities_futures_since: yearFieldSchema({ minYear: 1900, maxYear: new Date().getFullYear() }).optional(),
+    secondary_equities: investmentKnowledgeLevelSchema.optional(),
+    secondary_equities_since: yearFieldSchema({ minYear: 1900, maxYear: new Date().getFullYear() }).optional(),
+    secondary_etfs: investmentKnowledgeLevelSchema.optional(),
+    secondary_etfs_since: yearFieldSchema({ minYear: 1900, maxYear: new Date().getFullYear() }).optional(),
+    secondary_fixed_annuities: investmentKnowledgeLevelSchema.optional(),
+    secondary_fixed_annuities_since: yearFieldSchema({ minYear: 1900, maxYear: new Date().getFullYear() }).optional(),
+    secondary_fixed_insurance: investmentKnowledgeLevelSchema.optional(),
+    secondary_fixed_insurance_since: yearFieldSchema({ minYear: 1900, maxYear: new Date().getFullYear() }).optional(),
+    secondary_mutual_funds: investmentKnowledgeLevelSchema.optional(),
+    secondary_mutual_funds_since: yearFieldSchema({ minYear: 1900, maxYear: new Date().getFullYear() }).optional(),
+    secondary_options: investmentKnowledgeLevelSchema.optional(),
+    secondary_options_since: yearFieldSchema({ minYear: 1900, maxYear: new Date().getFullYear() }).optional(),
+    secondary_precious_metals: investmentKnowledgeLevelSchema.optional(),
+    secondary_precious_metals_since: yearFieldSchema({ minYear: 1900, maxYear: new Date().getFullYear() }).optional(),
+    secondary_real_estate: investmentKnowledgeLevelSchema.optional(),
+    secondary_real_estate_since: yearFieldSchema({ minYear: 1900, maxYear: new Date().getFullYear() }).optional(),
+    secondary_unit_investment_trusts: investmentKnowledgeLevelSchema.optional(),
+    secondary_unit_investment_trusts_since: yearFieldSchema({ minYear: 1900, maxYear: new Date().getFullYear() }).optional(),
+    secondary_variable_annuities: investmentKnowledgeLevelSchema.optional(),
+    secondary_variable_annuities_since: yearFieldSchema({ minYear: 1900, maxYear: new Date().getFullYear() }).optional(),
+    secondary_leveraged_inverse_etfs: investmentKnowledgeLevelSchema.optional(),
+    secondary_leveraged_inverse_etfs_since: yearFieldSchema({ minYear: 1900, maxYear: new Date().getFullYear() }).optional(),
+    secondary_complex_products: investmentKnowledgeLevelSchema.optional(),
+    secondary_complex_products_since: yearFieldSchema({ minYear: 1900, maxYear: new Date().getFullYear() }).optional(),
+    secondary_alternative_investments_knowledge: investmentKnowledgeLevelSchema.optional(),
+    secondary_alternative_investments_since: yearFieldSchema({ minYear: 1900, maxYear: new Date().getFullYear() }).optional(),
+    secondary_other_investments_knowledge: investmentKnowledgeLevelSchema.optional(),
+    secondary_other_investments_label: generalTextFieldSchema.max(200, "Other investment label must be no more than 200 characters").optional(),
+    secondary_other_investments_since: yearFieldSchema({ minYear: 1900, maxYear: new Date().getFullYear() }).optional(),
+
+    // Secondary Account Holder - Financial Information (with _2 suffix)
+    annual_income_from_2: currencyFieldSchema().optional(),
+    annual_income_to_2: currencyFieldSchema().optional(),
+    net_worth_from_2: currencyFieldSchema().optional(),
+    net_worth_to_2: currencyFieldSchema().optional(),
+    liquid_net_worth_from_2: currencyFieldSchema().optional(),
+    liquid_net_worth_to_2: currencyFieldSchema().optional(),
+    tax_bracket_2: taxBracketSchema.optional(),
+
+    // Secondary Account Holder - Different field names
+    secondary_employee_name: generalTextFieldSchema.max(200, "Employee name must be no more than 200 characters").optional(),
+    secondary_affiliation_details: generalTextFieldSchema.max(200, "Affiliation details must be no more than 200 characters").optional(),
+    secondary_years_investment_experience: yearsExperienceFieldSchema.optional(),
 
     // Affiliations
     employee_of_advisory_firm: yesNoSchema.optional(),
@@ -525,7 +778,7 @@ const baseAccountHolderSchema = z
       }
     }
 
-    // Government ID validation - all fields required together
+    // Government ID validation - First ID: all fields required together
     if (data.gov_id_type || data.gov_id_number || data.gov_id_country_of_issue || data.gov_id_date_of_issue || data.gov_id_date_of_expiration) {
       if (!data.gov_id_type || (typeof data.gov_id_type === "string" && data.gov_id_type.trim() === "")) {
         ctx.addIssue({
@@ -577,6 +830,81 @@ const baseAccountHolderSchema = z
       }
     }
 
+    // Government ID validation - Second ID: all fields required together
+    if (data.gov2_type || data.gov2_id_number || data.gov2_country_of_issue || data.gov2_date_of_issue || data.gov2_date_of_expiration) {
+      if (!data.gov2_type || (typeof data.gov2_type === "string" && data.gov2_type.trim() === "")) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Government ID type is required",
+          path: ["gov2_type"],
+        });
+      }
+      if (!data.gov2_id_number || (typeof data.gov2_id_number === "string" && data.gov2_id_number.trim() === "")) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Government ID number is required",
+          path: ["gov2_id_number"],
+        });
+      }
+      if (!data.gov2_country_of_issue || (typeof data.gov2_country_of_issue === "string" && data.gov2_country_of_issue.trim() === "")) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Country of issue is required",
+          path: ["gov2_country_of_issue"],
+        });
+      }
+      if (!data.gov2_date_of_issue) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Date of issue is required",
+          path: ["gov2_date_of_issue"],
+        });
+      }
+      if (!data.gov2_date_of_expiration) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Date of expiration is required",
+          path: ["gov2_date_of_expiration"],
+        });
+      }
+
+      // Government ID expiration must be after issue date
+      if (data.gov2_date_of_issue && data.gov2_date_of_expiration && typeof data.gov2_date_of_issue === "string" && typeof data.gov2_date_of_expiration === "string") {
+        const issueDate = new Date(data.gov2_date_of_issue);
+        const expDate = new Date(data.gov2_date_of_expiration);
+        if (!isNaN(issueDate.getTime()) && !isNaN(expDate.getTime()) && expDate <= issueDate) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Expiration date must be after issue date",
+            path: ["gov2_date_of_expiration"],
+          });
+        }
+      }
+    }
+
+    // Employment fields required if Employed or SelfEmployed/Self-Employed is selected
+    if (Array.isArray(data.employment_affiliations)) {
+      const hasEmployment = data.employment_affiliations.includes("Employed") || 
+                           data.employment_affiliations.includes("SelfEmployed") ||
+                           data.employment_affiliations.includes("Self-Employed");
+      if (hasEmployment) {
+        if (!data.occupation || (typeof data.occupation === "string" && data.occupation.trim() === "")) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Occupation is required when Employed or Self-Employed",
+            path: ["occupation"],
+          });
+        }
+        if (!data.employer_name || (typeof data.employer_name === "string" && data.employer_name.trim() === "")) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Employer name is required when Employed or Self-Employed",
+            path: ["employer_name"],
+          });
+        }
+      }
+    }
+
     // Employee/relationship fields required if related_to_employee_advisory is "Yes"
     if (data.related_to_employee_advisory === "Yes") {
       if (!data.employee_name_and_relationship || (typeof data.employee_name_and_relationship === "string" && data.employee_name_and_relationship.trim() === "")) {
@@ -587,6 +915,86 @@ const baseAccountHolderSchema = z
         });
       }
     }
+
+    // Investment Knowledge: "Other" label required if "Other" knowledge is selected (Primary)
+    if (data.other_investment_knowledge_value) {
+      if (!data.other_investment_knowledge_label || (typeof data.other_investment_knowledge_label === "string" && data.other_investment_knowledge_label.trim() === "")) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Other investment label is required when Other investment knowledge is selected",
+          path: ["other_investment_knowledge_label"],
+        });
+      }
+    }
+
+    // Investment Knowledge: "Other" label required if "Other" knowledge is selected (Secondary)
+    if (data.secondary_other_investments_knowledge) {
+      if (!data.secondary_other_investments_label || (typeof data.secondary_other_investments_label === "string" && data.secondary_other_investments_label.trim() === "")) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Other investment label is required when Other investment knowledge is selected",
+          path: ["secondary_other_investments_label"],
+        });
+      }
+    }
+
+    // Financial range validation for secondary (with _2 suffix): "To" must be >= "From"
+    if (data.annual_income_from_2 !== undefined && data.annual_income_to_2 !== undefined) {
+      const fromValue = data.annual_income_from_2;
+      const toValue = data.annual_income_to_2;
+      const from = typeof fromValue === "string" 
+        ? parseFloat(fromValue.replace(/[$,\s]/g, "")) 
+        : (typeof fromValue === "number" ? fromValue : 0);
+      const to = typeof toValue === "string"
+        ? parseFloat(toValue.replace(/[$,\s]/g, ""))
+        : (typeof toValue === "number" ? toValue : 0);
+      if (to < from) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "End amount must be greater than or equal to start amount",
+          path: ["annual_income_to_2"],
+        });
+      }
+    }
+
+    if (data.net_worth_from_2 !== undefined && data.net_worth_to_2 !== undefined) {
+      const fromValue = data.net_worth_from_2;
+      const toValue = data.net_worth_to_2;
+      const from = typeof fromValue === "string"
+        ? parseFloat(fromValue.replace(/[$,\s]/g, ""))
+        : (typeof fromValue === "number" ? fromValue : 0);
+      const to = typeof toValue === "string"
+        ? parseFloat(toValue.replace(/[$,\s]/g, ""))
+        : (typeof toValue === "number" ? toValue : 0);
+      if (to < from) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "End amount must be greater than or equal to start amount",
+          path: ["net_worth_to_2"],
+        });
+      }
+    }
+
+    if (data.liquid_net_worth_from_2 !== undefined && data.liquid_net_worth_to_2 !== undefined) {
+      const fromValue = data.liquid_net_worth_from_2;
+      const toValue = data.liquid_net_worth_to_2;
+      const from = typeof fromValue === "string"
+        ? parseFloat(fromValue.replace(/[$,\s]/g, ""))
+        : (typeof fromValue === "number" ? fromValue : 0);
+      const to = typeof toValue === "string"
+        ? parseFloat(toValue.replace(/[$,\s]/g, ""))
+        : (typeof toValue === "number" ? toValue : 0);
+      if (to < from) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "End amount must be greater than or equal to start amount",
+          path: ["liquid_net_worth_to_2"],
+        });
+      }
+    }
+
+    // Investment Knowledge: "Since Year" should be provided if knowledge level is selected (optional but recommended)
+    // Note: This is informational - we don't require it, but validate format if provided
 
     // Broker dealer fields required if employee_of_broker_dealer is "Yes"
     if (data.employee_of_broker_dealer === "Yes") {
@@ -732,8 +1140,8 @@ export const step5Schema = z
     risk_exposure: arrayFieldSchema(riskExposureSchema).optional(),
     account_investment_objectives: arrayFieldSchema(accountInvestmentObjectiveSchema).optional(),
     other_investments_see_attached: booleanFieldSchema,
-    investment_time_horizon_from: generalTextFieldSchema.max(100).optional(),
-    investment_time_horizon_to: generalTextFieldSchema.max(100).optional(),
+    investment_time_horizon_from: generalTextFieldSchema.max(100, "Time horizon from must be no more than 100 characters").optional(),
+    investment_time_horizon_to: generalTextFieldSchema.max(100, "Time horizon to must be no more than 100 characters").optional(),
     liquidity_needs: arrayFieldSchema(liquidityNeedSchema).optional(),
     // Investment value fields - all currency with reasonable max
     investment_equities_value: currencyFieldSchema().optional(),
@@ -753,18 +1161,114 @@ export const step5Schema = z
     investment_variable_annuities_value: currencyFieldSchema().optional(),
   })
   .superRefine((data, ctx) => {
-    // Investment time horizon validation - if dates, validate range
-    if (data.investment_time_horizon_from && data.investment_time_horizon_to) {
-      // Try to parse as dates
-      const fromDate = new Date(data.investment_time_horizon_from);
-      const toDate = new Date(data.investment_time_horizon_to);
-      if (!isNaN(fromDate.getTime()) && !isNaN(toDate.getTime())) {
-        if (toDate < fromDate) {
+    // Risk exposure validation - validate each item and filter empty strings
+    if (Array.isArray(data.risk_exposure)) {
+      if (data.risk_exposure.length === 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "At least one risk exposure is required",
+          path: ["risk_exposure"],
+        });
+      } else {
+        data.risk_exposure.forEach((item, index) => {
+          if (!item || typeof item !== "string" || item.trim() === "") {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: "Risk exposure cannot be empty",
+              path: ["risk_exposure", index],
+            });
+          } else {
+            const result = riskExposureSchema.safeParse(item);
+            if (!result.success) {
+              ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: `Invalid risk exposure option: ${item}`,
+                path: ["risk_exposure", index],
+              });
+            }
+          }
+        });
+      }
+    } else {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "At least one risk exposure is required",
+        path: ["risk_exposure"],
+      });
+    }
+
+    // Account investment objectives validation - validate each item and filter empty strings
+    if (Array.isArray(data.account_investment_objectives)) {
+      if (data.account_investment_objectives.length === 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "At least one account investment objective is required",
+          path: ["account_investment_objectives"],
+        });
+      } else {
+        data.account_investment_objectives.forEach((item, index) => {
+          if (!item || typeof item !== "string" || item.trim() === "") {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: "Account investment objective cannot be empty",
+              path: ["account_investment_objectives", index],
+            });
+          } else {
+            const result = accountInvestmentObjectiveSchema.safeParse(item);
+            if (!result.success) {
+              ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: `Invalid account investment objective option: ${item}`,
+                path: ["account_investment_objectives", index],
+              });
+            }
+          }
+        });
+      }
+    } else {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "At least one account investment objective is required",
+        path: ["account_investment_objectives"],
+      });
+    }
+
+    // Liquidity needs validation - validate each item if provided
+    if (Array.isArray(data.liquidity_needs)) {
+      data.liquidity_needs.forEach((item, index) => {
+        if (!item || typeof item !== "string" || item.trim() === "") {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: "End time horizon must be after or equal to start time horizon",
-            path: ["investment_time_horizon_to"],
+            message: "Liquidity need cannot be empty",
+            path: ["liquidity_needs", index],
           });
+        } else {
+          const result = liquidityNeedSchema.safeParse(item);
+          if (!result.success) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: `Invalid liquidity need option: ${item}`,
+              path: ["liquidity_needs", index],
+            });
+          }
+        }
+      });
+    }
+
+    // Investment time horizon validation - if dates, validate range
+    if (data.investment_time_horizon_from && data.investment_time_horizon_to) {
+      if (typeof data.investment_time_horizon_from === "string" && typeof data.investment_time_horizon_to === "string") {
+        // Try to parse as dates
+        const fromDate = new Date(data.investment_time_horizon_from);
+        const toDate = new Date(data.investment_time_horizon_to);
+        if (!isNaN(fromDate.getTime()) && !isNaN(toDate.getTime())) {
+          if (toDate < fromDate) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: "End time horizon must be after or equal to start time horizon",
+              path: ["investment_time_horizon_to"],
+            });
+          }
         }
       }
     }
@@ -802,6 +1306,28 @@ export const step6Schema = z
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Trusted contact email is required",
+          path: ["trusted_contact_email"],
+        });
+      } else if (typeof data.trusted_contact_email === "string" && data.trusted_contact_email.trim() !== "") {
+        // Validate email format if provided
+        const emailResult = emailFieldSchema.safeParse(data.trusted_contact_email);
+        if (!emailResult.success) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Please enter a valid email address",
+            path: ["trusted_contact_email"],
+          });
+        }
+      }
+    }
+
+    // Validate email format if provided (even when optional/declined)
+    if (data.trusted_contact_email && typeof data.trusted_contact_email === "string" && data.trusted_contact_email.trim() !== "") {
+      const emailResult = emailFieldSchema.safeParse(data.trusted_contact_email);
+      if (!emailResult.success) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Please enter a valid email address",
           path: ["trusted_contact_email"],
         });
       }
@@ -866,7 +1392,8 @@ export const step7Schema = z
       });
     }
 
-    // Validate individual signatures if they have any part filled
+    // Validate individual signatures if they have any part filled - all three fields required together
+    // Account Owner Signature
     if (data.account_owner_signature || data.account_owner_printed_name || data.account_owner_date) {
       if (!data.account_owner_signature || (typeof data.account_owner_signature === "string" && data.account_owner_signature.trim() === "")) {
         ctx.addIssue({
@@ -887,6 +1414,81 @@ export const step7Schema = z
           code: z.ZodIssueCode.custom,
           message: "Account owner signature date is required",
           path: ["account_owner_date"],
+        });
+      }
+    }
+
+    // Joint Account Owner Signature
+    if (data.joint_account_owner_signature || data.joint_account_owner_printed_name || data.joint_account_owner_date) {
+      if (!data.joint_account_owner_signature || (typeof data.joint_account_owner_signature === "string" && data.joint_account_owner_signature.trim() === "")) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Joint account owner signature is required",
+          path: ["joint_account_owner_signature"],
+        });
+      }
+      if (!data.joint_account_owner_printed_name || (typeof data.joint_account_owner_printed_name === "string" && data.joint_account_owner_printed_name.trim() === "")) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Joint account owner printed name is required",
+          path: ["joint_account_owner_printed_name"],
+        });
+      }
+      if (!data.joint_account_owner_date) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Joint account owner signature date is required",
+          path: ["joint_account_owner_date"],
+        });
+      }
+    }
+
+    // Financial Professional Signature
+    if (data.financial_professional_signature || data.financial_professional_printed_name || data.financial_professional_date) {
+      if (!data.financial_professional_signature || (typeof data.financial_professional_signature === "string" && data.financial_professional_signature.trim() === "")) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Financial professional signature is required",
+          path: ["financial_professional_signature"],
+        });
+      }
+      if (!data.financial_professional_printed_name || (typeof data.financial_professional_printed_name === "string" && data.financial_professional_printed_name.trim() === "")) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Financial professional printed name is required",
+          path: ["financial_professional_printed_name"],
+        });
+      }
+      if (!data.financial_professional_date) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Financial professional signature date is required",
+          path: ["financial_professional_date"],
+        });
+      }
+    }
+
+    // Supervisor/Principal Signature
+    if (data.supervisor_principal_signature || data.supervisor_principal_printed_name || data.supervisor_principal_date) {
+      if (!data.supervisor_principal_signature || (typeof data.supervisor_principal_signature === "string" && data.supervisor_principal_signature.trim() === "")) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Supervisor/principal signature is required",
+          path: ["supervisor_principal_signature"],
+        });
+      }
+      if (!data.supervisor_principal_printed_name || (typeof data.supervisor_principal_printed_name === "string" && data.supervisor_principal_printed_name.trim() === "")) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Supervisor/principal printed name is required",
+          path: ["supervisor_principal_printed_name"],
+        });
+      }
+      if (!data.supervisor_principal_date) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Supervisor/principal signature date is required",
+          path: ["supervisor_principal_date"],
         });
       }
     }

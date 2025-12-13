@@ -1060,20 +1060,20 @@ export default function InvestorProfileForm() {
               
               // Render always-enabled fields (Retirement checkbox and header fields) with explicit disabled={false}
               if (isAlwaysEnabled) {
-              return (
-                <FieldRenderer
-                  key={field.id}
-                  field={field}
-                  value={formData[field.id] || ""}
-                  onChange={(value) => updateField(field.id, value)}
+                return (
+                  <FieldRenderer
+                    key={field.id}
+                    field={field}
+                    value={formData[field.id] || ""}
+                    onChange={(value) => updateField(field.id, value)}
                   onBlur={() => validation.setTouched(field.id, true)}
-                  onRepeatableAdd={addRepeatableGroup}
-                  formData={formData}
-                  updateField={updateField}
-                  disabled={false}
+                    onRepeatableAdd={addRepeatableGroup}
+                    formData={formData}
+                    updateField={updateField}
+                    disabled={false}
                   error={validation.getFieldError(field.id)}
-                />
-              );
+                  />
+                );
               }
               
               return (

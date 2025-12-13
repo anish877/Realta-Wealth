@@ -229,11 +229,35 @@ function transformAccountHolderToFormData(
   // Investment knowledge
   if (holder.investmentKnowledge && holder.investmentKnowledge.length > 0) {
     holder.investmentKnowledge.forEach((ik: any) => {
-      const fieldName = mapInvestmentKnowledgeToField(ik.investmentType, prefix);
-      if (fieldName) {
-        formData[fieldName] = ik.knowledgeLevel || "";
-        const sinceField = fieldName.replace("_knowledge", "_since_year");
-        formData[sinceField] = ik.sinceYear || "";
+      // Handle "other" specially for both primary and secondary
+      if (ik.investmentType === "other") {
+        if (prefix === "primary") {
+          formData["other_investment_knowledge_value"] = ik.knowledgeLevel || "";
+          formData["other_investment_since_year"] = ik.sinceYear || "";
+          formData["other_investment_knowledge_label"] = ik.otherInvestmentLabel || "";
+        } else {
+          formData["secondary_other_investments_knowledge"] = ik.knowledgeLevel || "";
+          formData["secondary_other_investments_since"] = ik.sinceYear || "";
+          formData["secondary_other_investments_label"] = ik.otherInvestmentLabel || "";
+        }
+      } else if (prefix === "secondary" && ik.investmentType === "alternative_investments") {
+        // Handle "alternative_investments" specially for secondary
+        formData["secondary_alternative_investments_knowledge"] = ik.knowledgeLevel || "";
+        formData["secondary_alternative_investments_since"] = ik.sinceYear || "";
+      } else {
+        const fieldName = mapInvestmentKnowledgeToField(ik.investmentType, prefix);
+        if (fieldName) {
+          formData[fieldName] = ik.knowledgeLevel || "";
+          // For primary, use "_since_year", for secondary use "_since"
+          if (prefix === "primary") {
+            const sinceField = fieldName.replace("_knowledge", "_since_year");
+            formData[sinceField] = ik.sinceYear || "";
+          } else {
+            // For secondary: remove "secondary_" prefix and "_knowledge" suffix, then add "_since"
+            const baseField = fieldName.replace("secondary_", "").replace("_knowledge", "");
+            formData[`secondary_${baseField}_since`] = ik.sinceYear || "";
+          }
+        }
       }
     });
   }
@@ -270,7 +294,11 @@ function transformAccountHolderToFormData(
       holder.advisoryFirmInformation.employeeOfAdvisoryFirm || "";
     formData[`${fieldPrefix}_related_to_employee_advisory`] =
       holder.advisoryFirmInformation.relatedToEmployeeAdvisory || "";
-    formData[`${fieldPrefix}_employee_name_and_relationship`] =
+    // Secondary uses "employee_name" instead of "employee_name_and_relationship"
+    const employeeNameField = prefix === "secondary" 
+      ? `${fieldPrefix}_employee_name`
+      : `${fieldPrefix}_employee_name_and_relationship`;
+    formData[employeeNameField] =
       holder.advisoryFirmInformation.employeeNameAndRelationship || "";
   }
 
@@ -293,7 +321,11 @@ function transformAccountHolderToFormData(
     formData[`${fieldPrefix}_maintaining_other_brokerage_accounts`] =
       holder.otherBrokerageAccounts.maintainingOtherAccounts || "";
     formData[`${fieldPrefix}_with_what_firms`] = holder.otherBrokerageAccounts.withWhatFirms || "";
-    formData[`${fieldPrefix}_years_of_investment_experience`] =
+    // Secondary uses "years_investment_experience" instead of "years_of_investment_experience"
+    const experienceField = prefix === "secondary"
+      ? `${fieldPrefix}_years_investment_experience`
+      : `${fieldPrefix}_years_of_investment_experience`;
+    formData[experienceField] =
       holder.otherBrokerageAccounts.yearsOfInvestmentExperience || "";
   }
 
@@ -301,7 +333,11 @@ function transformAccountHolderToFormData(
   if (holder.exchangeFinraAffiliation) {
     formData[`${fieldPrefix}_affiliated_with_exchange_or_finra`] =
       holder.exchangeFinraAffiliation.affiliatedWithExchangeOrFinra || "";
-    formData[`${fieldPrefix}_affiliation_employer_authorization_required`] =
+    // Secondary uses "affiliation_details" instead of "affiliation_employer_authorization_required"
+    const affiliationField = prefix === "secondary"
+      ? `${fieldPrefix}_affiliation_details`
+      : `${fieldPrefix}_affiliation_employer_authorization_required`;
+    formData[affiliationField] =
       holder.exchangeFinraAffiliation.affiliationDetails || "";
   }
 

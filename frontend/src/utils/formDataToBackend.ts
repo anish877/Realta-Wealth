@@ -274,7 +274,8 @@ export function transformStep3(formData: FormData) {
   let employment = undefined;
   if (
     formData.primary_employment_affiliations?.includes("Employed") ||
-    formData.primary_employment_affiliations?.includes("SelfEmployed")
+    formData.primary_employment_affiliations?.includes("SelfEmployed") ||
+    formData.primary_employment_affiliations?.includes("Self-Employed")
   ) {
     const employerAddress = formData.primary_employer_address
       ? {
@@ -443,7 +444,7 @@ export function transformStep4(formData: FormData) {
     investmentKnowledge.push({
       investmentType: "alternative_investments",
       knowledgeLevel: formData.secondary_alternative_investments_knowledge,
-      sinceYear: null,
+      sinceYear: formData.secondary_alternative_investments_since || null,
       otherInvestmentLabel: null,
     });
   }
@@ -452,8 +453,8 @@ export function transformStep4(formData: FormData) {
     investmentKnowledge.push({
       investmentType: "other",
       knowledgeLevel: formData.secondary_other_investments_knowledge,
-      sinceYear: null,
-      otherInvestmentLabel: null,
+      sinceYear: formData.secondary_other_investments_since || null,
+      otherInvestmentLabel: formData.secondary_other_investments_label || null,
     });
   }
 
@@ -478,7 +479,8 @@ export function transformStep4(formData: FormData) {
   let employment = undefined;
   if (
     formData.secondary_employment_affiliations?.includes("Employed") ||
-    formData.secondary_employment_affiliations?.includes("SelfEmployed")
+    formData.secondary_employment_affiliations?.includes("SelfEmployed") ||
+    formData.secondary_employment_affiliations?.includes("Self-Employed")
   ) {
     const employerAddress = formData.secondary_employer_address
       ? {
