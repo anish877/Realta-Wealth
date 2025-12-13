@@ -5,6 +5,7 @@ import { CheckboxField } from "./CheckboxField";
 interface AddressFieldGroupProps {
   prefix: string;
   label: string;
+  addressFieldId?: string; // Optional: if different from prefix_address (e.g., primary_legal_address vs primary_address)
   values: {
     address: string;
     city: string;
@@ -21,6 +22,7 @@ interface AddressFieldGroupProps {
 export function AddressFieldGroup({
   prefix,
   label,
+  addressFieldId,
   values,
   onChange,
   showMailingSameAsLegal = false,
@@ -28,6 +30,7 @@ export function AddressFieldGroup({
   onMailingSameAsLegalChange,
 }: AddressFieldGroupProps) {
   const shouldHideFields = showMailingSameAsLegal && mailingSameAsLegal;
+  const addressId = addressFieldId || `${prefix}_address`;
 
   return (
     <div className="mb-6 space-y-4">
@@ -45,7 +48,7 @@ export function AddressFieldGroup({
       {!shouldHideFields && (
         <>
           <TextareaField
-            id={`${prefix}_address`}
+            id={addressId}
             label={showMailingSameAsLegal ? "Mailing Address (if different from legal address)" : "Address"}
             value={values.address}
             onChange={(val) => onChange("address", val)}

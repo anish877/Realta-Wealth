@@ -93,6 +93,7 @@ export function FieldRenderer({
     return (
       <AddressFieldGroup
         prefix={addressPrefix}
+        addressFieldId={addressFieldName}
         label={isMailing ? "Mailing Address" : isEmployer ? "Employer Address" : "Legal Address"}
         values={{
           address: (formData[addressFieldName] as string) || "",
