@@ -96,6 +96,7 @@ export function transformAdditionalHolderToBackend(formData: FormData) {
     // Basic Information
     accountRegistration: toOptional(formData.account_registration),
     rrName: toOptional(formData.rr_name),
+    rrNo: toOptional(formData.rr_no as string | undefined),
     name: toOptional(formData.name),
     personEntity: Array.isArray(formData.person_entity) && formData.person_entity.length > 0 ? formData.person_entity[0] : undefined,
     ssn: toOptional(formData.ssn),

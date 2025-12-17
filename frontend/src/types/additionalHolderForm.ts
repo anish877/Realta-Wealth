@@ -34,6 +34,7 @@ export interface AdditionalHolderFormData {
   // Basic Information
   account_registration?: string;
   rr_name?: string;
+  rr_no?: string;
   name?: string;
   person_entity?: string[];
   ssn?: string;
