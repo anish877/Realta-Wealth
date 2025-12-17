@@ -10,7 +10,7 @@ import { StatementSignaturesSection } from "./fields/StatementSignaturesSection"
 import { CurrencyField } from "./fields/CurrencyField";
 import { ComputedCurrencyField } from "./fields/ComputedCurrencyField";
 import { useStatementFormValidation } from "../hooks/useStatementFormValidation";
-import { transformFormDataForValidation, transformErrorsForDisplay, getValidatorFieldId } from "../utils/statementFormDataTransform";
+import { transformFormDataForValidation, transformErrorsForDisplay, getValidatorFieldId, getJsonFieldId } from "../utils/statementFormDataTransform";
 import { shouldShowStatementField, updateHasJointOwner } from "../utils/statementFieldDependencies";
 import { step1Schema, step2Schema } from "../validators/statementValidators";
 import {
@@ -79,6 +79,7 @@ export default function StatementOfFinancialConditionForm() {
   const [hasLoadedStatement, setHasLoadedStatement] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [saveState, setSaveState] = useState<SaveState>({ status: "idle" });
+  const [submitErrors, setSubmitErrors] = useState<Record<string, string>>({});
 
   const allSections = (statementSchema as any).schema as StatementSection[];
   const totalPages = 2;
@@ -198,6 +199,13 @@ export default function StatementOfFinancialConditionForm() {
       };
       return updated;
     });
+    // Clear any submit-level error for this field when user edits it
+    setSubmitErrors((prev) => {
+      if (!prev[fieldId]) return prev;
+      const next = { ...prev };
+      delete next[fieldId];
+      return next;
+    });
   }, []);
 
   const handlePrevious = useCallback(() => {
@@ -290,53 +298,51 @@ export default function StatementOfFinancialConditionForm() {
 
 
   const handleSubmit = useCallback(async () => {
-    if (!statementId) {
-      showToast("Please save the form first before submitting.", "warning");
-      return;
-    }
+    // Clear previous submit-level errors
+    setSubmitErrors({});
 
-    // Validate all pages before submission
+    // Validate all pages before submission using full schemas
     const validatorData = transformFormDataForValidation(formData);
     
-    let allErrors: Record<string, string> = {};
+    const submitErrorMap: Record<string, string> = {};
     let hasErrors = false;
 
-    // Validate page 1
+    // Validate page 1 (header + financials)
     try {
       step1Schema.parse(validatorData);
     } catch (error) {
       if (error instanceof z.ZodError) {
         error.errors.forEach((err) => {
-          const fieldPath = err.path.join(".");
-          if (fieldPath) {
-            allErrors[fieldPath] = err.message;
-            hasErrors = true;
-          }
+          const leafId = typeof err.path[err.path.length - 1] === "string" ? (err.path[err.path.length - 1] as string) : "";
+          if (!leafId) return;
+          const jsonId = getJsonFieldId(leafId);
+          submitErrorMap[jsonId] = err.message;
+          hasErrors = true;
+          // Mark validator field as touched so page-level validation is aware
+          validation.setTouched(leafId, true);
         });
       }
     }
 
-    // Validate page 2
+    // Validate page 2 (notes + signatures)
     try {
       step2Schema.parse(validatorData);
     } catch (error) {
       if (error instanceof z.ZodError) {
         error.errors.forEach((err) => {
-          const fieldPath = err.path.join(".");
-          if (fieldPath) {
-            allErrors[fieldPath] = err.message;
-            hasErrors = true;
-          }
+          const leafId = typeof err.path[err.path.length - 1] === "string" ? (err.path[err.path.length - 1] as string) : "";
+          if (!leafId) return;
+          const jsonId = getJsonFieldId(leafId);
+          submitErrorMap[jsonId] = err.message;
+          hasErrors = true;
+          validation.setTouched(leafId, true);
         });
       }
     }
 
     if (hasErrors) {
+      setSubmitErrors(submitErrorMap);
       showToast("Please fix validation errors on all pages before submitting", "error");
-      // Mark all error fields as touched
-      Object.keys(allErrors).forEach((fieldId) => {
-        validation.setTouched(fieldId, true);
-      });
       // If we're not on page 1, switch to page 1 to show errors
       if (currentPage !== 1) {
         setCurrentPage(1);
@@ -347,16 +353,36 @@ export default function StatementOfFinancialConditionForm() {
     setIsSubmitting(true);
 
     try {
-      // Save current page first (silent - no toast)
-      await saveCurrentPage(false, true);
-      
+      // Persist Step 1 (header + financial rows) with latest formData
+      const step1Payload = buildStatementStep1Payload(formData);
+      let currentStatementId = statementId;
+
+      if (currentStatementId) {
+        await updateStatementStep(currentStatementId, 1, step1Payload);
+      } else {
+        const response = await createStatement(step1Payload);
+        currentStatementId = response.data.id;
+        setStatementId(currentStatementId);
+        // Ensure URL reflects the created statement
+        navigate(`/app/statement/${currentStatementId}`, { replace: true });
+      }
+
+      // Persist Step 2 (additional notes + signatures) with latest formData
+      const step2Payload = buildStatementStep2Payload(formData);
+      if (currentStatementId) {
+        await updateStatementStep(currentStatementId, 2, step2Payload);
+      }
+
       // Submit statement
-      await submitStatement(statementId);
+      if (!currentStatementId) {
+        throw new Error("Statement could not be created before submit.");
+      }
+      await submitStatement(currentStatementId);
       showToast("Statement submitted successfully!", "success");
       
       // Optionally redirect after a delay
       setTimeout(() => {
-        window.location.href = "/?statementId=" + statementId;
+        window.location.href = "/?statementId=" + currentStatementId;
       }, 2000);
     } catch (error: any) {
       showToast(error.message || "Failed to submit statement", "error");
@@ -364,10 +390,14 @@ export default function StatementOfFinancialConditionForm() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [statementId, validation, saveCurrentPage, showToast, formData, currentPage, setCurrentPage]);
+  }, [statementId, validation, showToast, formData, currentPage, setCurrentPage, navigate]);
 
   // Get error for a field (handles both JSON and validator IDs)
   const getFieldError = useCallback((jsonFieldId: string): string | undefined => {
+    // Submit-level errors (from full form validation) take precedence
+    if (submitErrors[jsonFieldId]) {
+      return submitErrors[jsonFieldId];
+    }
     // Check display errors (already transformed to JSON IDs)
     if (displayErrors[jsonFieldId]) {
       return displayErrors[jsonFieldId];
@@ -379,7 +409,7 @@ export default function StatementOfFinancialConditionForm() {
       return validatorError;
     }
     return undefined;
-  }, [displayErrors, validation]);
+  }, [displayErrors, validation, submitErrors]);
 
   // Handle blur for a field
   const handleFieldBlur = useCallback((jsonFieldId: string) => {
@@ -518,7 +548,7 @@ export default function StatementOfFinancialConditionForm() {
                         computedValue={computedValue}
                         formData={formData}
                         updateField={updateField}
-                        mode="computed_or_manual"
+                        mode="computed"
                         error={rowError}
                         warning={warning}
                         onBlur={() => handleFieldBlur(jsonFieldId)}

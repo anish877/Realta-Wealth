@@ -25,16 +25,43 @@ async function handleResponse<T>(res: Response): Promise<T> {
     const data = await res.json().catch(() => ({}));
     let errorMessage = "Request failed";
     if (data.error) {
-      if (typeof data.error === "string") {
-        errorMessage = data.error;
-      } else if (Array.isArray(data.error)) {
+      const errObj = data.error;
+
+      // New-style backend errors: { code, message, details?, field? }
+      if (errObj.details) {
+        const details = errObj.details;
+        if (Array.isArray(details) && details.length > 0) {
+          // Zod-style details (array of { path, message })
+          if (typeof details[0] === "object" && details[0] !== null && ("path" in details[0] || "message" in details[0])) {
+            errorMessage = details
+              .map((err: any) => {
+                const path = Array.isArray(err.path) ? err.path.join(".") : err.path || err.field || "unknown";
+                return `${path}: ${err.message || "validation error"}`;
+              })
+              .join(", ");
+          } else if (details.every((d: any) => typeof d === "string")) {
+            // Simple list of validation messages
+            errorMessage = details.join(", ");
+          }
+        }
+      }
+
+      // Legacy / fallback shapes
+      if (typeof errObj === "string") {
+        errorMessage = errObj;
+      } else if (Array.isArray(errObj)) {
         // Handle Zod validation errors - show field path and message
-        errorMessage = data.error.map((err: any) => {
-          const path = err.path?.join(".") || "unknown";
-          return `${path}: ${err.message || "validation error"}`;
-        }).join(", ");
-      } else if (data.error.message) {
-        errorMessage = data.error.message;
+        errorMessage = errObj
+          .map((err: any) => {
+            const path = err.path?.join(".") || "unknown";
+            return `${path}: ${err.message || "validation error"}`;
+          })
+          .join(", ");
+      } else if (errObj.message) {
+        // If we didn't derive a better message from details, use the top-level message
+        if (errorMessage === "Request failed") {
+          errorMessage = errObj.message;
+        }
       }
     }
     throw new Error(errorMessage);

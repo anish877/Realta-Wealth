@@ -385,108 +385,19 @@ export const illiquidQualifiedAssetsSchema = z
     }
   });
 
-// Net Worth
-export const netWorthSchema = z
-  .object({
-    nw_total_assets_less_primary_residence: currencyFieldSchema(0, 999999999999.99, false),
-    nw_total_liabilities: currencyFieldSchema(0, 999999999999.99, false),
-    nw_total_net_worth_assets_less_pr_minus_liab: currencyFieldSchema(undefined, undefined, false),
-    nw_total_illiquid_securities: currencyFieldSchema(0, 999999999999.99, false),
-    nw_total_net_worth_final: currencyFieldSchema(undefined, undefined, false),
-    nw_total_potential_liquidity: currencyFieldSchema(0, 999999999999.99, false),
-    // Include source fields for calculation
-    lnqa_total_liquid_assets: currencyFieldSchema(0, 999999999999.99, false),
-    lqa_total: currencyFieldSchema(0, 999999999999.99, false),
-    inqa_investment_real_estate_value_equity: currencyFieldSchema(0, 999999999999.99, false),
-    inqa_private_business_value_equity: currencyFieldSchema(0, 999999999999.99, false),
-    liab_total: currencyFieldSchema(0, 999999999999.99, false),
-    iqa_rows: z.array(z.any()).optional(),
-  })
-  .superRefine((data, ctx) => {
-    // Calculate totals inline to avoid circular dependencies
-    // Total Assets (less primary residence) = lnqa_total + lqa_total + inqa_investment_real_estate + inqa_private_business + iqa_total
-    const lnqaTotal = parseFloat(normalizeCurrency(String(data.lnqa_total_liquid_assets || ""))) || 0;
-    const lqaTotal = parseFloat(normalizeCurrency(String(data.lqa_total || ""))) || 0;
-    const inqaInvestmentRealEstate = parseFloat(normalizeCurrency(String(data.inqa_investment_real_estate_value_equity || ""))) || 0;
-    const inqaPrivateBusiness = parseFloat(normalizeCurrency(String(data.inqa_private_business_value_equity || ""))) || 0;
-    
-    // Calculate iqa_total from rows
-    let iqaTotal = 0;
-    const iqaRows = data.iqa_rows || [];
-    for (const row of iqaRows) {
-      const value = (row as any).iqa_purchase_amount_value;
-      if (value !== null && value !== undefined && value !== "") {
-        const normalized = normalizeCurrency(String(value));
-        if (normalized !== "") {
-          const num = parseFloat(normalized);
-          if (!isNaN(num)) {
-            iqaTotal += num;
-          }
-        }
-      }
-    }
-    
-    const calculatedAssets = lnqaTotal + lqaTotal + inqaInvestmentRealEstate + inqaPrivateBusiness + iqaTotal;
-    
-    // Validate nw_total_assets_less_primary_residence
-    const enteredAssets = data.nw_total_assets_less_primary_residence;
-    const assetsValidation = validateTotalMatches(calculatedAssets, enteredAssets, 0.01);
-    if (!assetsValidation.isValid && calculatedAssets > 0) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: assetsValidation.error || `Total Assets (less primary residence) should be ${calculatedAssets.toFixed(2)}.`,
-        path: ["nw_total_assets_less_primary_residence"],
-      });
-    }
-    
-    // Validate nw_total_net_worth_assets_less_pr_minus_liab = assets - liabilities
-    const liabTotal = parseFloat(normalizeCurrency(String(data.liab_total || ""))) || 0;
-    const calculatedNetWorth = calculatedAssets - liabTotal;
-    const enteredNetWorth = data.nw_total_net_worth_assets_less_pr_minus_liab;
-    const netWorthValidation = validateTotalMatches(calculatedNetWorth, enteredNetWorth, 0.01);
-    if (!netWorthValidation.isValid && (calculatedNetWorth !== 0 || enteredNetWorth)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: netWorthValidation.error || `Total Net Worth (Assets less PR - Liabilities) should be ${calculatedNetWorth.toFixed(2)}.`,
-        path: ["nw_total_net_worth_assets_less_pr_minus_liab"],
-      });
-    }
-    
-    // Validate nw_total_net_worth_final = net worth + illiquid securities
-    const illiquidSecurities = parseFloat(normalizeCurrency(String(data.nw_total_illiquid_securities || ""))) || 0;
-    const calculatedFinal = calculatedNetWorth + illiquidSecurities;
-    const enteredFinal = data.nw_total_net_worth_final;
-    const finalValidation = validateTotalMatches(calculatedFinal, enteredFinal, 0.01);
-    if (!finalValidation.isValid && (calculatedFinal !== 0 || enteredFinal)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: finalValidation.error || `Total Net Worth should be ${calculatedFinal.toFixed(2)}.`,
-        path: ["nw_total_net_worth_final"],
-      });
-    }
-    
-    // Validate nw_total_potential_liquidity = lnqa_total + lqa_total
-    const calculatedLiquidity = lnqaTotal + lqaTotal;
-    const enteredLiquidity = data.nw_total_potential_liquidity;
-    const liquidityValidation = validateTotalMatches(calculatedLiquidity, enteredLiquidity, 0.01);
-    if (!liquidityValidation.isValid && calculatedLiquidity > 0) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: liquidityValidation.error || `Total Potential Liquidity should be ${calculatedLiquidity.toFixed(2)}.`,
-        path: ["nw_total_potential_liquidity"],
-      });
-    }
-    
-    // Validate nw_total_liabilities matches liab_total (they should be the same)
-    const nwLiabilities = parseFloat(normalizeCurrency(String(data.nw_total_liabilities || ""))) || 0;
-    if (liabTotal > 0 && nwLiabilities > 0 && Math.abs(liabTotal - nwLiabilities) > 0.01) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: `Total Liabilities should match the Liabilities table total (${liabTotal.toFixed(2)}).`,
-        path: ["nw_total_liabilities"],
-      });
-    }
-  });
+// Net Worth summary block
+// These fields are primarily auto-computed in the UI. We validate them as
+// well-formed currency values but do NOT hard-fail the form if they drift
+// from the underlying table math; instead, we show soft warnings via
+// checkManualOverrideWarnings in the UI.
+export const netWorthSchema = z.object({
+  nw_total_assets_less_primary_residence: currencyFieldSchema(0, 999999999999.99, false),
+  nw_total_liabilities: currencyFieldSchema(0, 999999999999.99, false),
+  nw_total_net_worth_assets_less_pr_minus_liab: currencyFieldSchema(undefined, undefined, false),
+  nw_total_illiquid_securities: currencyFieldSchema(0, 999999999999.99, false),
+  nw_total_net_worth_final: currencyFieldSchema(undefined, undefined, false),
+  nw_total_potential_liquidity: currencyFieldSchema(0, 999999999999.99, false),
+});
 
 // Notes
 export const notesSchema = z.object({
@@ -632,13 +543,6 @@ export const step1Schema: z.ZodTypeAny = z.object({
   // Illiquid Qualified Assets
   iqa_rows: z.array(illiquidQualifiedAssetsRowSchema).optional(),
   iqa_total: currencyFieldSchema(0, 999999999999.99, false),
-  // Net Worth
-  nw_total_assets_less_primary_residence: currencyFieldSchema(0, 999999999999.99, false),
-  nw_total_liabilities: currencyFieldSchema(0, 999999999999.99, false),
-  nw_total_net_worth_assets_less_pr_minus_liab: currencyFieldSchema(0, 999999999999.99, false),
-  nw_total_illiquid_securities: currencyFieldSchema(0, 999999999999.99, false),
-  nw_total_net_worth_final: currencyFieldSchema(0, 999999999999.99, false),
-  nw_total_potential_liquidity: currencyFieldSchema(0, 999999999999.99, false),
   // Notes
   notes: textFieldSchema(4000, false),
 }).superRefine((data, ctx) => {
