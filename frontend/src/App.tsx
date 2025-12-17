@@ -1,13 +1,18 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 import InvestorProfileForm from "./components/InvestorProfileForm";
+import StatementOfFinancialConditionForm from "./components/StatementOfFinancialConditionForm";
+import AdditionalHolderForm from "./components/AdditionalHolderForm";
+import AltOrderForm from "./components/AltOrderForm";
+import AccreditationForm from "./components/AccreditationForm";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { AuthPage } from "./components/AuthPage";
 import LandingPage from "./components/LandingPage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { PublicRoute } from "./components/PublicRoute";
-import { getProfilesByUser, generatePdf, type InvestorProfile } from "./api";
+import { getProfilesByUser, generatePdf, getStatements, getAdditionalHolders, getAltOrders, getAccreditations, generateStatementPdf, generateAdditionalHolderPdf, generateAltOrderPdf, generateAccreditationPdf, type InvestorProfile, type StatementProfile, type AdditionalHolderProfile, type AltOrderProfile, type AccreditationProfile } from "./api";
 import { setupApiInterceptor } from "./utils/apiInterceptor";
+import { useToast, ToastContainer } from "./components/Toast";
 
 function AppShell({
   children,
@@ -255,9 +260,9 @@ function AppShell({
   margin: 0 auto;
 }
 .hub-grid {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 20px;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
 }
 .hub-card {
   border: 1px solid rgba(11,92,255,0.12);
@@ -329,17 +334,40 @@ function ProtectedApp() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
+  const { toasts, showToast, removeToast } = useToast();
 
   const [profiles, setProfiles] = useState<InvestorProfile[]>([]);
   const [profilesLoading, setProfilesLoading] = useState(false);
   const [profilesError, setProfilesError] = useState<string | null>(null);
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
+  const [statements, setStatements] = useState<StatementProfile[]>([]);
+  const [statementsLoading, setStatementsLoading] = useState(false);
+  const [additionalHolders, setAdditionalHolders] = useState<AdditionalHolderProfile[]>([]);
+  const [additionalHoldersLoading, setAdditionalHoldersLoading] = useState(false);
+  const [altOrders, setAltOrders] = useState<AltOrderProfile[]>([]);
+  const [altOrdersLoading, setAltOrdersLoading] = useState(false);
+  const [accreditations, setAccreditations] = useState<AccreditationProfile[]>([]);
+  const [accreditationsLoading, setAccreditationsLoading] = useState(false);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [selectedForms, setSelectedForms] = useState<Set<string>>(new Set());
+  const [isGeneratingSelectedPdfs, setIsGeneratingSelectedPdfs] = useState(false);
 
   // Determine current view from route
-  const isFormView = location.pathname.includes("/profile");
+  const isFormView =
+    location.pathname.includes("/profile") ||
+    location.pathname.includes("/statement") ||
+    location.pathname.includes("/additional-holder") ||
+    location.pathname.includes("/alt-order") ||
+    location.pathname.includes("/506c");
+  const isStatementView = location.pathname.includes("/statement");
+  const isAdditionalHolderView = location.pathname.includes("/additional-holder");
+  const isAltOrderView = location.pathname.includes("/alt-order");
+  const isAccreditationView = location.pathname.includes("/506c");
   const profileId = location.pathname.includes("/profile/") 
     ? location.pathname.split("/profile/")[1] 
+    : null;
+  const statementId = location.pathname.includes("/statement/") 
+    ? location.pathname.split("/statement/")[1] 
     : null;
 
   const fetchProfiles = useCallback(async () => {
@@ -355,16 +383,76 @@ function ProtectedApp() {
     }
   }, []);
 
+  const fetchStatements = useCallback(async () => {
+    try {
+      setStatementsLoading(true);
+      const resp = await getStatements({ page: 1, limit: 10 });
+      setStatements(resp.statements || []);
+    } catch (err: any) {
+      console.error("Error fetching statements:", err);
+      setStatements([]);
+    } finally {
+      setStatementsLoading(false);
+    }
+  }, []);
+
+  const fetchAdditionalHolders = useCallback(async () => {
+    try {
+      setAdditionalHoldersLoading(true);
+      const resp = await getAdditionalHolders({ page: 1, limit: 10 });
+      setAdditionalHolders(resp.profiles || []);
+    } catch (err: any) {
+      console.error("Error fetching additional holders:", err);
+      setAdditionalHolders([]);
+    } finally {
+      setAdditionalHoldersLoading(false);
+    }
+  }, []);
+
+  const fetchAltOrders = useCallback(async () => {
+    try {
+      setAltOrdersLoading(true);
+      const resp = await getAltOrders({ page: 1, limit: 10 });
+      setAltOrders(resp.profiles || []);
+    } catch (err: any) {
+      console.error("Error fetching alt orders:", err);
+      setAltOrders([]);
+    } finally {
+      setAltOrdersLoading(false);
+    }
+  }, []);
+
+  const fetchAccreditations = useCallback(async () => {
+    try {
+      setAccreditationsLoading(true);
+      const resp = await getAccreditations({ page: 1, limit: 10 });
+      setAccreditations(resp.profiles || []);
+    } catch (err: any) {
+      console.error("Error fetching accreditations:", err);
+      setAccreditations([]);
+    } finally {
+      setAccreditationsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchProfiles();
-  }, [fetchProfiles]);
+    fetchStatements();
+    fetchAdditionalHolders();
+    fetchAltOrders();
+    fetchAccreditations();
+  }, [fetchProfiles, fetchStatements, fetchAdditionalHolders, fetchAltOrders, fetchAccreditations]);
 
-  // Refresh profiles when returning to hub (so Continue uses latest data)
+  // Refresh profiles, statements, additional holders, alt orders, and accreditations when returning to hub (so Continue uses latest data)
   useEffect(() => {
     if (!isFormView) {
       fetchProfiles();
+      fetchStatements();
+      fetchAdditionalHolders();
+      fetchAltOrders();
+      fetchAccreditations();
     }
-  }, [isFormView, fetchProfiles]);
+  }, [isFormView, fetchProfiles, fetchStatements, fetchAdditionalHolders, fetchAltOrders, fetchAccreditations]);
 
   const handleSelectProfile = (profileId: string) => {
     navigate(`/app/profile/${profileId}`, { replace: true });
@@ -377,6 +465,50 @@ function ProtectedApp() {
       navigate(`/app/profile/${profiles[0].id}`, { replace: true });
     } else {
       navigate("/app/profile/new", { replace: true });
+    }
+  };
+
+  const handleStartNewStatement = () => {
+    // If draft statement exists, navigate to it (will continue editing)
+    // Otherwise, navigate to new (will create it)
+    const draftStatement = statements.find(s => s.status === "draft");
+    if (draftStatement && draftStatement.id) {
+      navigate(`/app/statement/${draftStatement.id}`, { replace: true });
+    } else {
+      navigate("/app/statement/new", { replace: true });
+    }
+  };
+
+  const handleStartNewAltOrder = () => {
+    // If draft alt order exists, navigate to it (will continue editing)
+    // Otherwise, navigate to new (will create it)
+    const draftAltOrder = altOrders.find(o => o.status === "draft");
+    if (draftAltOrder && draftAltOrder.id) {
+      navigate(`/app/alt-order/${draftAltOrder.id}`, { replace: true });
+    } else {
+      navigate("/app/alt-order/new", { replace: true });
+    }
+  };
+
+  const handleStartNewAdditionalHolder = () => {
+    // If draft additional holder exists, navigate to it (will continue editing)
+    // Otherwise, navigate to new (will create it)
+    const draftAdditionalHolder = additionalHolders.find(h => h.status === "draft");
+    if (draftAdditionalHolder && draftAdditionalHolder.id) {
+      navigate(`/app/additional-holder/${draftAdditionalHolder.id}`, { replace: true });
+    } else {
+      navigate("/app/additional-holder/new", { replace: true });
+    }
+  };
+
+  const handleStartNewAccreditation = () => {
+    // If draft accreditation exists, navigate to it (will continue editing)
+    // Otherwise, navigate to new (will create it)
+    const draftAccreditation = accreditations.find(a => a.status === "draft");
+    if (draftAccreditation && draftAccreditation.id) {
+      navigate(`/app/506c/${draftAccreditation.id}`, { replace: true });
+    } else {
+      navigate("/app/506c/new", { replace: true });
     }
   };
 
@@ -405,6 +537,124 @@ function ProtectedApp() {
     }
   };
 
+  const handleToggleFormSelection = (formType: string) => {
+    setSelectedForms((prev) => {
+      const next = new Set(prev);
+      if (next.has(formType)) {
+        next.delete(formType);
+      } else {
+        next.add(formType);
+      }
+      return next;
+    });
+  };
+
+  const handleGenerateSelectedPdfs = async () => {
+    if (selectedForms.size === 0) {
+      showToast("Please select at least one form to generate PDF", "warning");
+      return;
+    }
+
+    setIsGeneratingSelectedPdfs(true);
+    const results: Array<{ formType: string; success: boolean; message: string }> = [];
+
+    try {
+      // Generate PDFs for each selected form
+      for (const formType of selectedForms) {
+        try {
+          let success = false;
+          let message = "";
+
+          switch (formType) {
+            case "investorProfile": {
+              const profileToUse = profiles.find(p => p.id);
+              if (!profileToUse?.id) {
+                results.push({ formType, success: false, message: "No investor profile found" });
+                continue;
+              }
+              await generatePdf(profileToUse.id);
+              success = true;
+              message = "Investor Profile PDF generated";
+              break;
+            }
+            case "statement": {
+              const draftStatement = statements.find(s => s.status === "draft" || s.status === "submitted");
+              if (!draftStatement?.id) {
+                results.push({ formType, success: false, message: "No statement found" });
+                continue;
+              }
+              await generateStatementPdf(draftStatement.id);
+              success = true;
+              message = "Statement PDF generated";
+              break;
+            }
+            case "accreditation": {
+              const draftAccreditation = accreditations.find(a => a.status === "draft" || a.status === "submitted");
+              if (!draftAccreditation?.id) {
+                results.push({ formType, success: false, message: "No accreditation found" });
+                continue;
+              }
+              await generateAccreditationPdf(draftAccreditation.id);
+              success = true;
+              message = "Accreditation PDF generated";
+              break;
+            }
+            case "additionalHolder": {
+              const draftAdditionalHolder = additionalHolders.find(h => h.status === "draft" || h.status === "submitted");
+              if (!draftAdditionalHolder?.id) {
+                results.push({ formType, success: false, message: "No additional holder found" });
+                continue;
+              }
+              await generateAdditionalHolderPdf(draftAdditionalHolder.id);
+              success = true;
+              message = "Additional Holder PDF generated";
+              break;
+            }
+            case "altOrder": {
+              const draftAltOrder = altOrders.find(o => o.status === "draft" || o.status === "submitted");
+              if (!draftAltOrder?.id) {
+                results.push({ formType, success: false, message: "No alt order found" });
+                continue;
+              }
+              await generateAltOrderPdf(draftAltOrder.id);
+              success = true;
+              message = "Alt Order PDF generated";
+              break;
+            }
+            default:
+              results.push({ formType, success: false, message: "Unknown form type" });
+          }
+
+          if (success) {
+            results.push({ formType, success: true, message });
+          }
+        } catch (error: any) {
+          results.push({ formType, success: false, message: error.message || "Failed to generate PDF" });
+        }
+      }
+
+      // Show results
+      const successCount = results.filter(r => r.success).length;
+      const failCount = results.filter(r => !r.success).length;
+
+      if (successCount > 0 && failCount === 0) {
+        showToast(`Successfully generated ${successCount} PDF(s)`, "success");
+      } else if (successCount > 0 && failCount > 0) {
+        showToast(`Generated ${successCount} PDF(s), ${failCount} failed`, "warning");
+      } else {
+        showToast("Failed to generate PDFs", "error");
+      }
+
+      // Clear selections after generation
+      setSelectedForms(new Set());
+    } catch (error: any) {
+      console.error("Error generating PDFs:", error);
+      showToast(error.message || "Failed to generate PDFs", "error");
+    } finally {
+      setIsGeneratingSelectedPdfs(false);
+    }
+  };
+
   // Auto-select the user's profile when it loads (only one profile per user)
   useEffect(() => {
     if (profiles.length > 0 && !selectedProfileId) {
@@ -416,6 +666,18 @@ function ProtectedApp() {
   const primaryProfile = profiles[0];
   const statusLabel = primaryProfile ? primaryProfile.status : "Not started";
   const actionLabel = primaryProfile ? (primaryProfile.status === "submitted" ? "View" : "Continue") : "Start";
+  
+  const draftStatement = statements.find(s => s.status === "draft");
+  const statementActionLabel = draftStatement ? "Continue" : "Start";
+  
+  const draftAdditionalHolder = additionalHolders.find(h => h.status === "draft");
+  const additionalHolderActionLabel = draftAdditionalHolder ? "Continue" : "Start";
+  
+  const draftAltOrder = altOrders.find(o => o.status === "draft");
+  const altOrderActionLabel = draftAltOrder ? "Continue" : "Start";
+  
+  const draftAccreditation = accreditations.find(a => a.status === "draft");
+  const accreditationActionLabel = draftAccreditation ? "Continue" : "Start";
 
   return (
     <AppShell 
@@ -430,16 +692,26 @@ function ProtectedApp() {
           <div className="hub-hero">
             <div className="hub-kicker">Realta Wealth</div>
             <h1 className="hub-title">Your investor forms, simplified.</h1>
-            <p className="hub-sub">Start or continue the Investor Profile. Clean, guided, and ready for your clients.</p>
+            <p className="hub-sub">Start or continue your forms. Clean, guided, and ready for your clients.</p>
           </div>
 
           <div className="hub-grid">
             <div className="hub-card flex flex-col gap-4">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--primary)] mb-1">Form</p>
-                  <h2 className="text-xl font-semibold text-[var(--fg)]">Investor Profile</h2>
-                  <p className="text-sm text-[var(--muted)]">Accurate, guided onboarding for Realta clients.</p>
+                <div className="flex items-center gap-3">
+                  <label className="flex items-center cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={selectedForms.has("investorProfile")}
+                      onChange={() => handleToggleFormSelection("investorProfile")}
+                      className="w-5 h-5 rounded border-2 border-[rgba(11,92,255,0.3)] text-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-1 transition-all cursor-pointer group-hover:border-[var(--primary)]"
+                    />
+                  </label>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--primary)] mb-1">Form</p>
+                    <h2 className="text-xl font-semibold text-[var(--fg)]">Investor Profile</h2>
+                    <p className="text-sm text-[var(--muted)]">Accurate, guided onboarding for Realta clients.</p>
+                  </div>
                 </div>
                 <span className="px-3 py-1 rounded-full text-xs font-semibold bg-[rgba(11,92,255,0.08)] text-[var(--primary)] border border-[rgba(11,92,255,0.16)]">
                   {statusLabel}
@@ -453,21 +725,6 @@ function ProtectedApp() {
               </div>
 
               {profilesError && <div className="text-sm text-red-600">{profilesError}</div>}
-
-              {/* Profile Info - Only one profile per user */}
-              {profiles.length > 0 && primaryProfile && (
-                <div className="mt-6 pt-6 border-t border-[rgba(11,92,255,0.1)]">
-                  <div className="text-xs font-semibold text-[var(--muted)] mb-2 uppercase tracking-[0.1em]">
-                    Your Profile
-                  </div>
-                  <div className="text-sm text-[var(--fg)]">
-                    {primaryProfile.rrName || primaryProfile.customerNames || `Profile ${primaryProfile.id.slice(0, 8)}`}
-                    {primaryProfile.accountNo && (
-                      <span className="text-[var(--muted)] ml-2">• {primaryProfile.accountNo}</span>
-                    )}
-                  </div>
-                </div>
-              )}
 
               <div className="flex justify-between items-center mt-4">
                 <div className="text-sm text-[var(--muted)]">
@@ -491,11 +748,211 @@ function ProtectedApp() {
                 </button>
               </div>
             </div>
+
+            <div className="hub-card flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <label className="flex items-center cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={selectedForms.has("statement")}
+                      onChange={() => handleToggleFormSelection("statement")}
+                      className="w-5 h-5 rounded border-2 border-[rgba(11,92,255,0.3)] text-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-1 transition-all cursor-pointer group-hover:border-[var(--primary)]"
+                    />
+                  </label>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--primary)] mb-1">Form</p>
+                    <h2 className="text-xl font-semibold text-[var(--fg)]">Statement of Financial Condition</h2>
+                    <p className="text-sm text-[var(--muted)]">Financial condition assessment for accredited investors.</p>
+                  </div>
+                </div>
+                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-[rgba(11,92,255,0.08)] text-[var(--primary)] border border-[rgba(11,92,255,0.16)]">
+                  Available
+                </span>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <span className="pill">Financial Data</span>
+                <span className="pill">Reg D Compliance</span>
+                <span className="pill">Secure</span>
+              </div>
+
+              <div className="flex justify-between items-center mt-4">
+                <div className="text-sm text-[var(--muted)]">
+                  Complete your statement of financial condition for investment suitability assessment.
+                </div>
+                <button
+                  type="button"
+                  className="h-11 px-5 rounded-full bg-[var(--primary)] text-white text-sm font-semibold hover:bg-[var(--primary-dark)] transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={handleStartNewStatement}
+                  disabled={statementsLoading}
+                >
+                  {statementActionLabel}
+                </button>
+              </div>
+            </div>
+
+            <div className="hub-card flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <label className="flex items-center cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={selectedForms.has("additionalHolder")}
+                      onChange={() => handleToggleFormSelection("additionalHolder")}
+                      className="w-5 h-5 rounded border-2 border-[rgba(11,92,255,0.3)] text-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-1 transition-all cursor-pointer group-hover:border-[var(--primary)]"
+                    />
+                  </label>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--primary)] mb-1">Form</p>
+                    <h2 className="text-xl font-semibold text-[var(--fg)]">Additional Holder</h2>
+                    <p className="text-sm text-[var(--muted)]">Additional Holder / Participant Information Supplement.</p>
+                  </div>
+                </div>
+                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-[rgba(11,92,255,0.08)] text-[var(--primary)] border border-[rgba(11,92,255,0.16)]">
+                  Available
+                </span>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <span className="pill">Joint Holder #3</span>
+                <span className="pill">Trustee #2</span>
+                <span className="pill">Entity Manager #2</span>
+              </div>
+
+              <div className="flex justify-between items-center mt-4">
+                <div className="text-sm text-[var(--muted)]">
+                  Complete additional holder information for joint accounts, trusts, or entities.
+                </div>
+                <button
+                  type="button"
+                  className="h-11 px-5 rounded-full bg-[var(--primary)] text-white text-sm font-semibold hover:bg-[var(--primary-dark)] transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={handleStartNewAdditionalHolder}
+                  disabled={additionalHoldersLoading}
+                >
+                  {additionalHolderActionLabel}
+                </button>
+              </div>
+            </div>
+
+            <div className="hub-card flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <label className="flex items-center cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={selectedForms.has("altOrder")}
+                      onChange={() => handleToggleFormSelection("altOrder")}
+                      className="w-5 h-5 rounded border-2 border-[rgba(11,92,255,0.3)] text-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-1 transition-all cursor-pointer group-hover:border-[var(--primary)]"
+                    />
+                  </label>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--primary)] mb-1">Form</p>
+                    <h2 className="text-xl font-semibold text-[var(--fg)]">Alternative Investment Order</h2>
+                    <p className="text-sm text-[var(--muted)]">Brokerage Alternative Investment Order and Disclosure Form.</p>
+                  </div>
+                </div>
+                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-[rgba(11,92,255,0.08)] text-[var(--primary)] border border-[rgba(11,92,255,0.16)]">
+                  Available
+                </span>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <span className="pill">Alternative Investments</span>
+                <span className="pill">Order Form</span>
+                <span className="pill">Disclosure</span>
+              </div>
+
+              <div className="flex justify-between items-center mt-4">
+                <div className="text-sm text-[var(--muted)]">
+                  Complete alternative investment order and disclosure form.
+                </div>
+                <button
+                  type="button"
+                  className="h-11 px-5 rounded-full bg-[var(--primary)] text-white text-sm font-semibold hover:bg-[var(--primary-dark)] transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={handleStartNewAltOrder}
+                  disabled={altOrdersLoading}
+                >
+                  {altOrderActionLabel}
+                </button>
+              </div>
+            </div>
+            <div className="hub-card flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <label className="flex items-center cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={selectedForms.has("accreditation")}
+                      onChange={() => handleToggleFormSelection("accreditation")}
+                      className="w-5 h-5 rounded border-2 border-[rgba(11,92,255,0.3)] text-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-1 transition-all cursor-pointer group-hover:border-[var(--primary)]"
+                    />
+                  </label>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--primary)] mb-1">Form</p>
+                    <h2 className="text-xl font-semibold text-[var(--fg)]">Accredited Investor Verification (506c)</h2>
+                    <p className="text-sm text-[var(--muted)]">Brokerage Accredited Investor Verification Form for SEC Rule 506C.</p>
+                  </div>
+                </div>
+                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-[rgba(11,92,255,0.08)] text-[var(--primary)] border border-[rgba(11,92,255,0.16)]">
+                  Available
+                </span>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <span className="pill">Accreditation</span>
+                <span className="pill">Rule 506c</span>
+                <span className="pill">Verification</span>
+              </div>
+
+              <div className="flex justify-between items-center mt-4">
+                <div className="text-sm text-[var(--muted)]">
+                  Verify accredited investor status with policy guidance and signatures.
+                </div>
+                <button
+                  type="button"
+                  className="h-11 px-5 rounded-full bg-[var(--primary)] text-white text-sm font-semibold hover:bg-[var(--primary-dark)] transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={handleStartNewAccreditation}
+                  disabled={accreditationsLoading}
+                >
+                  {accreditationActionLabel}
+                </button>
+              </div>
+            </div>
           </div>
+
+          {/* Floating Generate PDF Button */}
+          {selectedForms.size > 0 && (
+            <div className="fixed bottom-8 right-8 z-50 animate-in slide-in-from-bottom-5">
+              <button
+                type="button"
+                onClick={handleGenerateSelectedPdfs}
+                disabled={isGeneratingSelectedPdfs}
+                className="h-14 px-6 rounded-full bg-[var(--primary)] text-white text-sm font-semibold hover:bg-[var(--primary-dark)] transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3"
+              >
+                {isGeneratingSelectedPdfs ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                    Generate PDF{selectedForms.size > 1 ? "s" : ""} ({selectedForms.size})
+                  </>
+                )}
+              </button>
+            </div>
+          )}
         </div>
       )}
 
-      {isFormView && (
+      {isFormView && !isStatementView && !isAdditionalHolderView && !isAltOrderView && !isAccreditationView && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
@@ -512,6 +969,79 @@ function ProtectedApp() {
           <InvestorProfileForm />
         </div>
       )}
+
+      {isStatementView && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--primary)] mb-1">Statement of Financial Condition</p>
+              <h2 className="text-xl font-semibold text-[var(--fg)]">Complete your form</h2>
+            </div>
+            <button
+              className="text-[var(--primary)] text-sm font-semibold hover:underline"
+              onClick={handleBackToHub}
+            >
+              ← Back to forms
+            </button>
+          </div>
+          <StatementOfFinancialConditionForm />
+        </div>
+      )}
+
+      {isAdditionalHolderView && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--primary)] mb-1">Additional Holder</p>
+              <h2 className="text-xl font-semibold text-[var(--fg)]">Complete your form</h2>
+            </div>
+            <button
+              className="text-[var(--primary)] text-sm font-semibold hover:underline"
+              onClick={handleBackToHub}
+            >
+              ← Back to forms
+            </button>
+          </div>
+          <AdditionalHolderForm />
+        </div>
+      )}
+
+      {isAltOrderView && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--primary)] mb-1">Alternative Investment Order</p>
+              <h2 className="text-xl font-semibold text-[var(--fg)]">Complete your form</h2>
+            </div>
+            <button
+              className="text-[var(--primary)] text-sm font-semibold hover:underline"
+              onClick={handleBackToHub}
+            >
+              ← Back to forms
+            </button>
+          </div>
+          <AltOrderForm />
+        </div>
+      )}
+
+      {isAccreditationView && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--primary)] mb-1">Accredited Investor Verification (506c)</p>
+              <h2 className="text-xl font-semibold text-[var(--fg)]">Complete your form</h2>
+            </div>
+            <button
+              className="text-[var(--primary)] text-sm font-semibold hover:underline"
+              onClick={handleBackToHub}
+            >
+              ← Back to forms
+            </button>
+          </div>
+          <AccreditationForm />
+        </div>
+      )}
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
     </AppShell>
   );
 }

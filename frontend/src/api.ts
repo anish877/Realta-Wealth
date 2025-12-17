@@ -259,3 +259,498 @@ export async function generatePdf(profileId: string): Promise<{ data: { message:
   return { data: response.data };
 }
 
+// ============================================
+// Statement of Financial Condition API
+// ============================================
+
+export interface StatementProfile {
+  id: string;
+  userId: string;
+  status: "draft" | "submitted" | "approved" | "rejected";
+  lastCompletedPage?: number;
+  pageCompletionStatus?: Record<string, { completed?: boolean; updatedAt?: string }>;
+  rrName?: string;
+  rrNo?: string;
+  customerNames?: string;
+  notesPage1?: string;
+  additionalNotes?: string;
+  createdAt: string;
+  updatedAt: string;
+  submittedAt?: string;
+}
+
+export async function createStatement(step1Data: any): Promise<{ data: StatementProfile }> {
+  const res = await fetch(getApiUrl("/api/statements"), {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(step1Data),
+  });
+  const response = await handleResponse<{ success: boolean; data: StatementProfile }>(res);
+  return { data: response.data };
+}
+
+export async function getStatements(options?: { page?: number; limit?: number; status?: string }): Promise<{ statements: StatementProfile[]; pagination?: any }> {
+  const params = new URLSearchParams();
+  if (options?.page) params.append("page", options.page.toString());
+  if (options?.limit) params.append("limit", options.limit.toString());
+  if (options?.status) params.append("status", options.status);
+  
+  const queryString = params.toString();
+  const url = `/api/statements${queryString ? `?${queryString}` : ""}`;
+  
+  const res = await fetch(getApiUrl(url), {
+    method: "GET",
+    headers: getAuthHeaders(),
+  });
+  const response = await handleResponse<{ success: boolean; data: StatementProfile[]; pagination?: any }>(res);
+  return { statements: response.data || [], pagination: response.pagination };
+}
+
+export async function getStatement(statementId: string): Promise<{ data: StatementProfile }> {
+  const res = await fetch(getApiUrl(`/api/statements/${statementId}`), {
+    method: "GET",
+    headers: getAuthHeaders(),
+  });
+  const response = await handleResponse<{ success: boolean; data: StatementProfile }>(res);
+  return { data: response.data };
+}
+
+export async function updateStatementStep(
+  statementId: string,
+  stepNumber: number,
+  stepData: any
+): Promise<{ data: StatementProfile }> {
+  const res = await fetch(getApiUrl(`/api/statements/${statementId}/step${stepNumber}`), {
+    method: "PATCH",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(stepData),
+  });
+  const response = await handleResponse<{ success: boolean; data: StatementProfile }>(res);
+  return { data: response.data };
+}
+
+export async function submitStatement(statementId: string): Promise<{ data: StatementProfile }> {
+  const res = await fetch(getApiUrl(`/api/statements/${statementId}/submit`), {
+    method: "POST",
+    headers: getAuthHeaders(),
+  });
+  const response = await handleResponse<{ success: boolean; data: StatementProfile }>(res);
+  return { data: response.data };
+}
+
+export async function getStatementProgress(statementId: string): Promise<{ data: any }> {
+  const res = await fetch(getApiUrl(`/api/statements/${statementId}/progress`), {
+    method: "GET",
+    headers: getAuthHeaders(),
+  });
+  return handleResponse<{ success: boolean; data: any }>(res);
+}
+
+export async function generateStatementPdf(
+  statementId: string
+): Promise<{ data: { message: string; statementId: string } }> {
+  const res = await fetch(getApiUrl(`/api/statements/${statementId}/generate-pdf`), {
+    method: "POST",
+    headers: getAuthHeaders(),
+  });
+  const response = await handleResponse<{
+    success: boolean;
+    data: { message: string; statementId: string };
+  }>(res);
+  return { data: response.data };
+}
+
+// ============================================
+// Additional Holder API
+// ============================================
+
+export interface AdditionalHolderProfile {
+  id: string;
+  userId: string;
+  status: "draft" | "submitted" | "approved" | "rejected";
+  lastCompletedPage?: number;
+  pageCompletionStatus?: Record<string, { completed?: boolean; updatedAt?: string }>;
+  accountRegistration?: string;
+  rrName?: string;
+  rrNo?: string;
+  name?: string;
+  personEntity?: "Person" | "Entity";
+  ssn?: string;
+  ein?: string;
+  holderParticipantRole?: string;
+  email?: string;
+  dateOfBirth?: string;
+  positionHeld?: string;
+  primaryCitizenship?: string;
+  additionalCitizenship?: string;
+  gender?: "Male" | "Female";
+  maritalStatus?: string[];
+  employmentStatus?: string[];
+  occupation?: string;
+  yearsEmployed?: number;
+  typeOfBusiness?: string;
+  employerName?: string;
+  overallInvestmentKnowledge?: "Limited" | "Moderate" | "Extensive" | "None";
+  annualIncomeFrom?: number;
+  annualIncomeTo?: number;
+  netWorthFrom?: number;
+  netWorthTo?: number;
+  liquidNetWorthFrom?: number;
+  liquidNetWorthTo?: number;
+  taxBracket?: string;
+  yearsOfInvestmentExperience?: number;
+  employeeOfThisBrokerDealer?: "Yes" | "No";
+  relatedToEmployeeAtThisBrokerDealer?: "Yes" | "No";
+  employeeName?: string;
+  relationship?: string;
+  employeeOfAnotherBrokerDealer?: "Yes" | "No";
+  brokerDealerName?: string;
+  relatedToEmployeeAtAnotherBrokerDealer?: "Yes" | "No";
+  brokerDealerName2?: string;
+  employeeName2?: string;
+  relationship2?: string;
+  maintainingOtherBrokerageAccounts?: "Yes" | "No";
+  withWhatFirms?: string;
+  affiliatedWithExchangeOrFinra?: "Yes" | "No";
+  whatIsTheAffiliation?: string;
+  seniorOfficerDirectorShareholder?: "Yes" | "No";
+  companyNames?: string;
+  signature?: string;
+  printedName?: string;
+  signatureDate?: string;
+  createdAt: string;
+  updatedAt: string;
+  submittedAt?: string;
+  addresses?: Array<{
+    id: string;
+    addressType: "legal" | "mailing" | "employer";
+    addressLine?: string;
+    city?: string;
+    stateProvince?: string;
+    zipPostalCode?: string;
+    country?: string;
+  }>;
+  phones?: Array<{
+    id: string;
+    phoneType: "home" | "business" | "mobile";
+    phoneNumber?: string;
+  }>;
+  governmentIds?: Array<{
+    id: string;
+    type?: string;
+    idNumber?: string;
+    countryOfIssue?: string;
+    dateOfIssue?: string;
+    dateOfExpiration?: string;
+  }>;
+  investmentKnowledge?: Array<{
+    id: string;
+    investmentType: string;
+    knowledgeLevel?: "Limited" | "Moderate" | "Extensive" | "None";
+    sinceYear?: number;
+  }>;
+}
+
+export async function createAdditionalHolder(step1Data: any): Promise<{ data: AdditionalHolderProfile }> {
+  const res = await fetch(getApiUrl("/api/additional-holders"), {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(step1Data),
+  });
+  const response = await handleResponse<{ success: boolean; data: AdditionalHolderProfile }>(res);
+  return { data: response.data };
+}
+
+export async function getAdditionalHolders(options?: { page?: number; limit?: number; status?: string }): Promise<{ profiles: AdditionalHolderProfile[]; pagination?: any }> {
+  const params = new URLSearchParams();
+  if (options?.page) params.append("page", options.page.toString());
+  if (options?.limit) params.append("limit", options.limit.toString());
+  if (options?.status) params.append("status", options.status);
+  
+  const queryString = params.toString();
+  const url = `/api/additional-holders${queryString ? `?${queryString}` : ""}`;
+  
+  const res = await fetch(getApiUrl(url), {
+    method: "GET",
+    headers: getAuthHeaders(),
+  });
+  const response = await handleResponse<{ success: boolean; data: AdditionalHolderProfile[]; pagination?: any }>(res);
+  return { profiles: response.data || [], pagination: response.pagination };
+}
+
+export async function getAdditionalHolder(holderId: string): Promise<{ data: AdditionalHolderProfile }> {
+  const res = await fetch(getApiUrl(`/api/additional-holders/${holderId}`), {
+    method: "GET",
+    headers: getAuthHeaders(),
+  });
+  const response = await handleResponse<{ success: boolean; data: AdditionalHolderProfile }>(res);
+  return { data: response.data };
+}
+
+export async function updateAdditionalHolderStep(
+  holderId: string,
+  stepNumber: number,
+  stepData: any
+): Promise<{ data: AdditionalHolderProfile }> {
+  const res = await fetch(getApiUrl(`/api/additional-holders/${holderId}/step${stepNumber}`), {
+    method: "PATCH",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(stepData),
+  });
+  const response = await handleResponse<{ success: boolean; data: AdditionalHolderProfile }>(res);
+  return { data: response.data };
+}
+
+export async function submitAdditionalHolder(holderId: string): Promise<{ data: AdditionalHolderProfile }> {
+  const res = await fetch(getApiUrl(`/api/additional-holders/${holderId}/submit`), {
+    method: "POST",
+    headers: getAuthHeaders(),
+  });
+  const response = await handleResponse<{ success: boolean; data: AdditionalHolderProfile }>(res);
+  return { data: response.data };
+}
+
+export async function generateAdditionalHolderPdf(
+  holderId: string
+): Promise<{ data: { message: string; holderId: string } }> {
+  const res = await fetch(getApiUrl(`/api/additional-holders/${holderId}/generate-pdf`), {
+    method: "POST",
+    headers: getAuthHeaders(),
+  });
+  const response = await handleResponse<{
+    success: boolean;
+    data: { message: string; holderId: string };
+  }>(res);
+  return { data: response.data };
+}
+
+// ============================================
+// Alternative Investment Order API
+// ============================================
+
+export interface AltOrderProfile {
+  id: string;
+  userId: string;
+  status: "draft" | "submitted" | "approved" | "rejected";
+  lastCompletedPage?: number;
+  pageCompletionStatus?: Record<string, { completed?: boolean; updatedAt?: string }>;
+  rrName?: string;
+  rrNo?: string;
+  customerNames?: string;
+  proposedPrincipalAmount?: number;
+  qualifiedAccount?: "Yes" | "No";
+  qualifiedAccountCertificationText?: string;
+  solicitedTrade?: "Yes" | "No";
+  taxAdvantagePurchase?: "Yes" | "No";
+  custodian?: string;
+  nameOfProduct?: string;
+  sponsorIssuer?: string;
+  dateOfPpm?: string;
+  datePpmSent?: string;
+  existingIlliquidAltPositions?: number;
+  existingIlliquidAltConcentration?: number;
+  existingSemiLiquidAltPositions?: number;
+  existingSemiLiquidAltConcentration?: number;
+  existingTaxAdvantageAltPositions?: number;
+  existingTaxAdvantageAltConcentration?: number;
+  totalNetWorth?: number;
+  liquidNetWorth?: number;
+  totalConcentration?: number;
+  accountOwnerSignature?: string;
+  accountOwnerPrintedName?: string;
+  accountOwnerDate?: string;
+  jointAccountOwnerSignature?: string;
+  jointAccountOwnerPrintedName?: string;
+  jointAccountOwnerDate?: string;
+  financialProfessionalSignature?: string;
+  financialProfessionalPrintedName?: string;
+  financialProfessionalDate?: string;
+  registeredPrincipalSignature?: string;
+  registeredPrincipalPrintedName?: string;
+  registeredPrincipalDate?: string;
+  notes?: string;
+  regBiDelivery?: boolean;
+  stateRegistration?: boolean;
+  aiInsight?: boolean;
+  statementOfFinancialCondition?: boolean;
+  suitabilityReceived?: boolean;
+  createdAt: string;
+  updatedAt: string;
+  submittedAt?: string;
+}
+
+export async function createAltOrder(orderData: any): Promise<{ data: AltOrderProfile }> {
+  const res = await fetch(getApiUrl("/api/alt-orders"), {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(orderData),
+  });
+  const response = await handleResponse<{ success: boolean; data: AltOrderProfile }>(res);
+  return { data: response.data };
+}
+
+export async function getAltOrders(options?: { page?: number; limit?: number; status?: string }): Promise<{ profiles: AltOrderProfile[]; pagination?: any }> {
+  const params = new URLSearchParams();
+  if (options?.page) params.append("page", options.page.toString());
+  if (options?.limit) params.append("limit", options.limit.toString());
+  if (options?.status) params.append("status", options.status);
+  
+  const queryString = params.toString();
+  const url = `/api/alt-orders${queryString ? `?${queryString}` : ""}`;
+  
+  const res = await fetch(getApiUrl(url), {
+    method: "GET",
+    headers: getAuthHeaders(),
+  });
+  const response = await handleResponse<{ success: boolean; data: AltOrderProfile[]; pagination?: any }>(res);
+  return { profiles: response.data || [], pagination: response.pagination };
+}
+
+export async function getAltOrder(orderId: string): Promise<{ data: AltOrderProfile }> {
+  const res = await fetch(getApiUrl(`/api/alt-orders/${orderId}`), {
+    method: "GET",
+    headers: getAuthHeaders(),
+  });
+  const response = await handleResponse<{ success: boolean; data: AltOrderProfile }>(res);
+  return { data: response.data };
+}
+
+export async function updateAltOrder(
+  orderId: string,
+  orderData: any
+): Promise<{ data: AltOrderProfile }> {
+  const res = await fetch(getApiUrl(`/api/alt-orders/${orderId}`), {
+    method: "PATCH",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(orderData),
+  });
+  const response = await handleResponse<{ success: boolean; data: AltOrderProfile }>(res);
+  return { data: response.data };
+}
+
+export async function submitAltOrder(orderId: string): Promise<{ data: AltOrderProfile }> {
+  const res = await fetch(getApiUrl(`/api/alt-orders/${orderId}/submit`), {
+    method: "POST",
+    headers: getAuthHeaders(),
+  });
+  const response = await handleResponse<{ success: boolean; data: AltOrderProfile }>(res);
+  return { data: response.data };
+}
+
+export async function generateAltOrderPdf(
+  orderId: string
+): Promise<{ data: { message: string; orderId: string } }> {
+  const res = await fetch(getApiUrl(`/api/alt-orders/${orderId}/generate-pdf`), {
+    method: "POST",
+    headers: getAuthHeaders(),
+  });
+  const response = await handleResponse<{
+    success: boolean;
+    data: { message: string; orderId: string };
+  }>(res);
+  return { data: response.data };
+}
+
+// ============================================
+// Accredited Investor Verification (506c) API
+// ============================================
+
+export interface AccreditationProfile {
+  id: string;
+  userId: string;
+  status: "draft" | "submitted" | "approved" | "rejected";
+  lastCompletedPage?: number;
+  pageCompletionStatus?: Record<string, { completed?: boolean; updatedAt?: string }>;
+  rrName?: string;
+  rrNo?: string;
+  customerNames?: string;
+  hasJointOwner?: boolean;
+  accountOwnerSignature?: string;
+  accountOwnerPrintedName?: string;
+  accountOwnerDate?: string;
+  jointAccountOwnerSignature?: string;
+  jointAccountOwnerPrintedName?: string;
+  jointAccountOwnerDate?: string;
+  financialProfessionalSignature?: string;
+  financialProfessionalPrintedName?: string;
+  financialProfessionalDate?: string;
+  registeredPrincipalSignature?: string;
+  registeredPrincipalPrintedName?: string;
+  registeredPrincipalDate?: string;
+  createdAt: string;
+  updatedAt: string;
+  submittedAt?: string;
+}
+
+export async function createAccreditation(accreditationData: any): Promise<{ data: AccreditationProfile }> {
+  const res = await fetch(getApiUrl("/api/accreditations"), {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(accreditationData),
+  });
+  const response = await handleResponse<{ success: boolean; data: AccreditationProfile }>(res);
+  return { data: response.data };
+}
+
+export async function getAccreditations(options?: { page?: number; limit?: number; status?: string }): Promise<{ profiles: AccreditationProfile[]; pagination?: any }> {
+  const params = new URLSearchParams();
+  if (options?.page) params.append("page", options.page.toString());
+  if (options?.limit) params.append("limit", options.limit.toString());
+  if (options?.status) params.append("status", options.status);
+  
+  const queryString = params.toString();
+  const url = `/api/accreditations${queryString ? `?${queryString}` : ""}`;
+  
+  const res = await fetch(getApiUrl(url), {
+    method: "GET",
+    headers: getAuthHeaders(),
+  });
+  const response = await handleResponse<{ success: boolean; data: AccreditationProfile[]; pagination?: any }>(res);
+  return { profiles: response.data || [], pagination: response.pagination };
+}
+
+export async function getAccreditation(accreditationId: string): Promise<{ data: AccreditationProfile }> {
+  const res = await fetch(getApiUrl(`/api/accreditations/${accreditationId}`), {
+    method: "GET",
+    headers: getAuthHeaders(),
+  });
+  const response = await handleResponse<{ success: boolean; data: AccreditationProfile }>(res);
+  return { data: response.data };
+}
+
+export async function updateAccreditation(
+  accreditationId: string,
+  accreditationData: any
+): Promise<{ data: AccreditationProfile }> {
+  const res = await fetch(getApiUrl(`/api/accreditations/${accreditationId}`), {
+    method: "PATCH",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(accreditationData),
+  });
+  const response = await handleResponse<{ success: boolean; data: AccreditationProfile }>(res);
+  return { data: response.data };
+}
+
+export async function submitAccreditation(accreditationId: string): Promise<{ data: AccreditationProfile }> {
+  const res = await fetch(getApiUrl(`/api/accreditations/${accreditationId}/submit`), {
+    method: "POST",
+    headers: getAuthHeaders(),
+  });
+  const response = await handleResponse<{ success: boolean; data: AccreditationProfile }>(res);
+  return { data: response.data };
+}
+
+export async function generateAccreditationPdf(
+  accreditationId: string
+): Promise<{ data: { message: string; accreditationId: string } }> {
+  const res = await fetch(getApiUrl(`/api/accreditations/${accreditationId}/generate-pdf`), {
+    method: "POST",
+    headers: getAuthHeaders(),
+  });
+  const response = await handleResponse<{
+    success: boolean;
+    data: { message: string; accreditationId: string };
+  }>(res);
+  return { data: response.data };
+}
+

@@ -145,25 +145,30 @@ export const fieldVisibilityRules: FieldVisibilityRule[] = [
     fieldId: 'other_account_type_text',
     showWhen: [{ field: 'type_of_account_right', operator: 'includes', value: 'other_account_type' }],
   },
-  // Trust block fields - show when Trust is selected
+  // Trust block fields - show when Trust checkbox is checked OR trust is in account types
   {
     fieldId: 'trust_block',
     showWhen: [
-      { field: 'type_of_account_right', operator: 'includes', value: 'trust' }
+      { field: 'trust_checkbox', operator: 'checked', value: true },
+      { field: 'type_of_account', operator: 'includes', value: 'trust' }
     ],
-    requireAll: false,
+    requireAll: false, // OR logic - show if checkbox checked OR trust in account types
   },
   {
     fieldId: 'trust_establishment_date',
     showWhen: [
-      { field: 'type_of_account_right', operator: 'includes', value: 'trust' }
+      { field: 'trust_checkbox', operator: 'checked', value: true },
+      { field: 'type_of_account', operator: 'includes', value: 'trust' }
     ],
+    requireAll: false,
   },
   {
     fieldId: 'trust_type',
     showWhen: [
-      { field: 'type_of_account_right', operator: 'includes', value: 'trust' }
+      { field: 'trust_checkbox', operator: 'checked', value: true },
+      { field: 'type_of_account', operator: 'includes', value: 'trust' }
     ],
+    requireAll: false,
   },
   // Transfer on Death agreement dates
   {

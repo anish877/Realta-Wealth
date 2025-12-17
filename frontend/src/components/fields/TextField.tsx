@@ -14,6 +14,8 @@ interface TextFieldProps {
   error?: string;
   isValid?: boolean;
   onBlur?: () => void;
+  floatingLabel?: boolean;
+  className?: string;
 }
 
 export function TextField({
@@ -28,14 +30,22 @@ export function TextField({
   error,
   isValid,
   onBlur,
+  floatingLabel = true,
+  className = "",
 }: TextFieldProps) {
   const [isFocused, setIsFocused] = useState(false);
   const hasValue = value && value.length > 0;
-  const showLabel = isFocused || hasValue;
+  const showLabel = floatingLabel ? isFocused || hasValue : false;
 
   return (
     <div className="mb-6 relative">
       <div className="relative">
+        {!floatingLabel && (
+          <Label htmlFor={id} className="mb-2 block">
+            {label}
+            {required && <span className="text-red-500 ml-1">*</span>}
+          </Label>
+        )}
         <Input
           id={id}
           type={type}
@@ -53,6 +63,7 @@ export function TextField({
             ${showLabel ? "pt-6 pb-2" : ""}
             ${error ? "border-red-500" : isValid ? "border-green-500" : ""}
             transition-colors duration-100
+            ${className}
           `}
         />
         {showLabel && (

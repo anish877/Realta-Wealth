@@ -1,0 +1,174 @@
+{
+  "document": {
+    "title": "Brokerage Alternative Investment Order and Disclosure Form",
+    "source_file": "REI-Alt-Order-Ticket-v20240101.pdf",
+    "pages": 1,
+    "form_id_code": "CEICIAOTDF08242023"
+  },
+  "schema": [
+    {
+      "sectionId": "alt_order_form",
+      "title": "Alternative Investment Order and Disclosure Form",
+      "page": 1,
+      "fields": [
+        {
+          "id": "intro_bullets",
+          "label": "Introduction",
+          "type": "intro_bullets",
+          "page": 1,
+          "bullets": [
+            "An Alternative Investment is an investment that is not traded on an exchange and is usually more complex than exchange traded products like stocks, bonds, and mutual funds.",
+            "Alternative Investments include products such as Limited Partnerships, non-traded REITs, Business Development Corporations, closed-end funds or interval funds.",
+            "Registered offerings are sold by prospectus. Unregistered offerings (Regulation D, or private placements) are sold by Private Placement Memorandum or PPM. Please ensure your financial professional provides you with the most up-to-date prospectus or PPM for the offering. It is also important that you read the prospectus or PPM because they provide important information and disclosures to you about the investment which may influence your decision to invest.",
+            "Alternative investments tend to have more risk associated with them, and you may lose your entire investment.",
+            "Alternative investments are only available to sophisticated investors, and Realta reserves the right to reject your order at its sole discretion.",
+            "Securities offered by Realta Equities, Inc."
+          ]
+        },
+        {
+          "id": "section_customer_account_info",
+          "label": "CUSTOMER/ACCOUNT INFORMATION",
+          "type": "section_header",
+          "page": 1
+        },
+        { "id": "rr_name", "label": "RR Name", "type": "text", "page": 1 },
+        { "id": "rr_no", "label": "RR No.", "type": "text", "page": 1 },
+        { "id": "customer_names", "label": "Customer Names(s)", "type": "text", "page": 1 },
+        { "id": "proposed_principal_amount", "label": "Proposed Principal Amount", "type": "currency", "page": 1, "prefix": "$" },
+        {
+          "id": "qualified_account",
+          "label": "Qualified Account",
+          "type": "yes_no",
+          "page": 1,
+          "options": ["Yes", "No"]
+        },
+        {
+          "id": "qualified_account_certification_text",
+          "label": "Qualified account certification_text",
+          "type": "text",
+          "page": 1,
+          "notes": "If purchasing this product in a qualified account, I certify that I have other sufficient qualified funds available to meet my required minimum distributions pursuant to IRS requirements until this product matures."
+        },
+        {
+          "id": "solicited_trade",
+          "label": "Solicited Trade",
+          "type": "yes_no",
+          "page": 1,
+          "options": ["Yes", "No"]
+        },
+        {
+          "id": "tax_advantage_purchase",
+          "label": "Tax Advantage Purchase",
+          "type": "yes_no",
+          "page": 1,
+          "options": ["Yes", "No"]
+        },
+        {
+          "id": "section_customer_order_info",
+          "label": "CUSTOMER ORDER INFORMATION",
+          "type": "section_header",
+          "page": 1
+        },
+        {
+          "id": "custodian",
+          "label": "Custodian",
+          "type": "dropdown",
+          "page": 1,
+          "options": ["First Clearing", "Direct", "MainStar", "CNB", "Kingdom Trust", "Other"]
+        },
+        { "id": "name_of_product", "label": "Name of Product", "type": "text", "page": 1 },
+        { "id": "sponsor_issuer", "label": "Sponsor/Issuer", "type": "text", "page": 1 },
+        { "id": "date_of_ppm", "label": "Date of PPM", "type": "date", "page": 1 },
+        { "id": "date_ppm_sent", "label": "Date PPM Sent", "type": "date", "page": 1 },
+        { "id": "existing_illiquid_alt_positions", "label": "Existing Illiquid Alt Positions", "type": "currency", "page": 1, "prefix": "$" },
+        { "id": "existing_illiquid_alt_concentration", "label": "Existing Illiquid Alt Concentration", "type": "percentage", "page": 1, "suffix": "%" },
+        { "id": "existing_semi_liquid_alt_positions", "label": "Existing Semi-liquid Alt Positions", "type": "currency", "page": 1, "prefix": "$" },
+        { "id": "existing_semi_liquid_alt_concentration", "label": "Existing Semi-liquid Alt Concentration", "type": "percentage", "page": 1, "suffix": "%" },
+        { "id": "existing_tax_advantage_alt_positions", "label": "Existing Tax Advantage Alt Positions", "type": "currency", "page": 1, "prefix": "$" },
+        { "id": "existing_tax_advantage_alt_concentration", "label": "Existing Tax Advantage Alt Concentration", "type": "percentage", "page": 1, "suffix": "%" },
+        { "id": "total_net_worth", "label": "Total Net Worth", "type": "currency", "page": 1, "prefix": "$" },
+        { "id": "liquid_net_worth", "label": "Liquid Net Worth*", "type": "currency", "page": 1, "prefix": "$", "notes": "*Excluding home and auto" },
+        { "id": "total_concentration", "label": "Total Concentration*", "type": "percentage", "page": 1, "suffix": "%", "notes": "*Concentration = Proposed and Existing (Illiquid and Semi-liquid Alts) / Total Net Worth" },
+        {
+          "id": "section_acknowledgements",
+          "label": "BY SIGNING BELOW, I ACKNOWLEDGE THE FOLLOWING:",
+          "type": "section_header",
+          "page": 1
+        },
+        {
+          "id": "acknowledgements",
+          "label": "Acknowledgements",
+          "type": "acknowledgements",
+          "page": 1,
+          "bullets": [
+            "I/We understand that the investment purchased may be illiquid and is suitable only as a long-term investment. I/We may have no liquidity needs for the funds invested in this security.",
+            "I/We have read and carefully reviewed the prospectus or Private Placement Memorandum for the product(s) being purchased.",
+            "I/We understand the fees and expenses associated with this purchase as outlined in the Prospectus or Private Placement Memorandum.",
+            "I/We understand that the Alternative Investment purchased may not be publicly be traded and there is no market.",
+            "I/we may not be able to sell the investment to another party without taking a significant reduction in price and we may not find a buyer at all. If there is a redemption policy offered by the sponsor, it may be limited and/or at the sole discretion of the sponsor. Please refer to the redemption policy outlined in the prospectus or Private Placement Memorandum.",
+            "I/We understand that this is a speculative investment and may lose some or all this investment. I/we have sufficient means tolerate the risks and potential loss of the amount invested.",
+            "I/We understand that dividends/distributions paid to me/us may vary based upon many factors, including but not limited to, economic risks, regulatory changes, performance, personnel changes, and changes in the industry. Distributions may stop entirely at the discretion of the sponsor or issuer. Portions of, or the entirety of, distributions may be a return of capital.",
+            "I/We meet the suitability standards of the issuer and my state of primary residence.",
+            "The features and risks of the product, my/our financial status, tax status, risk tolerances, and investment objectives were discussed by my/our representative.",
+            "I/We believe that this investment meets my/our financial goals and that the information provided above is an accurate reflection at the time of signing."
+          ]
+        },
+        {
+          "id": "section_signatures",
+          "label": "Signatures",
+          "type": "section_header",
+          "page": 1
+        },
+        {
+          "id": "account_owner_signature",
+          "label": "Account Owner Signature",
+          "type": "signature",
+          "page": 1,
+          "role": "Account Owner"
+        },
+        { "id": "account_owner_printed_name", "label": "Account Owner Printed Name", "type": "text", "page": 1 },
+        { "id": "account_owner_date", "label": "Account Owner Date", "type": "date", "page": 1 },
+        {
+          "id": "joint_account_owner_signature",
+          "label": "Joint Account Owner Signature",
+          "type": "signature",
+          "page": 1,
+          "role": "Joint Account Owner"
+        },
+        { "id": "joint_account_owner_printed_name", "label": "Joint Account Owner Printed Name", "type": "text", "page": 1 },
+        { "id": "joint_account_owner_date", "label": "Joint Account Owner Date", "type": "date", "page": 1 },
+        {
+          "id": "financial_professional_signature",
+          "label": "Financial Professional Signature",
+          "type": "signature",
+          "page": 1,
+          "role": "Financial Professional"
+        },
+        { "id": "financial_professional_printed_name", "label": "Financial Professional Printed Name", "type": "text", "page": 1 },
+        { "id": "financial_professional_date", "label": "Financial Professional Date", "type": "date", "page": 1 },
+        {
+          "id": "section_internal_use",
+          "label": "Realta INTERNAL USE ONLY",
+          "type": "section_header",
+          "page": 1
+        },
+        {
+          "id": "registered_principal_signature",
+          "label": "Registered Principal Signature",
+          "type": "signature",
+          "page": 1,
+          "role": "Registered Principal"
+        },
+        { "id": "registered_principal_printed_name", "label": "Registered Principal Printed Name", "type": "text", "page": 1 },
+        { "id": "registered_principal_date", "label": "Registered Principal Date", "type": "date", "page": 1 },
+        { "id": "notes", "label": "Notes:", "type": "textarea", "page": 1 },
+        { "id": "reg_bi_delivery", "label": "Reg BI Delivery", "type": "checkbox", "page": 1 },
+        { "id": "state_registration", "label": "State Registration", "type": "checkbox", "page": 1 },
+        { "id": "ai_insight", "label": "AI Insight", "type": "checkbox", "page": 1 },
+        { "id": "statement_of_financial_condition", "label": "Statement of Financial Condition", "type": "checkbox", "page": 1 },
+        { "id": "suitability_received", "label": "Suitability Received", "type": "checkbox", "page": 1 }
+      ]
+    }
+  ]
+}
+

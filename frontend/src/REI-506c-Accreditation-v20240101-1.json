@@ -1,0 +1,262 @@
+{
+  "document": {
+    "title": "Brokerage Accredited Investor Verification Form for SEC Rule 506C",
+    "source_file": "506c-Policy-and-Accreditation-Form-v20240101.pdf",
+    "document_family": "Realta Wealth / Realta Equities, Inc.",
+    "version_code_on_form": "CEI506CAI 20240101",
+    "revision_date_marker": "Revised 20240101",
+    "topic": "Brokerage Accredited Investor Verification Form for SEC Rule 506C + Accreditation Policy – 506c",
+    "pages": 4
+  },
+  "schema": [
+    {
+      "sectionId": "accreditation_form",
+      "title": "Accredited Investor Verification (506c)",
+      "page": 1,
+      "fields": [
+        {
+          "id": "policy_guidance",
+          "label": "Policy Guidance",
+          "type": "policy_guidance",
+          "page": 1,
+          "content": {
+            "bullets": [
+              {
+                "heading": "Definition of Accredited Investor:",
+                "text": "The financial professional and Realta Equities, Inc. will adopt the definition of an accredited investor as outlined in Rule 501 of Regulation D under the Securities Act of 1933. The definition includes, but is not limited to, individuals with a net worth exceeding $1 million (excluding their primary residence) or an annual income exceeding $200,000 ($300,000 for joint income). For entities, any organization with total assets exceeding $5 million, such as corporations, partnerships, LLC’s and trusts and for entities with total assets of less than $5 million that all owners are individually accredited investors."
+              },
+              {
+                "heading": "Accreditation Verification Methods:",
+                "text": "The financial professional and Realta Equities, Inc. will use one or more of the following methods to verify the accredited status of potential investors:",
+                "sub_methods": [
+                  {
+                    "label": "Review of Financial Documents:",
+                    "text": "The financial professional and Realta Equities, Inc. may request and review financial documents, such as tax returns, bank statements, brokerage statements, or other similar records that demonstrate an investor's income or net worth."
+                  },
+                  {
+                    "label": "Written Representation:",
+                    "text": "The financial professional and Realta Equities, Inc. may require investors to complete an accredited investor questionnaire or certification, which includes representations regarding their accredited status and the basis for such representation."
+                  },
+                  {
+                    "label": "Third-Party Verification:",
+                    "text": "The company may engage the services of a reliable third-party, such as a registered broker-dealer, attorney, or certified public accountant (CPA), to independently verify an investor's accredited status."
+                  },
+                  {
+                    "label": "Other Reasonable Methods:",
+                    "text": "The company may employ other reasonable methods to verify an investor's accredited status, provided that they are appropriate and sufficient to establish the investor's eligibility."
+                  }
+                ]
+              },
+              {
+                "heading": "Ongoing Accreditation Verification:",
+                "text": "The financial professional and Realta Equities, Inc. will periodically review and update the accredited status of investors throughout the offering period. If there are indications or changes that suggest an investor may no longer meet the accredited investor criteria, the company will take steps to re-verify their status and ensure ongoing compliance."
+              }
+            ]
+          }
+        },
+        { "id": "section_client_info", "label": "CLIENT/ACCOUNT INFORMATION", "type": "section_header", "page": 1 },
+        { "id": "rr_name", "label": "RR Name", "type": "text", "page": 1 },
+        { "id": "rr_no", "label": "RR No.", "type": "text", "page": 1 },
+        { "id": "customer_names", "label": "Customer Name(s)", "type": "text", "page": 1 },
+        {
+          "id": "section_acknowledgements",
+          "label": "BY SIGNING BELOW, I ACKNOWLEDGE THE FOLLOWING:",
+          "type": "section_header",
+          "page": 1
+        },
+        {
+          "id": "acknowledgements",
+          "label": "Acknowledgements",
+          "type": "acknowledgements",
+          "page": 1,
+          "bullets": [
+            "This Accreditation Form for SEC Rule 506(c) Offerings serves as a guideline for the financial professional and Realta Equities, Inc. to verify the accredited status of potential investors and maintain compliance with the requirements of Rule 506(c). The company will implement appropriate procedures and controls to ensure the accuracy and reliability of the verification process while adhering to applicable securities laws and regulations.",
+            "I/We have read and carefully reviewed the SEC Rule regarding 506(c) Offerings and fully understand the need to verify the information necessary to determine whether an individual(s) or entity is accredited.",
+            "I/We have attested and verified that the annual income or net worth needed to qualify as an accredited investor has been met.",
+            "I/We have provided and reviewed bank statements, brokerage statements, certificates of deposit, tax assessments, third party appraisals, credit report from a national agency, balance sheet created by the Verification Provider, audited financial statements, tax forms to include W2 or 1099, K1, 1040. This is not every document that can be used for verification, but a summary of documents that can be used."
+          ]
+        },
+        {
+          "id": "signatures_block",
+          "label": "Signatures",
+          "type": "signatures_block",
+          "page": 1,
+          "signature_lines": [
+            { "role": "Account Owner", "fields": ["Signature", "Printed Name", "Date"] },
+            { "role": "Joint Account Owner", "fields": ["Signature", "Printed Name", "Date"] },
+            { "role": "Financial Professional", "fields": ["Signature", "Printed Name", "Date"] },
+            { "role": "REALTA INTERNAL USE ONLY — Registered Principal", "fields": ["Signature", "Printed Name", "Date"] }
+          ]
+        },
+        {
+          "id": "verification_options",
+          "label": "Accreditation Policy – 506c: Verification Options",
+          "type": "verification_options",
+          "page": 2,
+          "content": {
+            "intro": "Realta Wealth offers advisors and their end-clients two (2) options regarding the accreditation verification method required under SEC Rule 506c.",
+            "options": [
+              {
+                "option_name": "Third-Party Attestation Method",
+                "description": "This verification method requires Realta Wealth to receive a signed, third￾party attestation from a certified public accountant, licensed attorney, a non-Realta registered broker-dealer, or a Realta non- registered financial professional.",
+                "requirements": [
+                  "This third-party attestation must specifically attest to the net worth, income, or other criteria the third-party is relying on to offer their attestation.",
+                  "This attestation must be in writing, can be delivered to Realta Wealth via electronic means, and should be dated within one year."
+                ]
+              },
+              {
+                "option_name": "Accredited Investor Verification Form Method",
+                "description": "This method requires you and your customer attest on the Realta Wealth Accredited Investor Verification Form that the income and/or net worth requirements to qualify as an accredited investor have been met, and that you and your customer have carefully reviewed SEC Rule 506c.",
+                "advisor_obligations": [
+                  "As a Realta Wealth financial professional providing this verification, you are required to review certain relevant documentation regarding the investor you are offering your verification on behalf of."
+                ],
+                "submission_rules": [
+                  "This Verification Form must be completed by the client and the advisor and should be submitted with every 506c alternative transaction that is submitted.",
+                  "This form is valid for one year from the date of signing."
+                ],
+                "recordkeeping_note": "Note that the supporting documentation an advisor utilizes to verify a client’s accreditation status must be retained in the client file by the financial professional, however it SHOULD NOT be sent to Realta Wealth along with the completed Verification From."
+              }
+            ]
+          }
+        },
+        {
+          "id": "accreditation_categories_intro",
+          "label": "Income and Net Worth Requirements Lead-in",
+          "type": "text_block",
+          "page": 2,
+          "text": "To assist you and your customer with this method of verification, including the required documents a financial professional must review prior to signing the Investor Verification Form, we provide the range of income and net worth requirements just below. A customer must meet one of the below, relevant to the customer type, in order to meet the accreditation requirements for participation in a 506c program."
+        },
+        {
+          "id": "accreditation_categories_1",
+          "label": "Accreditation Categories (Page 2)",
+          "type": "accreditation_categories",
+          "page": 2,
+          "categories": [
+            {
+              "category": "Natural Person whose individual net worth, or joint net worth with the investor’s spouse, at the time of purchase exceeds $1,000,000 (excludes primary residence). Net worth is determined by subtracting total liabilities from total assets.",
+              "documentation": [
+                "Documents dated within the last 3 months to verify assets including, but not limited to: bank statements, brokerage statements, certificates of deposit, tax assessments, third-party appraisals; and",
+                "Documents dated within the past 3 months to verify liabilities including a credit report of a nationwide credit reporting agency."
+              ]
+            },
+            {
+              "category": "Natural Person who had an individual income in excess of $200,000 in the two most recent years or joint income with the investor’s spouse in excess of $300,000 in each of those years, and, in either case, has a reasonable expectation of reaching the same income level in the current year.",
+              "documentation": [
+                "IRS tax reporting documents showing income, including, but not limited to IRS Forms W-2, 1099, K-1, and 1040."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "accreditation_categories_2",
+          "label": "Accreditation Categories (Page 3)",
+          "type": "accreditation_categories",
+          "page": 3,
+          "categories": [
+            {
+              "category": "Tax Exempt Organization described in Section 501(c)(3) of the Tax Code, a corporation, or similar business trust or partnership which was not formed for the specific purpose of acquiring the investment, and which has total assets in excess of $5,000,000.",
+              "documentation": [
+                "Documentation includes audited financial statements dated within the past three months (or older audited financial statements together with interim unaudited statements dated within the last 3 months) showing total assets in excess of $5,000,000."
+              ]
+            },
+            {
+              "category": "Trust with total assets of $5,000,000, and decision to purchase the shares is directed by a “sophisticated person” as defined in Rule 506(c)(2)(ii) under Reg D of the Securities Act.",
+              "documentation": [
+                "Documentation includes trust organizational documents."
+              ]
+            },
+            {
+              "category": "Revocable trust and the grantor or settlor of such trust is an accredited investor.",
+              "documentation": [
+                "Documentation includes trust organizational documents."
+              ]
+            },
+            {
+              "category": "Entity in which all equity owners are Accredited Investors.",
+              "documentation": [
+                "Documentation includes organizational or other documents to substantiate accredited investor status.",
+                "Each equity owner must provide and be accredited; please see documentation for verification of natural persons in the first or second bullet point referencing a Natural Person."
+              ]
+            },
+            {
+              "category": "The investor is a “bank” as defined in Section 3(a)(2) of the Securities Act or any “savings and loan association” or other institution as defined in Section 3(a)(5)(A) of the Securities Act, whether acting in its individual or fiduciary capacity (this includes a trust for which a bank acts as trustee and exercises investment discretion with respect to the trust’s decision to invest in the Fund)",
+              "documentation": [
+                "Organizational or other documents."
+              ]
+            },
+            {
+              "category": "Insurance Company",
+              "documentation": [
+                "Organizational or other documents."
+              ]
+            },
+            {
+              "category": "The investor is an “investment company” registered under the Investment Company Act of 1940 (the “Investment Company Act”) or a “business development company” as defined in Section 2(a)(48) of the Investment Company Act.",
+              "documentation": [
+                "Investment Company organizational documents."
+              ]
+            },
+            {
+              "category": "The investor is a Small Business Investment Company licensed by the U.S. Small Business Administration under Section 301(c) or (d) of the Small Business Investment Act of 1958.",
+              "documentation": [
+                "Investment Company organizational documents."
+              ]
+            },
+            {
+              "category": "The investor is a plan, established and maintained by a state, its political subdivisions, or any agency or instrumentality of a state or its political subdivisions, for the benefit of its employees and such plan has total assets in excess of $5,000,000.",
+              "documentation": [
+                "Plan organizational documents, along with documents to verify total assets, such as financials."
+              ]
+            },
+            {
+              "category": "The investor is a “private business development company” as defined in Section 202(a)(22) of the Investment Advisers Act of 1940.",
+              "documentation": [
+                "Business Development Company organizational documents."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "accreditation_categories_3",
+          "label": "Accreditation Categories (Page 4)",
+          "type": "accreditation_categories",
+          "page": 4,
+          "categories": [
+            {
+              "category": "The investor is an employee benefit plan within the meaning of the Employee Retirement Income Security Act of 1974 (“ERISA”), as amended, if the investment decision is made by a plan fiduciary (as defined in section 3(21) of ERISA), which is either a bank, savings and loan association, insurance company, or registered investment adviser, or if the employee benefit plan has total assets in excess of $5,000,000 or, if a self-directed plan, with investment decisions made solely by persons who are accredited investors.",
+              "documentation": [
+                "Plan organizational documents, organizational documents for the fiduciary, financial documents showing total assets in excess of $5,000,000, or accreditation documents of natural persons (see the first or second bullet point referencing a Natural Person) in the case of a self-directed plan."
+              ]
+            },
+            {
+              "category": "The investor is a “knowledgeable employee” of a private securities fund, as determined by that particular fund.",
+              "documentation": [
+                "Signed acknowledgement by an executive, officer, or director of the fund, on fund letterhead, verifying that the investor is a “knowledgeable employee.”"
+              ]
+            },
+            {
+              "category": "The investor is an executive officer, director, trustee, general partner, advisory board member or person serving in a similar capacity of the issuer or an affiliated management person; or",
+              "documentation": [
+                "Documents (publicly available or internal information) such as securities filings, research reports, governing documents, resolutions, or other certificates proving that the investor is such."
+              ]
+            },
+            {
+              "category": "The investor is a SEC- and/or state-registered investment adviser, general securities representative or private securities offering representative. The current requisite designations include individuals that maintain Series 7, Series 65 or Series 82 licenses in good standing with their relevant member firm.",
+              "documentation": [
+                "Provide FINRA CRD number to confirm investor holds a relevant license in good standing."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "final_compliance_statement",
+          "label": "Final Compliance Statement",
+          "type": "text_block",
+          "page": 4,
+          "text": "By receiving this document, you acknowledge that a 506c program Subscription Agreement will not be accepted if either a valid third-party attestation, or completed Accredited Investor Verification Form are not submitted with the agreement."
+        }
+      ]
+    }
+  ]
+}
+

@@ -345,10 +345,14 @@ export default function InvestorProfileForm() {
       return;
     }
 
-    // Validate all steps
-    const validation = validateCurrentStep();
-    if (!validation.isValid) {
-      showToast(`Validation errors: ${validation.errors.join(", ")}`, "error");
+    // Validate all steps before final submit
+    const allValidation = validation.validateAll();
+    if (!allValidation.isValid) {
+      // Mark all fields with errors as touched so they show inline
+      Object.keys(allValidation.errors).forEach((fieldId) => {
+        validation.setTouched(fieldId, true);
+      });
+      showToast("Please fix the errors before submitting.", "error");
       return;
     }
 

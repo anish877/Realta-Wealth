@@ -1,0 +1,214 @@
+{
+  "document": {
+    "title": "Statement of Financial Condition",
+    "company": {
+      "name": "Realta Wealth",
+      "phone": "(888) 657-5200",
+      "fax": "(302) 250-4730",
+      "website": "www.realtawealth.com"
+    },
+    "document_code": "CEISOFC08172023",
+    "total_pages": 2,
+    "source_file": "REI-Statement-of-Financial-Condition-v20240101.pdf"
+  },
+  "schema": [
+    {
+      "sectionId": "page1_statement",
+      "title": "Statement of Financial Condition - Page 1",
+      "page": 1,
+      "fields": [
+        {
+          "id": "account_registration",
+          "label": "Account Registration",
+          "type": "group",
+          "page": 1,
+          "fields": [
+            { "id": "rr_name", "label": "RR Name", "type": "text", "page": 1 },
+            { "id": "rr_no", "label": "RR No.", "type": "text", "page": 1 },
+            { "id": "customer_names", "label": "Customer Names(s)", "type": "text", "page": 1 }
+          ]
+        },
+        {
+          "id": "liquid_non_qualified_assets",
+          "label": "Liquid Non-Qualified Assets",
+          "type": "financial_table",
+          "page": 1,
+          "columns": ["LIQUID NON-QUALIFIED ASSETS", "APPROX. VALUE"],
+          "rows": [
+            { "id": "cash_money_markets", "label": "Cash/Money Markets/CDs", "field_type": "currency" },
+            { "id": "brokerage_non_managed", "label": "Brokerage (non-managed)", "field_type": "currency" },
+            { "id": "managed_accounts", "label": "Managed Accounts", "field_type": "currency" },
+            { "id": "mutual_funds_direct", "label": "Mutual Funds (Direct)", "field_type": "currency" },
+            { "id": "annuities_less_surrender", "label": "Annuities (less surrender charges)", "field_type": "currency" },
+            { "id": "cash_value_life_insurance", "label": "Cash Value Life insurance", "field_type": "currency" },
+            { "id": "other_business_assets", "label": "Other (business Assets/collectibles)", "field_type": "currency" },
+            { "id": "total_liquid_assets", "label": "TOTAL LIQUID ASSETS", "field_type": "currency", "is_total": true }
+          ]
+        },
+        {
+          "id": "liabilities",
+          "label": "Liabilities",
+          "type": "financial_table",
+          "page": 1,
+          "columns": ["LIABILITIES", "AMOUNT"],
+          "rows": [
+            { "id": "mortgage_primary_residence", "label": "Mortgage (Primary Residence)", "field_type": "currency" },
+            { "id": "mortgages_secondary_investment", "label": "Mortgages (Secondary or Investment)", "field_type": "currency" },
+            { "id": "home_equity_loans", "label": "Home Equity Loans", "field_type": "currency" },
+            { "id": "credit_cards", "label": "Credit Cards", "field_type": "currency" },
+            { "id": "other_liabilities", "label": "Other Liabilities", "field_type": "currency" },
+            { "id": "total_liabilities", "label": "TOTAL LIABILITIES", "field_type": "currency", "is_total": true }
+          ]
+        },
+        {
+          "id": "net_worth",
+          "label": "Net Worth",
+          "type": "financial_table",
+          "page": 1,
+          "columns": ["NET WORTH", "AMOUNT"],
+          "rows": [
+            { "id": "total_assets_less_primary_residence", "label": "Total Assets (less primary residence)", "field_type": "currency" },
+            { "id": "total_liabilities_net_worth", "label": "Total Liabilities", "field_type": "currency" },
+            { "id": "total_net_worth_assets_less_pr", "label": "Total Net Worth (Assets less PR – Liabilities)", "field_type": "currency" },
+            { "id": "total_illiquid_securities", "label": "Total Illiquid Securities", "field_type": "currency" },
+            { "id": "total_net_worth", "label": "Total Net Worth", "field_type": "currency" },
+            { "id": "total_potential_liquidity", "label": "Total Potential Liquidity", "field_type": "currency" }
+          ]
+        },
+        {
+          "id": "illiquid_non_qualified_assets",
+          "label": "Illiquid Non-Qualified Assets",
+          "type": "financial_table",
+          "page": 1,
+          "columns": ["ILLIQUID NON-QUALIFIED ASSETS", "VALUE / EQUITY"],
+          "rows": [
+            { "id": "primary_residence", "label": "Primary Residence", "field_type": "currency" },
+            { "id": "investment_real_estate", "label": "Investment Real Estate", "field_type": "currency" },
+            { "id": "private_business", "label": "Private Business", "field_type": "currency" },
+            { "id": "total_illiquid_assets_equity", "label": "TOTAL ILLIQUID ASSETS (equity)", "field_type": "currency", "is_total": true }
+          ]
+        },
+        {
+          "id": "liquid_qualified_assets",
+          "label": "Liquid Qualified Assets",
+          "type": "financial_table",
+          "page": 1,
+          "columns": ["Liquid Qualified Assets", "APPROX. VALUE"],
+          "rows": [
+            { "id": "qualified_cash_money_markets", "label": "Cash/Money Markets/CDs", "field_type": "currency" },
+            { "id": "retirement_plans", "label": "Retirement Plans (401K, 403B, etc,.)", "field_type": "currency" },
+            { "id": "qualified_brokerage_non_managed", "label": "Brokerage (non-managed)", "field_type": "currency" },
+            { "id": "qualified_managed_accounts", "label": "Managed Accounts", "field_type": "currency" },
+            { "id": "qualified_mutual_funds_direct", "label": "Mutual Funds (Direct)", "field_type": "currency" },
+            { "id": "qualified_annuities", "label": "Annuities", "field_type": "currency" },
+            { "id": "total_liquid_qualified_assets", "label": "TOTAL LIQUID QUALIFIED ASSETS", "field_type": "currency", "is_total": true }
+          ]
+        },
+        {
+          "id": "income_summary",
+          "label": "Income Summary",
+          "type": "financial_table",
+          "page": 1,
+          "columns": ["INCOME SUMMARY", "AMOUNT"],
+          "rows": [
+            { "id": "salary_commissions", "label": "Salary/Commissions", "field_type": "currency" },
+            { "id": "investment_income", "label": "Investment Income (Interest & Dividends)", "field_type": "currency" },
+            { "id": "pension", "label": "Pension", "field_type": "currency" },
+            { "id": "social_security", "label": "Social Security", "field_type": "currency" },
+            { "id": "net_rental_income", "label": "Net Rental Income", "field_type": "currency" },
+            { "id": "other_income", "label": "Other", "field_type": "currency" },
+            { "id": "total_annual_income", "label": "TOTAL ANNUAL INCOME", "field_type": "currency", "is_total": true }
+          ]
+        },
+        {
+          "id": "illiquid_qualified_assets",
+          "label": "Illiquid Qualified Assets",
+          "type": "financial_table",
+          "page": 1,
+          "columns": ["ILLIQUID QUALIFIED ASSETS", "Purchase Amount / Value"],
+          "rows": [
+            { "id": "illiquid_qualified_1", "label": "", "field_type": "currency", "allow_custom_label": true },
+            { "id": "illiquid_qualified_2", "label": "", "field_type": "currency", "allow_custom_label": true },
+            { "id": "illiquid_qualified_3", "label": "", "field_type": "currency", "allow_custom_label": true },
+            { "id": "illiquid_qualified_4", "label": "", "field_type": "currency", "allow_custom_label": true },
+            { "id": "total_illiquid_qualified_assets", "label": "TOTAL ILLIQUID QUALIFED ASSETS", "field_type": "currency", "is_total": true }
+          ],
+          "allow_add_rows": true
+        },
+        {
+          "id": "notes_page1",
+          "label": "Notes",
+          "type": "textarea",
+          "page": 1
+        }
+      ]
+    },
+    {
+      "sectionId": "page2_statement",
+      "title": "Statement of Financial Condition - Page 2",
+      "page": 2,
+      "fields": [
+        {
+          "id": "additional_notes",
+          "label": "Additional Notes",
+          "type": "textarea",
+          "page": 2
+        },
+        {
+          "id": "acknowledgment",
+          "label": "BY SIGNING BELOW, I ACKNOWLEDGE THE FOLLOWING:",
+          "type": "acknowledgment",
+          "page": 2,
+          "bullets": [
+            "I attest that the data above and attached are accurate and complete based on information I have provided to my financial professional.",
+            "I agree to report material changes to my financial and personal circumstances to my financial professional in a timely fashion.",
+            "I understand that I may be required to attest and recertify this information from time to time in order for my financial professional to provide future recommendations that are suitable and in my best interest.",
+            "I understand that I may be requested to supply supporting documentation to verify the information presented on this statement of financial condition.",
+            "I understand that this information is to be used and relied upon by my financial professional to make recommendations in my best interest."
+          ]
+        },
+        {
+          "id": "signatures",
+          "label": "Signatures",
+          "type": "signatures",
+          "page": 2,
+          "signature_lines": [
+            {
+              "role": "Account Owner",
+              "fields": [
+                { "id": "account_owner_signature", "label": "Account Owner Signature", "type": "signature" },
+                { "id": "account_owner_printed_name", "label": "Printed Name", "type": "text" },
+                { "id": "account_owner_date", "label": "Date", "type": "date" }
+              ]
+            },
+            {
+              "role": "Joint Account Owner",
+              "fields": [
+                { "id": "joint_account_owner_signature", "label": "Joint Account Owner Signature", "type": "signature" },
+                { "id": "joint_account_owner_printed_name", "label": "Printed Name", "type": "text" },
+                { "id": "joint_account_owner_date", "label": "Date", "type": "date" }
+              ]
+            },
+            {
+              "role": "Financial Professional",
+              "fields": [
+                { "id": "financial_professional_signature", "label": "Financial Professional Signature", "type": "signature" },
+                { "id": "financial_professional_printed_name", "label": "Printed Name", "type": "text" },
+                { "id": "financial_professional_date", "label": "Date", "type": "date" }
+              ]
+            },
+            {
+              "role": "Registered Principal",
+              "fields": [
+                { "id": "registered_principal_signature", "label": "Registered Principal Signature", "type": "signature" },
+                { "id": "registered_principal_printed_name", "label": "Printed Name", "type": "text" },
+                { "id": "registered_principal_date", "label": "Date", "type": "date" }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

@@ -8,6 +8,12 @@ import {
   step7Schema,
 } from "../validators/investorProfileValidators";
 import { accountHolderSchema } from "../validators/accountHolderValidators";
+import {
+  step1Schema as additionalHolderStep1Schema,
+  step2Schema as additionalHolderStep2Schema,
+} from "../validators/additionalHolderValidators";
+import { altOrderSchema } from "../validators/altOrderValidators";
+import { accreditationSchema } from "../validators/accreditationValidators";
 
 export class ValidationService {
   /**
@@ -42,6 +48,10 @@ export class ValidationService {
 
   /**
    * Validate Step 4 data (Secondary Account Holder)
+   * Note: Step 4 should only be validated if the step is visible (Joint or Trust account selected).
+   * The frontend filters out Step 4 when it's not visible, but backend validation should also
+   * check account types before requiring Step 4 data. Currently, validation runs regardless
+   * of visibility - this is acceptable since the frontend prevents Step 4 updates when hidden.
    */
   async validateStep4(data: unknown): Promise<void> {
     const result = accountHolderSchema.safeParse(data);
@@ -212,6 +222,180 @@ export class ValidationService {
           "brokerDealerEmployeeName"
         );
       }
+    }
+  }
+
+  /**
+   * Validate Additional Holder Step 1 data
+   */
+  async validateAdditionalHolderStep1(data: unknown): Promise<void> {
+    const result = additionalHolderStep1Schema.safeParse(data);
+    if (!result.success) {
+      throw new ValidationError("Additional Holder Step 1 validation failed", result.error.errors);
+    }
+  }
+
+  /**
+   * Validate Additional Holder Step 2 data
+   */
+  async validateAdditionalHolderStep2(data: unknown): Promise<void> {
+    const result = additionalHolderStep2Schema.safeParse(data);
+    if (!result.success) {
+      throw new ValidationError("Additional Holder Step 2 validation failed", result.error.errors);
+    }
+  }
+
+  /**
+   * Validate complete Additional Holder profile before submission
+   */
+  async validateCompleteAdditionalHolder(profileId: string): Promise<void> {
+    const profile = await prisma.additionalHolderProfile.findUnique({
+      where: { id: profileId },
+      include: {
+        addresses: true,
+        phones: true,
+        governmentIds: true,
+        investmentKnowledge: true,
+      },
+    });
+
+    if (!profile) {
+      throw new NotFoundError("Additional Holder Profile", profileId);
+    }
+
+    const errors: string[] = [];
+
+    // Validate Step 1 - Basic required fields
+    if (!profile.name) {
+      errors.push("Step 1: Name is required");
+    }
+    if (!profile.personEntity) {
+      errors.push("Step 1: Person/Entity selection is required");
+    }
+    if (profile.personEntity === "Person" && !profile.ssn) {
+      errors.push("Step 1: SSN is required for Person");
+    }
+    if (profile.personEntity === "Entity" && !profile.ein) {
+      errors.push("Step 1: EIN is required for Entity");
+    }
+
+    // Validate Step 2 - Signature required
+    if (!profile.signature || !profile.printedName || !profile.signatureDate) {
+      errors.push("Step 2: Signature, printed name, and date are required");
+    }
+
+    if (errors.length > 0) {
+      throw new ValidationError("Additional Holder Profile validation failed", errors);
+    }
+  }
+
+  /**
+   * Validate Alt Order data
+   */
+  async validateAltOrder(data: unknown): Promise<void> {
+    const result = altOrderSchema.safeParse(data);
+    if (!result.success) {
+      throw new ValidationError("Alt Order validation failed", result.error.errors);
+    }
+  }
+
+  /**
+   * Validate complete Alt Order before submission
+   */
+  async validateCompleteAltOrder(orderId: string): Promise<void> {
+    const order = await prisma.altOrderProfile.findUnique({
+      where: { id: orderId },
+    });
+
+    if (!order) {
+      throw new NotFoundError("Alt Order Profile", orderId);
+    }
+
+    const errors: string[] = [];
+
+    // Validate required fields
+    if (!order.rrName) {
+      errors.push("RR Name is required");
+    }
+    if (!order.rrNo) {
+      errors.push("RR No. is required");
+    }
+    if (!order.customerNames) {
+      errors.push("Customer Names(s) is required");
+    }
+    if (!order.proposedPrincipalAmount) {
+      errors.push("Proposed Principal Amount is required");
+    }
+
+    // Conditional: Qualified account certification text required if Qualified Account = "Yes"
+    if (order.qualifiedAccount === "Yes" && !order.qualifiedAccountCertificationText) {
+      errors.push("Qualified account certification text is required when Qualified Account is Yes");
+    }
+
+    // Validate signatures - at least account owner signature required
+    if (!order.accountOwnerSignature || !order.accountOwnerPrintedName || !order.accountOwnerDate) {
+      errors.push("Account Owner signature, printed name, and date are required");
+    }
+
+    if (errors.length > 0) {
+      throw new ValidationError("Alt Order validation failed", errors);
+    }
+  }
+
+  /**
+   * Validate Accreditation data
+   */
+  async validateAccreditation(data: unknown): Promise<void> {
+    const result = accreditationSchema.safeParse(data);
+    if (!result.success) {
+      throw new ValidationError("Accreditation validation failed", result.error.errors);
+    }
+  }
+
+  /**
+   * Validate complete Accreditation before submission
+   */
+  async validateCompleteAccreditation(profileId: string): Promise<void> {
+    const profile = await prisma.accreditationProfile.findUnique({
+      where: { id: profileId },
+    });
+
+    if (!profile) {
+      throw new NotFoundError("Accreditation Profile", profileId);
+    }
+
+    const errors: string[] = [];
+
+    // Validate required fields
+    if (!profile.rrName) {
+      errors.push("RR Name is required");
+    }
+    if (!profile.rrNo) {
+      errors.push("RR No. is required");
+    }
+    if (!profile.customerNames) {
+      errors.push("Customer Name(s) is required");
+    }
+
+    // Validate signatures - at least account owner signature required
+    if (!profile.accountOwnerSignature || !profile.accountOwnerPrintedName || !profile.accountOwnerDate) {
+      errors.push("Account Owner signature, printed name, and date are required");
+    }
+
+    // If has joint owner, joint account owner signature is required
+    if (profile.hasJointOwner) {
+      if (!profile.jointAccountOwnerSignature || !profile.jointAccountOwnerPrintedName || !profile.jointAccountOwnerDate) {
+        errors.push("Joint Account Owner signature, printed name, and date are required when joint owner is present");
+      }
+    }
+
+    // Financial professional signature required
+    if (!profile.financialProfessionalSignature || !profile.financialProfessionalPrintedName || !profile.financialProfessionalDate) {
+      errors.push("Financial Professional signature, printed name, and date are required");
+    }
+
+    if (errors.length > 0) {
+      throw new ValidationError("Accreditation validation failed", errors);
     }
   }
 }

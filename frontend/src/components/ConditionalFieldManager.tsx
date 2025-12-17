@@ -37,12 +37,19 @@ export class ConditionalFieldManager {
     if (stepNumber === 4) {
       // Step 4 (Secondary Account Holder) should only show for Joint or Trust accounts
       const typeOfAccount = (formData['type_of_account'] as string[]) || [];
-      const typeOfAccountRight = (formData['type_of_account_right'] as string[]) || [];
+      const trustCheckbox = (formData['trust_checkbox'] as boolean) === true;
       
+      // Check for joint tenant in account types
       const hasJoint = typeOfAccount.includes('joint_tenant');
-      const hasTrust = typeOfAccountRight.includes('trust');
       
-      return hasJoint || hasTrust;
+      // Check for trust checkbox (trust is selected via checkbox, not account type)
+      const hasTrust = trustCheckbox;
+      
+      // Also check if trust is in type_of_account array (for backward compatibility)
+      // Note: Trust may be stored as account type in some cases
+      const hasTrustAccountType = typeOfAccount.includes('trust');
+      
+      return hasJoint || hasTrust || hasTrustAccountType;
     }
     
     // All other steps are always visible

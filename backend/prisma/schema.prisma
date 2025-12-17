@@ -177,6 +177,25 @@ enum AccountHolderType {
   secondary
 }
 
+// Statement of Financial Condition enums
+
+enum StatementRowCategory {
+  liquid_non_qualified
+  liabilities
+  net_worth
+  illiquid_non_qualified
+  liquid_qualified
+  income_summary
+  illiquid_qualified
+}
+
+enum StatementSignatureType {
+  account_owner
+  joint_account_owner
+  financial_professional
+  registered_principal
+}
+
 // ============================================
 // MODELS
 // ============================================
@@ -191,6 +210,10 @@ model User {
   updatedAt    DateTime          @updatedAt @map("updated_at")
   
   investorProfiles InvestorProfile[]
+  statementProfiles StatementProfile[]
+  additionalHolderProfiles AdditionalHolderProfile[]
+  altOrderProfiles AltOrderProfile[]
+  accreditationProfiles AccreditationProfile[]
   
   @@map("users")
 }
@@ -234,6 +257,329 @@ model InvestorProfile {
   @@index([status])
   @@index([createdAt])
   @@map("investor_profiles")
+}
+
+// ============================================
+// STATEMENT OF FINANCIAL CONDITION
+// ============================================
+
+model StatementProfile {
+  id                 String          @id @default(uuid())
+  userId             String          @map("user_id")
+  status             ProfileStatus   @default(draft)
+  lastCompletedPage  Int             @default(0) @map("last_completed_page")
+  pageCompletionStatus Json?         @map("page_completion_status")
+
+  // Header / registration (mirrors top of page 1)
+  rrName             String?         @map("rr_name")
+  rrNo               String?         @map("rr_no")
+  customerNames      String?         @map("customer_names")
+
+  // Notes
+  notesPage1         String?         @map("notes_page1")
+  additionalNotes    String?         @map("additional_notes")
+
+  createdAt          DateTime        @default(now()) @map("created_at")
+  updatedAt          DateTime        @updatedAt @map("updated_at")
+  submittedAt        DateTime?       @map("submitted_at")
+
+  user               User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  financialRows      StatementFinancialRow[]
+  signatures         StatementSignature[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("statement_profiles")
+}
+
+model StatementFinancialRow {
+  id          String               @id @default(uuid())
+  statementId String               @map("statement_id")
+  category    StatementRowCategory @map("category")
+  rowKey      String               @map("row_key")
+  label       String?              @map("label")
+  value       Decimal              @db.Decimal(19, 2)
+  isTotal     Boolean              @default(false) @map("is_total")
+
+  statement   StatementProfile     @relation(fields: [statementId], references: [id], onDelete: Cascade)
+
+  @@index([statementId])
+  @@index([category])
+  @@map("statement_financial_rows")
+}
+
+model StatementSignature {
+  id            String                @id @default(uuid())
+  statementId   String                @map("statement_id")
+  signatureType StatementSignatureType @map("signature_type")
+  signatureData String                @map("signature_data") // base64 encoded image
+  printedName   String                @map("printed_name")
+  signatureDate DateTime              @map("signature_date")
+
+  statement     StatementProfile      @relation(fields: [statementId], references: [id], onDelete: Cascade)
+
+  @@unique([statementId, signatureType])
+  @@index([statementId])
+  @@index([signatureType])
+  @@map("statement_signatures")
+}
+
+// ============================================
+// ADDITIONAL HOLDER / PARTICIPANT INFORMATION
+// ============================================
+
+model AdditionalHolderProfile {
+  id                 String          @id @default(uuid())
+  userId             String          @map("user_id")
+  status             ProfileStatus   @default(draft)
+  lastCompletedPage  Int             @default(0) @map("last_completed_page")
+  pageCompletionStatus Json?         @map("page_completion_status")
+
+  // Step 1: Basic Information
+  accountRegistration String?       @map("account_registration")
+  rrName              String?        @map("rr_name")
+  rrNo                String?        @map("rr_no")
+  name                String?        @map("name")
+  personEntity        PersonEntity?  @map("person_entity")
+  ssn                 String?        @map("ssn")
+  ein                 String?        @map("ein")
+  holderParticipantRole String?      @map("holder_participant_role")
+  email               String?       @map("email")
+  dateOfBirth         DateTime?      @map("date_of_birth")
+  positionHeld        String?        @map("position_held")
+  primaryCitizenship  String?        @map("primary_citizenship")
+  additionalCitizenship String?      @map("additional_citizenship")
+  gender              Gender?        @map("gender")
+  maritalStatus       MaritalStatus[] @map("marital_status")
+  employmentStatus    EmploymentAffiliation[] @map("employment_status")
+  occupation          String?        @map("occupation")
+  yearsEmployed       Int?           @map("years_employed")
+  typeOfBusiness      String?        @map("type_of_business")
+  employerName        String?        @map("employer_name")
+  overallInvestmentKnowledge InvestmentKnowledgeLevel? @map("overall_investment_knowledge")
+  annualIncomeFrom    Decimal?       @db.Decimal(19, 2) @map("annual_income_from")
+  annualIncomeTo      Decimal?       @db.Decimal(19, 2) @map("annual_income_to")
+  netWorthFrom        Decimal?       @db.Decimal(19, 2) @map("net_worth_from")
+  netWorthTo          Decimal?       @db.Decimal(19, 2) @map("net_worth_to")
+  liquidNetWorthFrom  Decimal?      @db.Decimal(19, 2) @map("liquid_net_worth_from")
+  liquidNetWorthTo    Decimal?      @db.Decimal(19, 2) @map("liquid_net_worth_to")
+  taxBracket          TaxBracket?    @map("tax_bracket")
+  yearsOfInvestmentExperience Int?   @map("years_of_investment_experience")
+
+  // Employment/Affiliation Questions
+  employeeOfThisBrokerDealer YesNo?  @map("employee_of_this_broker_dealer")
+  relatedToEmployeeAtThisBrokerDealer YesNo? @map("related_to_employee_at_this_broker_dealer")
+  employeeName        String?        @map("employee_name")
+  relationship        String?        @map("relationship")
+  employeeOfAnotherBrokerDealer YesNo? @map("employee_of_another_broker_dealer")
+  brokerDealerName    String?        @map("broker_dealer_name")
+  relatedToEmployeeAtAnotherBrokerDealer YesNo? @map("related_to_employee_at_another_broker_dealer")
+  brokerDealerName2   String?        @map("broker_dealer_name_2")
+  employeeName2       String?        @map("employee_name_2")
+  relationship2       String?        @map("relationship_2")
+  maintainingOtherBrokerageAccounts YesNo? @map("maintaining_other_brokerage_accounts")
+  withWhatFirms       String?        @map("with_what_firms")
+  affiliatedWithExchangeOrFinra YesNo? @map("affiliated_with_exchange_or_finra")
+  whatIsTheAffiliation String?       @map("what_is_the_affiliation")
+  seniorOfficerDirectorShareholder YesNo? @map("senior_officer_director_shareholder")
+  companyNames        String?        @map("company_names")
+
+  // Signature
+  signature           String?        @map("signature")
+  printedName         String?        @map("printed_name")
+  signatureDate       DateTime?      @map("signature_date")
+
+  createdAt           DateTime       @default(now()) @map("created_at")
+  updatedAt           DateTime       @updatedAt @map("updated_at")
+  submittedAt         DateTime?      @map("submitted_at")
+
+  user                User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  addresses           AdditionalHolderAddress[]
+  phones              AdditionalHolderPhone[]
+  governmentIds       AdditionalHolderGovernmentId[]
+  investmentKnowledge AdditionalHolderInvestmentKnowledge[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("additional_holder_profiles")
+}
+
+model AdditionalHolderAddress {
+  id                  String                @id @default(uuid())
+  profileId           String                @map("profile_id")
+  addressType         AddressType           @map("address_type")
+  addressLine         String?               @map("address_line")
+  city                String?               @map("city")
+  stateProvince       String?               @map("state_province")
+  zipPostalCode       String?               @map("zip_postal_code")
+  country             String?               @map("country")
+
+  profile             AdditionalHolderProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+  @@index([addressType])
+  @@map("additional_holder_addresses")
+}
+
+model AdditionalHolderPhone {
+  id                  String                @id @default(uuid())
+  profileId           String                @map("profile_id")
+  phoneType           PhoneType             @map("phone_type")
+  phoneNumber         String?               @map("phone_number")
+
+  profile             AdditionalHolderProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+  @@index([phoneType])
+  @@map("additional_holder_phones")
+}
+
+model AdditionalHolderGovernmentId {
+  id                  String                @id @default(uuid())
+  profileId           String                @map("profile_id")
+  type                String?              @map("type")
+  idNumber            String?               @map("id_number")
+  countryOfIssue      String?               @map("country_of_issue")
+  dateOfIssue         DateTime?             @map("date_of_issue")
+  dateOfExpiration    DateTime?             @map("date_of_expiration")
+
+  profile             AdditionalHolderProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+  @@map("additional_holder_government_ids")
+}
+
+model AdditionalHolderInvestmentKnowledge {
+  id                  String                @id @default(uuid())
+  profileId           String                @map("profile_id")
+  investmentType      InvestmentType        @map("investment_type")
+  knowledgeLevel      InvestmentKnowledgeLevel? @map("knowledge_level")
+  sinceYear           Int?                  @map("since_year")
+
+  profile             AdditionalHolderProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, investmentType])
+  @@index([profileId])
+  @@index([investmentType])
+  @@map("additional_holder_investment_knowledge")
+}
+
+// ============================================
+// ALTERNATIVE INVESTMENT ORDER
+// ============================================
+
+model AltOrderProfile {
+  id                 String          @id @default(uuid())
+  userId             String          @map("user_id")
+  status             ProfileStatus   @default(draft)
+  lastCompletedPage  Int             @default(0) @map("last_completed_page")
+  pageCompletionStatus Json?         @map("page_completion_status")
+
+  // Customer/Account Information
+  rrName             String?         @map("rr_name")
+  rrNo               String?         @map("rr_no")
+  customerNames      String?         @map("customer_names")
+  proposedPrincipalAmount Decimal?   @db.Decimal(19, 2) @map("proposed_principal_amount")
+  qualifiedAccount   YesNo?          @map("qualified_account")
+  qualifiedAccountCertificationText String? @map("qualified_account_certification_text")
+  solicitedTrade     YesNo?          @map("solicited_trade")
+  taxAdvantagePurchase YesNo?        @map("tax_advantage_purchase")
+
+  // Customer Order Information
+  custodian          String?         @map("custodian")
+  nameOfProduct      String?         @map("name_of_product")
+  sponsorIssuer      String?         @map("sponsor_issuer")
+  dateOfPpm          DateTime?       @map("date_of_ppm")
+  datePpmSent        DateTime?       @map("date_ppm_sent")
+  existingIlliquidAltPositions Decimal? @db.Decimal(19, 2) @map("existing_illiquid_alt_positions")
+  existingIlliquidAltConcentration Decimal? @db.Decimal(5, 2) @map("existing_illiquid_alt_concentration")
+  existingSemiLiquidAltPositions Decimal? @db.Decimal(19, 2) @map("existing_semi_liquid_alt_positions")
+  existingSemiLiquidAltConcentration Decimal? @db.Decimal(5, 2) @map("existing_semi_liquid_alt_concentration")
+  existingTaxAdvantageAltPositions Decimal? @db.Decimal(19, 2) @map("existing_tax_advantage_alt_positions")
+  existingTaxAdvantageAltConcentration Decimal? @db.Decimal(5, 2) @map("existing_tax_advantage_alt_concentration")
+  totalNetWorth      Decimal?        @db.Decimal(19, 2) @map("total_net_worth")
+  liquidNetWorth     Decimal?        @db.Decimal(19, 2) @map("liquid_net_worth")
+  totalConcentration Decimal?        @db.Decimal(5, 2) @map("total_concentration")
+
+  // Signatures
+  accountOwnerSignature String?      @map("account_owner_signature")
+  accountOwnerPrintedName String?    @map("account_owner_printed_name")
+  accountOwnerDate    DateTime?      @map("account_owner_date")
+  jointAccountOwnerSignature String? @map("joint_account_owner_signature")
+  jointAccountOwnerPrintedName String? @map("joint_account_owner_printed_name")
+  jointAccountOwnerDate DateTime?    @map("joint_account_owner_date")
+  financialProfessionalSignature String? @map("financial_professional_signature")
+  financialProfessionalPrintedName String? @map("financial_professional_printed_name")
+  financialProfessionalDate DateTime? @map("financial_professional_date")
+  registeredPrincipalSignature String? @map("registered_principal_signature")
+  registeredPrincipalPrintedName String? @map("registered_principal_printed_name")
+  registeredPrincipalDate DateTime?  @map("registered_principal_date")
+
+  // Internal Use Only
+  notes              String?         @map("notes")
+  regBiDelivery      Boolean         @default(false) @map("reg_bi_delivery")
+  stateRegistration  Boolean         @default(false) @map("state_registration")
+  aiInsight          Boolean         @default(false) @map("ai_insight")
+  statementOfFinancialCondition Boolean @default(false) @map("statement_of_financial_condition")
+  suitabilityReceived Boolean        @default(false) @map("suitability_received")
+
+  createdAt          DateTime        @default(now()) @map("created_at")
+  updatedAt          DateTime        @updatedAt @map("updated_at")
+  submittedAt         DateTime?       @map("submitted_at")
+
+  user                User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("alt_order_profiles")
+}
+
+// ============================================
+// ACCREDITED INVESTOR VERIFICATION (506C)
+// ============================================
+
+model AccreditationProfile {
+  id                 String          @id @default(uuid())
+  userId             String          @map("user_id")
+  status             ProfileStatus   @default(draft)
+  lastCompletedPage  Int             @default(0) @map("last_completed_page")
+  pageCompletionStatus Json?         @map("page_completion_status")
+
+  // Client/Account Information
+  rrName             String?         @map("rr_name")
+  rrNo               String?         @map("rr_no")
+  customerNames      String?         @map("customer_names")
+  hasJointOwner      Boolean         @default(false) @map("has_joint_owner")
+
+  // Signatures
+  accountOwnerSignature String?       @map("account_owner_signature")
+  accountOwnerPrintedName String?     @map("account_owner_printed_name")
+  accountOwnerDate    DateTime?      @map("account_owner_date")
+  jointAccountOwnerSignature String? @map("joint_account_owner_signature")
+  jointAccountOwnerPrintedName String? @map("joint_account_owner_printed_name")
+  jointAccountOwnerDate DateTime?    @map("joint_account_owner_date")
+  financialProfessionalSignature String? @map("financial_professional_signature")
+  financialProfessionalPrintedName String? @map("financial_professional_printed_name")
+  financialProfessionalDate DateTime? @map("financial_professional_date")
+  registeredPrincipalSignature String?   @map("registered_principal_signature")
+  registeredPrincipalPrintedName String? @map("registered_principal_printed_name")
+  registeredPrincipalDate DateTime?    @map("registered_principal_date")
+
+  createdAt          DateTime        @default(now()) @map("created_at")
+  updatedAt          DateTime        @updatedAt @map("updated_at")
+  submittedAt         DateTime?       @map("submitted_at")
+
+  user                User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("accreditation_profiles")
 }
 
 // Step 1: Many-to-Many Relationships
