@@ -21,6 +21,7 @@ function AppShell({
   onGeneratePdf,
   isGeneratingPdf,
   hasProfiles,
+  hasSelectedForms,
 }: {
   children: React.ReactNode;
   onLogout: () => void;
@@ -28,6 +29,7 @@ function AppShell({
   onGeneratePdf?: () => void;
   isGeneratingPdf?: boolean;
   hasProfiles?: boolean;
+  hasSelectedForms?: boolean;
 }) {
   const accentLines = useMemo(
     () => (
@@ -294,7 +296,7 @@ function AppShell({
               <button
                 type="button"
                 onClick={onGeneratePdf}
-                disabled={isGeneratingPdf}
+                disabled={isGeneratingPdf || !hasSelectedForms}
                 className="app-generate-pdf"
               >
                 {isGeneratingPdf ? (
@@ -686,6 +688,7 @@ function ProtectedApp() {
       onGeneratePdf={handleGeneratePdf}
       isGeneratingPdf={isGeneratingPdf}
       hasProfiles={profiles.length > 0 && !!selectedProfileId}
+      hasSelectedForms={selectedForms.size > 0}
     >
       {!isFormView && (
         <div className="space-y-10">
