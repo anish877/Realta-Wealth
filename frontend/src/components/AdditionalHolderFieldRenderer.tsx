@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { TextField } from "./fields/TextField";
 import { DateField } from "./fields/DateField";
 import { CurrencyField } from "./fields/CurrencyField";
@@ -40,6 +41,18 @@ export function AdditionalHolderFieldRenderer({
 
   const fieldError = errors[field.id];
   const handleBlur = () => onBlur?.(field.id);
+  const singleSelectIds = useMemo(
+    () =>
+      new Set([
+        "person_entity",
+        "gender",
+        "marital_status",
+        "employment_status",
+        "overall_level",
+        "tax_bracket",
+      ]),
+    []
+  );
 
   // Handle address groups
   if (field.id === "legal_address" && field.fields) {
@@ -295,6 +308,7 @@ export function AdditionalHolderFieldRenderer({
             value={(value as string[]) || []}
             onChange={onChange}
             options={field.options || []}
+            singleSelect={singleSelectIds.has(field.id)}
           />
           {fieldError && (
             <p className="mt-1 text-sm text-red-600">{fieldError}</p>

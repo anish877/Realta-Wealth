@@ -28,6 +28,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import type { FieldValue, FormData } from "../types/form";
 import { useFormValidation } from "../hooks/useFormValidation";
 import { StepErrorSummary } from "./ValidationError";
+import { FormSkeleton } from "./FormSkeleton";
 
 type SaveState =
   | { status: "idle"; error?: string }
@@ -54,21 +55,33 @@ interface Section {
   fields: Field[];
 }
 
-export default function InvestorProfileForm() {
+interface InvestorProfileFormProps {
+  clientId?: string;
+}
+
+export default function InvestorProfileForm({ clientId }: InvestorProfileFormProps = {}) {
   const { isAuthenticated } = useAuth();
   const { toasts, showToast, removeToast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Extract profileId from URL pathname (since we're using wildcard routes)
+  // Extract profileId from URL pathname (handles both /app/profile/:id and /app/clients/:clientId/forms/profile/:id)
   const profileIdFromUrl = useMemo(() => {
-    const pathMatch = location.pathname.match(/\/profile\/(.+)$/);
+    const pathMatch = location.pathname.match(/\/profile\/([^/]+)/);
     if (pathMatch && pathMatch[1]) {
       const id = pathMatch[1];
       return id === "new" ? null : id;
     }
     return null;
   }, [location.pathname]);
+
+  // Extract clientId from URL if not provided as prop
+  const clientIdFromUrl = useMemo(() => {
+    const pathMatch = location.pathname.match(/\/clients\/([^/]+)/);
+    return pathMatch ? pathMatch[1] : null;
+  }, [location.pathname]);
+
+  const effectiveClientId = clientId || clientIdFromUrl;
   
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<FormData>({});
@@ -77,6 +90,7 @@ export default function InvestorProfileForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [saveState, setSaveState] = useState<SaveState>({ status: "idle" });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSavingNext, setIsSavingNext] = useState(false);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
   const [lastCompletedStep, setLastCompletedStep] = useState<number>(0);
 
@@ -217,12 +231,16 @@ export default function InvestorProfileForm() {
             if (stepNumber !== 1) {
               throw new Error("Please complete Step 1 to create a profile before saving other steps.");
             }
-            const response = await createProfile(payload);
+            const response = await createProfile(payload, effectiveClientId);
             responseData = response.data;
             const newProfileId = response.data.id;
             setProfileId(newProfileId);
             // Update URL to include profileId so form reloads correctly when navigating back
-            navigate(`/app/profile/${newProfileId}`, { replace: true });
+            if (effectiveClientId) {
+              navigate(`/app/clients/${effectiveClientId}/forms/profile/${newProfileId}`, { replace: true });
+            } else {
+              navigate(`/app/profile/${newProfileId}`, { replace: true });
+            }
           }
 
           const statusMap = (responseData as any).stepCompletionStatus || {};
@@ -368,11 +386,6 @@ export default function InvestorProfileForm() {
       
       // Update completed steps
       setCompletedSteps((prev) => new Set([...prev, getStepNumberFromSection(currentSection?.sectionId) || 0]));
-      
-      // Optionally redirect after a delay
-      setTimeout(() => {
-        window.location.href = "/?profileId=" + profileId;
-      }, 2000);
     } catch (error: any) {
       showToast(error.message || "Failed to submit profile", "error");
       console.error("Error submitting profile:", error);
@@ -405,41 +418,10 @@ export default function InvestorProfileForm() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-12 px-4 flex items-center justify-center">
-        <div className="w-full max-w-5xl space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="space-y-2">
-              <div className="h-4 w-28 bg-slate-200 rounded-full animate-pulse" />
-              <div className="h-7 w-64 bg-slate-200 rounded-full animate-pulse" />
-            </div>
-            <div className="h-5 w-24 bg-slate-200 rounded-full animate-pulse" />
-          </div>
-
-          <div className="rounded-2xl bg-white shadow-lg border border-slate-100 p-8 space-y-4 animate-pulse">
-            <div className="h-6 w-48 bg-slate-200 rounded-full" />
-            <div className="h-4 w-72 bg-slate-100 rounded-full" />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-              <div className="h-12 bg-slate-100 rounded-xl" />
-              <div className="h-12 bg-slate-100 rounded-xl" />
-              <div className="h-12 bg-slate-100 rounded-xl" />
-              <div className="h-12 bg-slate-100 rounded-xl" />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="h-10 bg-slate-100 rounded-full" />
-              <div className="h-10 bg-slate-100 rounded-full" />
-              <div className="h-10 bg-slate-100 rounded-full" />
-            </div>
-          </div>
-
-          <div className="rounded-2xl bg-white shadow-lg border border-slate-100 p-8 space-y-3 animate-pulse">
-            <div className="h-5 w-36 bg-slate-200 rounded-full" />
-            <div className="h-4 w-full bg-slate-100 rounded-lg" />
-            <div className="h-4 w-5/6 bg-slate-100 rounded-lg" />
-            <div className="h-4 w-2/3 bg-slate-100 rounded-lg" />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-              <div className="h-12 bg-slate-100 rounded-xl" />
-              <div className="h-12 bg-slate-100 rounded-xl" />
-            </div>
+      <div className="form-root">
+        <div className="form-container">
+          <div className="form-content">
+            <FormSkeleton fieldCount={8} showSectionHeader={true} />
           </div>
         </div>
       </div>
@@ -1104,6 +1086,7 @@ export default function InvestorProfileForm() {
           onNext={handleNext}
           onSubmit={handleSubmit}
           isSubmitting={isSubmitting}
+          isSavingNext={isSavingNext}
         />
         </div>
       </div>

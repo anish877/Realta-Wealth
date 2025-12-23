@@ -48,7 +48,7 @@ export function AuthPage() {
     
     if (!isLogin) {
       data.fullName = fullName;
-      data.role = "client";
+      data.role = "admin";
     }
     
     try {
@@ -80,7 +80,7 @@ export function AuthPage() {
       if (isLogin) {
         loginSchema.parse({ email, password });
       } else {
-        registerSchema.parse({ email, password, fullName, role: "client" });
+        registerSchema.parse({ email, password, fullName, role: "admin" });
       }
       setFieldErrors({});
       return true;
@@ -142,8 +142,8 @@ export function AuthPage() {
       if (isLogin) {
         await login(email, password);
       } else {
-        // All signups are client-only for now
-        await register(email, password, fullName, "client");
+        // All signups are admin-only
+        await register(email, password, fullName, "admin");
       }
       // Redirect to return URL or default to /app after successful auth
       navigate(getReturnUrl(), { replace: true });

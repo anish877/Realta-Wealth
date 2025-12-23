@@ -7,15 +7,20 @@ export function shouldShowAdditionalHolderField(
   fieldId: string,
   formData: Record<string, FieldValue>
 ): boolean {
+  const hasValue = (candidate: FieldValue, expected: string) => {
+    if (Array.isArray(candidate)) return candidate.includes(expected);
+    return candidate === expected;
+  };
+
   // SSN/EIN based on Person/Entity
   if (fieldId === "ssn") {
     const personEntity = formData.person_entity;
-    return Array.isArray(personEntity) && personEntity.includes("Person");
+    return hasValue(personEntity, "Person");
   }
 
   if (fieldId === "ein") {
     const personEntity = formData.person_entity;
-    return Array.isArray(personEntity) && personEntity.includes("Entity");
+    return hasValue(personEntity, "Entity");
   }
 
   // Mailing address - show if different from legal (or if mailing_same_as_legal is false)
@@ -38,13 +43,10 @@ export function shouldShowAdditionalHolderField(
     fieldId.startsWith("employer_")
   ) {
     const employmentStatus = formData.employment_status;
-    if (Array.isArray(employmentStatus)) {
-      return (
-        employmentStatus.includes("Employed") ||
-        employmentStatus.includes("Self-Employed")
-      );
-    }
-    return false;
+    return (
+      hasValue(employmentStatus, "Employed") ||
+      hasValue(employmentStatus, "Self-Employed")
+    );
   }
 
   // Yes/No follow-up fields - show when "Yes" is selected
@@ -87,10 +89,15 @@ export function getAdditionalHolderFieldRequirements(
   fieldId: string,
   formData: Record<string, FieldValue>
 ): { required: boolean; message?: string } {
+  const hasValue = (candidate: FieldValue, expected: string) => {
+    if (Array.isArray(candidate)) return candidate.includes(expected);
+    return candidate === expected;
+  };
+
   // SSN required if Person
   if (fieldId === "ssn") {
     const personEntity = formData.person_entity;
-    if (Array.isArray(personEntity) && personEntity.includes("Person")) {
+    if (hasValue(personEntity, "Person")) {
       return { required: true, message: "SSN is required for Person" };
     }
   }
@@ -98,7 +105,7 @@ export function getAdditionalHolderFieldRequirements(
   // EIN required if Entity
   if (fieldId === "ein") {
     const personEntity = formData.person_entity;
-    if (Array.isArray(personEntity) && personEntity.includes("Entity")) {
+    if (hasValue(personEntity, "Entity")) {
       return { required: true, message: "EIN is required for Entity" };
     }
   }
@@ -106,13 +113,11 @@ export function getAdditionalHolderFieldRequirements(
   // Employment fields required if Employed or Self-Employed
   if (fieldId === "occupation" || fieldId === "employer_name") {
     const employmentStatus = formData.employment_status;
-    if (Array.isArray(employmentStatus)) {
-      if (
-        employmentStatus.includes("Employed") ||
-        employmentStatus.includes("Self-Employed")
-      ) {
-        return { required: true };
-      }
+    if (
+      hasValue(employmentStatus, "Employed") ||
+      hasValue(employmentStatus, "Self-Employed")
+    ) {
+      return { required: true };
     }
   }
 

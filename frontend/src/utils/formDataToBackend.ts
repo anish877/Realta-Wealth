@@ -186,14 +186,14 @@ export function transformStep3(formData: FormData) {
   }
 
   const phones = [];
-  if (formData.primary_home_phone) {
-    phones.push({ phoneType: "home", phoneNumber: formData.primary_home_phone });
+  if (formData.primary_home_phone && formData.primary_home_phone.trim()) {
+    phones.push({ phoneType: "home", phoneNumber: formData.primary_home_phone.trim() });
   }
-  if (formData.primary_business_phone) {
-    phones.push({ phoneType: "business", phoneNumber: formData.primary_business_phone });
+  if (formData.primary_business_phone && formData.primary_business_phone.trim()) {
+    phones.push({ phoneType: "business", phoneNumber: formData.primary_business_phone.trim() });
   }
-  if (formData.primary_mobile_phone) {
-    phones.push({ phoneType: "mobile", phoneNumber: formData.primary_mobile_phone });
+  if (formData.primary_mobile_phone && formData.primary_mobile_phone.trim()) {
+    phones.push({ phoneType: "mobile", phoneNumber: formData.primary_mobile_phone.trim() });
   }
 
   // Investment knowledge
@@ -313,7 +313,7 @@ export function transformStep3(formData: FormData) {
     gender: formData.primary_gender || null,
     generalInvestmentKnowledge: formData.primary_general_investment_knowledge || null,
     addresses: addresses.length > 0 ? addresses : undefined,
-    phones: phones.length > 0 ? phones : undefined,
+    phones: phones, // Always send phones array (empty array means clear all phones)
     maritalStatuses: formData.primary_marital_status || [],
     employmentAffiliations: formData.primary_employment_affiliations || [],
     employment,
@@ -405,9 +405,15 @@ export function transformStep4(formData: FormData) {
   }
 
   const phones = [];
-  if (formData.secondary_home_phone) phones.push({ phoneType: "home", phoneNumber: formData.secondary_home_phone });
-  if (formData.secondary_business_phone) phones.push({ phoneType: "business", phoneNumber: formData.secondary_business_phone });
-  if (formData.secondary_mobile_phone) phones.push({ phoneType: "mobile", phoneNumber: formData.secondary_mobile_phone });
+  if (formData.secondary_home_phone && formData.secondary_home_phone.trim()) {
+    phones.push({ phoneType: "home", phoneNumber: formData.secondary_home_phone.trim() });
+  }
+  if (formData.secondary_business_phone && formData.secondary_business_phone.trim()) {
+    phones.push({ phoneType: "business", phoneNumber: formData.secondary_business_phone.trim() });
+  }
+  if (formData.secondary_mobile_phone && formData.secondary_mobile_phone.trim()) {
+    phones.push({ phoneType: "mobile", phoneNumber: formData.secondary_mobile_phone.trim() });
+  }
 
   // Investment knowledge for secondary
   const investmentKnowledge = [];
@@ -518,7 +524,7 @@ export function transformStep4(formData: FormData) {
     gender: formData.secondary_gender || null,
     generalInvestmentKnowledge: formData.secondary_general_investment_knowledge || null,
     addresses: addresses.length > 0 ? addresses : undefined,
-    phones: phones.length > 0 ? phones : undefined,
+    phones: phones, // Always send phones array (empty array means clear all phones)
     maritalStatuses: formData.secondary_marital_status || [],
     employmentAffiliations: formData.secondary_employment_affiliations || [],
     employment,

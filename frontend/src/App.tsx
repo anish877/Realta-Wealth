@@ -10,7 +10,11 @@ import { AuthPage } from "./components/AuthPage";
 import LandingPage from "./components/LandingPage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { PublicRoute } from "./components/PublicRoute";
-import { getProfilesByUser, generatePdf, getStatements, getAdditionalHolders, getAltOrders, getAccreditations, generateStatementPdf, generateAdditionalHolderPdf, generateAltOrderPdf, generateAccreditationPdf, type InvestorProfile, type StatementProfile, type AdditionalHolderProfile, type AltOrderProfile, type AccreditationProfile } from "./api";
+import AdminDashboard from "./components/AdminDashboard";
+import ClientCreationDrawer from "./components/ClientCreationDrawer";
+import ClientDetailView from "./components/ClientDetailView";
+import ClientFormsHub from "./components/ClientFormsHub";
+import { getProfilesByUser, generatePdf, getStatements, getAdditionalHolders, getAltOrders, getAccreditations, generateStatementPdf, generateAdditionalHolderPdf, generateAltOrderPdf, generateAccreditationPdf, type InvestorProfile, type StatementProfile, type AdditionalHolderProfile, type AltOrderProfile, type AccreditationProfile, type Client } from "./api";
 import { setupApiInterceptor } from "./utils/apiInterceptor";
 import { useToast, ToastContainer } from "./components/Toast";
 
@@ -337,6 +341,10 @@ function ProtectedApp() {
   const location = useLocation();
   const { user, logout } = useAuth();
   const { toasts, showToast, removeToast } = useToast();
+  const [showClientModal, setShowClientModal] = useState(false);
+
+  // Check if user is admin
+  const isAdmin = user?.role === "admin";
 
   const [profiles, setProfiles] = useState<InvestorProfile[]>([]);
   const [profilesLoading, setProfilesLoading] = useState(false);
@@ -355,6 +363,8 @@ function ProtectedApp() {
   const [isGeneratingSelectedPdfs, setIsGeneratingSelectedPdfs] = useState(false);
 
   // Determine current view from route
+  const isClientFormsRoute = location.pathname.includes("/clients/") && location.pathname.includes("/forms");
+  const isClientDetailRoute = location.pathname.match(/^\/app\/clients\/[^/]+$/);
   const isFormView =
     location.pathname.includes("/profile") ||
     location.pathname.includes("/statement") ||
@@ -365,30 +375,44 @@ function ProtectedApp() {
   const isAdditionalHolderView = location.pathname.includes("/additional-holder");
   const isAltOrderView = location.pathname.includes("/alt-order");
   const isAccreditationView = location.pathname.includes("/506c");
-  const profileId = location.pathname.includes("/profile/") 
-    ? location.pathname.split("/profile/")[1] 
-    : null;
-  const statementId = location.pathname.includes("/statement/") 
-    ? location.pathname.split("/statement/")[1] 
-    : null;
+  
+  // Extract IDs from route
+  const clientIdMatch = location.pathname.match(/\/clients\/([^/]+)/);
+  const clientId = clientIdMatch ? clientIdMatch[1] : null;
+  
+  // Extract form IDs - handle both /app/profile/:id and /app/clients/:clientId/forms/profile/:id
+  const profileIdMatch = location.pathname.match(/\/profile\/([^/]+)/);
+  const profileId = profileIdMatch ? (profileIdMatch[1] === "new" ? null : profileIdMatch[1]) : null;
+  
+  const statementIdMatch = location.pathname.match(/\/statement\/([^/]+)/);
+  const statementId = statementIdMatch ? (statementIdMatch[1] === "new" ? null : statementIdMatch[1]) : null;
+  
+  const additionalHolderIdMatch = location.pathname.match(/\/additional-holder\/([^/]+)/);
+  const additionalHolderId = additionalHolderIdMatch ? (additionalHolderIdMatch[1] === "new" ? null : additionalHolderIdMatch[1]) : null;
+  
+  const altOrderIdMatch = location.pathname.match(/\/alt-order\/([^/]+)/);
+  const altOrderId = altOrderIdMatch ? (altOrderIdMatch[1] === "new" ? null : altOrderIdMatch[1]) : null;
+  
+  const accreditationIdMatch = location.pathname.match(/\/506c\/([^/]+)/);
+  const accreditationId = accreditationIdMatch ? (accreditationIdMatch[1] === "new" ? null : accreditationIdMatch[1]) : null;
 
   const fetchProfiles = useCallback(async () => {
     try {
       setProfilesLoading(true);
       setProfilesError(null);
-      const resp = await getProfilesByUser(undefined, { page: 1, limit: 10 });
+      const resp = await getProfilesByUser(undefined, { page: 1, limit: 10 }, clientId || undefined);
       setProfiles(resp.profiles || []);
     } catch (err: any) {
       setProfilesError(err.message || "Unable to load forms");
     } finally {
       setProfilesLoading(false);
     }
-  }, []);
+  }, [clientId]);
 
   const fetchStatements = useCallback(async () => {
     try {
       setStatementsLoading(true);
-      const resp = await getStatements({ page: 1, limit: 10 });
+      const resp = await getStatements({ page: 1, limit: 10, clientId: clientId || undefined });
       setStatements(resp.statements || []);
     } catch (err: any) {
       console.error("Error fetching statements:", err);
@@ -396,12 +420,12 @@ function ProtectedApp() {
     } finally {
       setStatementsLoading(false);
     }
-  }, []);
+  }, [clientId]);
 
   const fetchAdditionalHolders = useCallback(async () => {
     try {
       setAdditionalHoldersLoading(true);
-      const resp = await getAdditionalHolders({ page: 1, limit: 10 });
+      const resp = await getAdditionalHolders({ page: 1, limit: 10, clientId: clientId || undefined });
       setAdditionalHolders(resp.profiles || []);
     } catch (err: any) {
       console.error("Error fetching additional holders:", err);
@@ -409,12 +433,12 @@ function ProtectedApp() {
     } finally {
       setAdditionalHoldersLoading(false);
     }
-  }, []);
+  }, [clientId]);
 
   const fetchAltOrders = useCallback(async () => {
     try {
       setAltOrdersLoading(true);
-      const resp = await getAltOrders({ page: 1, limit: 10 });
+      const resp = await getAltOrders({ page: 1, limit: 10, clientId: clientId || undefined });
       setAltOrders(resp.profiles || []);
     } catch (err: any) {
       console.error("Error fetching alt orders:", err);
@@ -422,12 +446,12 @@ function ProtectedApp() {
     } finally {
       setAltOrdersLoading(false);
     }
-  }, []);
+  }, [clientId]);
 
   const fetchAccreditations = useCallback(async () => {
     try {
       setAccreditationsLoading(true);
-      const resp = await getAccreditations({ page: 1, limit: 10 });
+      const resp = await getAccreditations({ page: 1, limit: 10, clientId: clientId || undefined });
       setAccreditations(resp.profiles || []);
     } catch (err: any) {
       console.error("Error fetching accreditations:", err);
@@ -435,7 +459,7 @@ function ProtectedApp() {
     } finally {
       setAccreditationsLoading(false);
     }
-  }, []);
+  }, [clientId]);
 
   useEffect(() => {
     fetchProfiles();
@@ -457,65 +481,111 @@ function ProtectedApp() {
   }, [isFormView, fetchProfiles, fetchStatements, fetchAdditionalHolders, fetchAltOrders, fetchAccreditations]);
 
   const handleSelectProfile = (profileId: string) => {
+    if (clientId) {
+      navigate(`/app/clients/${clientId}/forms/profile/${profileId}`, { replace: true });
+    } else {
     navigate(`/app/profile/${profileId}`, { replace: true });
+    }
   };
 
   const handleStartNew = () => {
-    // If profile exists, navigate to it (will update it)
-    // Otherwise, navigate to new (will create it)
+    if (clientId) {
+      if (profiles.length > 0 && profiles[0].id) {
+        navigate(`/app/clients/${clientId}/forms/profile/${profiles[0].id}`, { replace: true });
+      } else {
+        navigate(`/app/clients/${clientId}/forms/profile/new`, { replace: true });
+      }
+    } else {
     if (profiles.length > 0 && profiles[0].id) {
       navigate(`/app/profile/${profiles[0].id}`, { replace: true });
     } else {
       navigate("/app/profile/new", { replace: true });
+      }
     }
   };
 
   const handleStartNewStatement = () => {
-    // If draft statement exists, navigate to it (will continue editing)
-    // Otherwise, navigate to new (will create it)
     const draftStatement = statements.find(s => s.status === "draft");
+    if (clientId) {
+      if (draftStatement && draftStatement.id) {
+        navigate(`/app/clients/${clientId}/forms/statement/${draftStatement.id}`, { replace: true });
+      } else {
+        navigate(`/app/clients/${clientId}/forms/statement/new`, { replace: true });
+      }
+    } else {
     if (draftStatement && draftStatement.id) {
       navigate(`/app/statement/${draftStatement.id}`, { replace: true });
     } else {
       navigate("/app/statement/new", { replace: true });
+      }
     }
   };
 
   const handleStartNewAltOrder = () => {
-    // If draft alt order exists, navigate to it (will continue editing)
-    // Otherwise, navigate to new (will create it)
     const draftAltOrder = altOrders.find(o => o.status === "draft");
+    if (clientId) {
+      if (draftAltOrder && draftAltOrder.id) {
+        navigate(`/app/clients/${clientId}/forms/alt-order/${draftAltOrder.id}`, { replace: true });
+      } else {
+        navigate(`/app/clients/${clientId}/forms/alt-order/new`, { replace: true });
+      }
+    } else {
     if (draftAltOrder && draftAltOrder.id) {
       navigate(`/app/alt-order/${draftAltOrder.id}`, { replace: true });
     } else {
       navigate("/app/alt-order/new", { replace: true });
+      }
     }
   };
 
   const handleStartNewAdditionalHolder = () => {
-    // If draft additional holder exists, navigate to it (will continue editing)
-    // Otherwise, navigate to new (will create it)
     const draftAdditionalHolder = additionalHolders.find(h => h.status === "draft");
+    if (clientId) {
+      if (draftAdditionalHolder && draftAdditionalHolder.id) {
+        navigate(`/app/clients/${clientId}/forms/additional-holder/${draftAdditionalHolder.id}`, { replace: true });
+      } else {
+        navigate(`/app/clients/${clientId}/forms/additional-holder/new`, { replace: true });
+      }
+    } else {
     if (draftAdditionalHolder && draftAdditionalHolder.id) {
       navigate(`/app/additional-holder/${draftAdditionalHolder.id}`, { replace: true });
     } else {
       navigate("/app/additional-holder/new", { replace: true });
+      }
     }
   };
 
   const handleStartNewAccreditation = () => {
-    // If draft accreditation exists, navigate to it (will continue editing)
-    // Otherwise, navigate to new (will create it)
     const draftAccreditation = accreditations.find(a => a.status === "draft");
+    if (clientId) {
+      if (draftAccreditation && draftAccreditation.id) {
+        navigate(`/app/clients/${clientId}/forms/506c/${draftAccreditation.id}`, { replace: true });
+      } else {
+        navigate(`/app/clients/${clientId}/forms/506c/new`, { replace: true });
+      }
+    } else {
     if (draftAccreditation && draftAccreditation.id) {
       navigate(`/app/506c/${draftAccreditation.id}`, { replace: true });
     } else {
       navigate("/app/506c/new", { replace: true });
+      }
     }
   };
 
   const handleBackToHub = () => {
+    if (clientId) {
+      navigate(`/app/clients/${clientId}/forms`, { replace: true });
+    } else {
     navigate("/app", { replace: true });
+    }
+  };
+
+  const handleClientCreated = (client: Client) => {
+    navigate(`/app/clients/${client.id}/forms`, { replace: true });
+  };
+
+  const handleClientClick = (clientId: string) => {
+    navigate(`/app/clients/${clientId}`, { replace: true });
   };
 
   const handleGeneratePdf = async () => {
@@ -681,6 +751,53 @@ function ProtectedApp() {
   const draftAccreditation = accreditations.find(a => a.status === "draft");
   const accreditationActionLabel = draftAccreditation ? "Continue" : "Start";
 
+  // Show admin dashboard for admins on main /app route
+  if (isAdmin && location.pathname === "/app") {
+    return (
+      <AppShell 
+        onLogout={() => logout("/auth")} 
+        userName={user?.fullName}
+      >
+        <AdminDashboard 
+          onCreateClient={() => setShowClientModal(true)}
+          onClientClick={handleClientClick}
+        />
+        <ClientCreationDrawer
+          isOpen={showClientModal}
+          onClose={() => setShowClientModal(false)}
+          onSuccess={handleClientCreated}
+        />
+        <ToastContainer toasts={toasts} onRemove={removeToast} />
+      </AppShell>
+    );
+  }
+
+  // Show client detail view
+  if (isAdmin && isClientDetailRoute) {
+    return (
+      <AppShell 
+        onLogout={() => logout("/auth")} 
+        userName={user?.fullName}
+      >
+        <ClientDetailView />
+        <ToastContainer toasts={toasts} onRemove={removeToast} />
+      </AppShell>
+    );
+  }
+
+  // Show client forms hub (same UI as before, but client-scoped)
+  if (isAdmin && isClientFormsRoute && !isFormView) {
+    return (
+      <AppShell 
+        onLogout={() => logout("/auth")} 
+        userName={user?.fullName}
+      >
+        <ClientFormsHub />
+        <ToastContainer toasts={toasts} onRemove={removeToast} />
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell 
       onLogout={() => logout("/auth")} 
@@ -690,7 +807,7 @@ function ProtectedApp() {
       hasProfiles={profiles.length > 0 && !!selectedProfileId}
       hasSelectedForms={selectedForms.size > 0}
     >
-      {!isFormView && (
+      {!isFormView && !isClientFormsRoute && (
         <div className="space-y-10">
           <div className="hub-hero">
             <div className="hub-kicker">Realta Wealth</div>
@@ -966,10 +1083,10 @@ function ProtectedApp() {
               className="text-[var(--primary)] text-sm font-semibold hover:underline"
               onClick={handleBackToHub}
             >
-              ← Back to forms
+              ← Back to {clientId ? "client forms" : "forms"}
             </button>
           </div>
-          <InvestorProfileForm />
+          <InvestorProfileForm clientId={clientId || undefined} />
         </div>
       )}
 
@@ -984,10 +1101,10 @@ function ProtectedApp() {
               className="text-[var(--primary)] text-sm font-semibold hover:underline"
               onClick={handleBackToHub}
             >
-              ← Back to forms
+              ← Back to {clientId ? "client forms" : "forms"}
             </button>
           </div>
-          <StatementOfFinancialConditionForm />
+          <StatementOfFinancialConditionForm clientId={clientId || undefined} />
         </div>
       )}
 
@@ -1002,10 +1119,10 @@ function ProtectedApp() {
               className="text-[var(--primary)] text-sm font-semibold hover:underline"
               onClick={handleBackToHub}
             >
-              ← Back to forms
+              ← Back to {clientId ? "client forms" : "forms"}
             </button>
           </div>
-          <AdditionalHolderForm />
+          <AdditionalHolderForm clientId={clientId || undefined} />
         </div>
       )}
 
@@ -1020,10 +1137,10 @@ function ProtectedApp() {
               className="text-[var(--primary)] text-sm font-semibold hover:underline"
               onClick={handleBackToHub}
             >
-              ← Back to forms
+              ← Back to {clientId ? "client forms" : "forms"}
             </button>
           </div>
-          <AltOrderForm />
+          <AltOrderForm clientId={clientId || undefined} />
         </div>
       )}
 
@@ -1038,10 +1155,10 @@ function ProtectedApp() {
               className="text-[var(--primary)] text-sm font-semibold hover:underline"
               onClick={handleBackToHub}
             >
-              ← Back to forms
+              ← Back to {clientId ? "client forms" : "forms"}
             </button>
           </div>
-          <AccreditationForm />
+          <AccreditationForm clientId={clientId || undefined} />
         </div>
       )}
       <ToastContainer toasts={toasts} onRemove={removeToast} />

@@ -34,24 +34,15 @@ export function ProtectedRoute({ children, roles, requireAuth = true }: Protecte
   // If roles are specified, check if user has required role
   if (roles && roles.length > 0 && user) {
     if (!roles.includes(user.role)) {
-      // User doesn't have required role, show access denied page
-      return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
-          <div className="text-center max-w-md mx-auto px-4">
-            <h1 className="text-2xl font-semibold text-slate-900 mb-2">Access Denied</h1>
-            <p className="text-slate-600 mb-6">
-              You don't have permission to access this page. Required role: {roles.join(" or ")}.
-            </p>
-            <a
-              href="/app"
-              className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
-            >
-              Go to Dashboard
-            </a>
-          </div>
-        </div>
-      );
+      // User doesn't have required role, redirect to landing page
+      return <Navigate to="/" replace />;
     }
+  }
+
+  // For admin-only routes, check if user is admin
+  // If no roles specified but we're in /app routes, require admin
+  if (!roles && requireAuth && user && user.role !== "admin") {
+    return <Navigate to="/" replace />;
   }
 
   // User is authenticated and has required role (if specified)

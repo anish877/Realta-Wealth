@@ -8,6 +8,7 @@ import { useAccreditationValidation } from "../hooks/useAccreditationValidation"
 import { updateHasJointOwner } from "../utils/accreditationFieldDependencies";
 import { useToast, ToastContainer } from "./Toast";
 import { StepErrorSummary } from "./ValidationError";
+import { FormSkeleton } from "./FormSkeleton";
 import { useAuth } from "../contexts/AuthContext";
 import {
   createAccreditation,
@@ -26,15 +27,27 @@ type SaveState =
   | { status: "success"; error?: string; timestamp: Date }
   | { status: "error"; error: string };
 
-export default function AccreditationForm() {
+interface AccreditationFormProps {
+  clientId?: string;
+}
+
+export default function AccreditationForm({ clientId }: AccreditationFormProps = {}) {
   const { isAuthenticated } = useAuth();
   const { toasts, showToast, removeToast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Extract accreditationId from URL pathname
+  // Extract clientId from URL if not provided as prop
+  const clientIdFromUrl = useMemo(() => {
+    const pathMatch = location.pathname.match(/\/clients\/([^/]+)/);
+    return pathMatch ? pathMatch[1] : null;
+  }, [location.pathname]);
+
+  const effectiveClientId = clientId || clientIdFromUrl;
+
+  // Extract accreditationId from URL pathname (handles both /app/506c/:id and /app/clients/:clientId/forms/506c/:id)
   const accreditationIdFromUrl = useMemo(() => {
-    const pathMatch = location.pathname.match(/\/506c\/(.+)$/);
+    const pathMatch = location.pathname.match(/\/506c\/([^/]+)/);
     if (pathMatch && pathMatch[1]) {
       const id = pathMatch[1];
       return id === "new" ? null : id;
@@ -132,9 +145,6 @@ export default function AccreditationForm() {
       await saveCurrentAccreditation(false, true);
       await submitAccreditation(accreditationId);
       showToast("Form submitted successfully!", "success");
-      setTimeout(() => {
-        window.location.href = "/?accreditationId=" + accreditationId;
-      }, 2000);
     } catch (error: any) {
       showToast(error.message || "Failed to submit form", "error");
     } finally {
@@ -157,11 +167,15 @@ export default function AccreditationForm() {
           const response = await updateAccreditation(accreditationId, accreditationData);
           responseData = response.data;
         } else {
-          const response = await createAccreditation(accreditationData);
+          const response = await createAccreditation(accreditationData, effectiveClientId);
           responseData = response.data;
           const newAccreditationId = response.data.id;
           setAccreditationId(newAccreditationId);
-          navigate(`/app/506c/${newAccreditationId}`, { replace: true });
+          if (effectiveClientId) {
+            navigate(`/app/clients/${effectiveClientId}/forms/506c/${newAccreditationId}`, { replace: true });
+          } else {
+            navigate(`/app/506c/${newAccreditationId}`, { replace: true });
+          }
         }
 
         const statusMap = (responseData as any).pageCompletionStatus || {};
@@ -209,6 +223,18 @@ export default function AccreditationForm() {
     },
     [formData, updateField, validation.errors, isSubmitting, handleFieldBlur]
   );
+
+  if (isLoading) {
+    return (
+      <div className="form-root">
+        <div className="form-container">
+          <div className="form-content">
+            <FormSkeleton fieldCount={8} showSectionHeader={true} />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!currentSection) {
     return null;

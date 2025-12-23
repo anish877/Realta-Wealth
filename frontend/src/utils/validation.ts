@@ -676,7 +676,7 @@ export const signatureSchema = z
   .min(10, {
     message: "Signature must be at least 10 characters",
   })
-  .max(500, {
-    message: "Signature must be no more than 500 characters",
+  .max(5000000, {
+    message: "Signature is too large",
   });
 

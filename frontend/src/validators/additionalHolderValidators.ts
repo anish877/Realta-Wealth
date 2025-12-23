@@ -139,6 +139,45 @@ export const step1Schema = z
     mutual_funds_since_year: yearFieldSchema({ minYear: 1900, maxYear: new Date().getFullYear() }).optional(),
   })
   .superRefine((data, ctx) => {
+    // Enforce single-choice selections where only one answer is allowed
+    const singleChoiceFields: Array<keyof typeof data> = [
+      "person_entity",
+      "gender",
+      "marital_status",
+      "employment_status",
+      "overall_level",
+    ];
+    singleChoiceFields.forEach((field) => {
+      const val = data[field];
+      if (Array.isArray(val) && val.length > 1) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Select only one option",
+          path: [field as string],
+        });
+      }
+    });
+
+    // Ensure each knowledge selection on page 1 is single-choice
+    const page1KnowledgeFields: Array<keyof typeof data> = [
+      "commodities_futures_knowledge",
+      "equities_knowledge",
+      "exchange_traded_funds_knowledge",
+      "fixed_annuities_knowledge",
+      "fixed_insurance_knowledge",
+      "mutual_funds_knowledge",
+    ];
+    page1KnowledgeFields.forEach((field) => {
+      const val = data[field];
+      if (Array.isArray(val) && val.length > 1) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Choose a single knowledge level",
+          path: [field as string],
+        });
+      }
+    });
+
     // SSN required if Person
     const personEntity = data.person_entity;
     if (Array.isArray(personEntity) && personEntity.includes("Person")) {
@@ -288,6 +327,30 @@ export const step2Schema = z
     date: dateFieldSchema({ notFuture: true }),
   })
   .superRefine((data, ctx) => {
+    // Single-choice enforcement for page 2 knowledge + tax bracket
+    const page2KnowledgeFields: Array<keyof typeof data> = [
+      "options_knowledge",
+      "precious_metals_knowledge",
+      "real_estate_knowledge",
+      "unit_investment_trusts_knowledge",
+      "variable_annuities_knowledge",
+      "leveraged_inverse_etfs_knowledge",
+      "complex_products_knowledge",
+      "alternative_investments_knowledge",
+      "other_investments_knowledge",
+      "tax_bracket",
+    ];
+    page2KnowledgeFields.forEach((field) => {
+      const val = data[field];
+      if (Array.isArray(val) && val.length > 1) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Select only one option",
+          path: [field as string],
+        });
+      }
+    });
+
     // Government ID #1: All fields required together if any is provided
     const govId1Fields = [
       data.gov_id_1_type,
@@ -471,6 +534,34 @@ export function validatePage(pageNumber: number, formData: Record<string, any>):
   isValid: boolean;
   errors: Record<string, string>;
 } {
+  // Sanitize nulls to undefined and strip nulls from arrays/objects so optional fields don't error
+  const sanitizeValue = (val: any): any => {
+    if (val === null) return undefined;
+    if (Array.isArray(val)) {
+      const cleaned = val.map((item) => sanitizeValue(item)).filter((v) => v !== undefined);
+      return cleaned.length ? cleaned : undefined;
+    }
+    if (typeof val === "object" && val !== undefined) {
+      const result: Record<string, any> = {};
+      Object.entries(val).forEach(([k, v]) => {
+        const sanitized = sanitizeValue(v);
+        if (sanitized !== undefined) {
+          result[k] = sanitized;
+        }
+      });
+      return Object.keys(result).length ? result : undefined;
+    }
+    return val;
+  };
+
+  const sanitizedData: Record<string, any> = {};
+  Object.entries(formData || {}).forEach(([k, v]) => {
+    const sanitized = sanitizeValue(v);
+    if (sanitized !== undefined) {
+      sanitizedData[k] = sanitized;
+    }
+  });
+
   let schema: z.ZodTypeAny;
   
   if (pageNumber === 1) {
@@ -481,7 +572,7 @@ export function validatePage(pageNumber: number, formData: Record<string, any>):
     return { isValid: true, errors: {} };
   }
 
-  const result = schema.safeParse(formData);
+  const result = schema.safeParse(sanitizedData);
   
   if (result.success) {
     return { isValid: true, errors: {} };

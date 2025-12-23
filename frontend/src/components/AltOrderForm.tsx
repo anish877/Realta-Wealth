@@ -12,6 +12,7 @@ import { useAltOrderValidation } from "../hooks/useAltOrderValidation";
 import { updateHasJointOwner } from "../utils/altOrderFieldDependencies";
 import { useToast, ToastContainer } from "./Toast";
 import { StepErrorSummary } from "./ValidationError";
+import { FormSkeleton } from "./FormSkeleton";
 import { useAuth } from "../contexts/AuthContext";
 import {
   createAltOrder,
@@ -30,15 +31,27 @@ type SaveState =
   | { status: "success"; error?: string; timestamp: Date }
   | { status: "error"; error: string };
 
-export default function AltOrderForm() {
+interface AltOrderFormProps {
+  clientId?: string;
+}
+
+export default function AltOrderForm({ clientId }: AltOrderFormProps = {}) {
   const { isAuthenticated } = useAuth();
   const { toasts, showToast, removeToast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Extract orderId from URL pathname
+  // Extract clientId from URL if not provided as prop
+  const clientIdFromUrl = useMemo(() => {
+    const pathMatch = location.pathname.match(/\/clients\/([^/]+)/);
+    return pathMatch ? pathMatch[1] : null;
+  }, [location.pathname]);
+
+  const effectiveClientId = clientId || clientIdFromUrl;
+
+  // Extract orderId from URL pathname (handles both /app/alt-order/:id and /app/clients/:clientId/forms/alt-order/:id)
   const orderIdFromUrl = useMemo(() => {
-    const pathMatch = location.pathname.match(/\/alt-order\/(.+)$/);
+    const pathMatch = location.pathname.match(/\/alt-order\/([^/]+)/);
     if (pathMatch && pathMatch[1]) {
       const id = pathMatch[1];
       return id === "new" ? null : id;
@@ -147,9 +160,6 @@ export default function AltOrderForm() {
       await saveCurrentOrder(false, true);
       await submitAltOrder(orderId);
       showToast("Form submitted successfully!", "success");
-      setTimeout(() => {
-        window.location.href = "/?altOrderId=" + orderId;
-      }, 2000);
     } catch (error: any) {
       showToast(error.message || "Failed to submit form", "error");
     } finally {
@@ -172,11 +182,15 @@ export default function AltOrderForm() {
           const response = await updateAltOrder(orderId, orderData);
           responseData = response.data;
         } else {
-          const response = await createAltOrder(orderData);
+          const response = await createAltOrder(orderData, effectiveClientId);
           responseData = response.data;
           const newOrderId = response.data.id;
           setOrderId(newOrderId);
-          navigate(`/app/alt-order/${newOrderId}`, { replace: true });
+          if (effectiveClientId) {
+            navigate(`/app/clients/${effectiveClientId}/forms/alt-order/${newOrderId}`, { replace: true });
+          } else {
+            navigate(`/app/alt-order/${newOrderId}`, { replace: true });
+          }
         }
 
         const statusMap = (responseData as any).pageCompletionStatus || {};
@@ -227,6 +241,18 @@ export default function AltOrderForm() {
       />
     );
   }, [formData, updateField, validation, isSubmitting, handleFieldBlur]);
+
+  if (isLoading) {
+    return (
+      <div className="form-root">
+        <div className="form-container">
+          <div className="form-content">
+            <FormSkeleton fieldCount={8} showSectionHeader={true} />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!currentSection) {
     return (

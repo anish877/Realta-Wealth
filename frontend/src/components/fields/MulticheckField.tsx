@@ -11,6 +11,7 @@ interface MulticheckFieldProps {
   otherFieldId?: string;
   otherValue?: string;
   onOtherChange?: (value: string) => void;
+  singleSelect?: boolean;
 }
 
 export function MulticheckField({
@@ -22,6 +23,7 @@ export function MulticheckField({
   otherFieldId,
   otherValue = "",
   onOtherChange,
+  singleSelect = false,
 }: MulticheckFieldProps) {
   const selectedValues = value || [];
   const hasOther = options.some((opt) => {
@@ -31,6 +33,11 @@ export function MulticheckField({
   const otherSelected = selectedValues.some((v) => v.toLowerCase().includes("other"));
 
   const handleToggle = (optionKey: string, checked: boolean) => {
+    if (singleSelect) {
+      onChange(checked ? [optionKey] : []);
+      return;
+    }
+
     if (checked) {
       onChange([...selectedValues, optionKey]);
     } else {

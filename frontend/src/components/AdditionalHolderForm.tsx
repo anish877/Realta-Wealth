@@ -8,6 +8,7 @@ import { useAdditionalHolderValidation } from "../hooks/useAdditionalHolderValid
 import { shouldShowAdditionalHolderField } from "../utils/additionalHolderFieldDependencies";
 import { useToast, ToastContainer } from "./Toast";
 import { StepErrorSummary } from "./ValidationError";
+import { FormSkeleton } from "./FormSkeleton";
 import { useAuth } from "../contexts/AuthContext";
 import {
   createAdditionalHolder,
@@ -29,15 +30,27 @@ type SaveState =
   | { status: "success"; error?: string; timestamp: Date }
   | { status: "error"; error: string };
 
-export default function AdditionalHolderForm() {
+interface AdditionalHolderFormProps {
+  clientId?: string;
+}
+
+export default function AdditionalHolderForm({ clientId }: AdditionalHolderFormProps = {}) {
   const { isAuthenticated } = useAuth();
   const { toasts, showToast, removeToast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Extract holderId from URL pathname
+  // Extract clientId from URL if not provided as prop
+  const clientIdFromUrl = useMemo(() => {
+    const pathMatch = location.pathname.match(/\/clients\/([^/]+)/);
+    return pathMatch ? pathMatch[1] : null;
+  }, [location.pathname]);
+
+  const effectiveClientId = clientId || clientIdFromUrl;
+
+  // Extract holderId from URL pathname (handles both /app/additional-holder/:id and /app/clients/:clientId/forms/additional-holder/:id)
   const holderIdFromUrl = useMemo(() => {
-    const pathMatch = location.pathname.match(/\/additional-holder\/(.+)$/);
+    const pathMatch = location.pathname.match(/\/additional-holder\/([^/]+)/);
     if (pathMatch && pathMatch[1]) {
       const id = pathMatch[1];
       return id === "new" ? null : id;
@@ -146,7 +159,68 @@ export default function AdditionalHolderForm() {
     }
   }, [currentPage]);
 
-  const handleNext = useCallback(() => {
+  const saveCurrentPage = useCallback(async (showNotification = true, silent = false): Promise<boolean> => {
+    if (showNotification && !silent) {
+      setSaveState({ status: "saving" });
+    }
+    
+    const stepData = currentPage === 1 
+      ? transformAdditionalHolderStep1(formData)
+      : transformAdditionalHolderStep2(formData);
+
+    let lastError: any = null;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        let responseData;
+        if (holderId) {
+          const response = await updateAdditionalHolderStep(holderId, currentPage, stepData);
+          responseData = response.data;
+        } else {
+          if (currentPage !== 1) {
+            throw new Error("Please complete Page 1 to create an additional holder before saving other pages.");
+          }
+          const response = await createAdditionalHolder(stepData, effectiveClientId);
+          responseData = response.data;
+          const newHolderId = response.data.id;
+          setHolderId(newHolderId);
+          if (effectiveClientId) {
+            navigate(`/app/clients/${effectiveClientId}/forms/additional-holder/${newHolderId}`, { replace: true });
+          } else {
+            navigate(`/app/additional-holder/${newHolderId}`, { replace: true });
+          }
+        }
+
+        const statusMap = (responseData as any).pageCompletionStatus || {};
+        const completed = new Set<number>();
+        Object.entries(statusMap).forEach(([key, value]) => {
+          const num = parseInt(key, 10);
+          if ((value as any)?.completed) {
+            completed.add(num);
+          }
+        });
+        setCompletedPages(completed);
+
+        setSaveState({ status: "success", timestamp: new Date() });
+        if (showNotification && !silent) {
+          showToast(`Page ${currentPage} saved successfully`, "success");
+        }
+        return true;
+      } catch (error: any) {
+        lastError = error;
+        await new Promise((resolve) => setTimeout(resolve, 300 * Math.pow(2, attempt)));
+      }
+    }
+
+    const message = lastError?.message || "Failed to save page";
+    setSaveState({ status: "error", error: message });
+    if (!silent) {
+      showToast(message, "error");
+    }
+    console.error("Error saving page:", lastError);
+    return false;
+  }, [formData, holderId, currentPage, showToast, navigate]);
+
+  const handleNext = useCallback(async () => {
     // Validate current page before navigation
     const validationResult = validation.validatePage(currentPage);
     if (!validationResult.isValid) {
@@ -158,14 +232,27 @@ export default function AdditionalHolderForm() {
       return;
     }
 
-    // Mark page as completed
-    setCompletedPages((prev) => new Set([...prev, currentPage]));
+    setIsSavingNext(true);
+    try {
+      // Save before moving forward
+      const saved = await saveCurrentPage(false, true);
+      if (!saved) {
+        return;
+      }
 
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      // Mark page as completed
+      setCompletedPages((prev) => new Set([...prev, currentPage]));
+
+      if (currentPage < totalPages) {
+        setCurrentPage(currentPage + 1);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    } catch (error) {
+      showToast("Failed to save page. Please try again.", "error");
+    } finally {
+      setIsSavingNext(false);
     }
-  }, [currentPage, totalPages, validation, showToast]);
+  }, [currentPage, totalPages, validation, showToast, saveCurrentPage]);
 
   const handleSubmit = useCallback(async () => {
     if (!holderId) {
@@ -200,71 +287,12 @@ export default function AdditionalHolderForm() {
       await saveCurrentPage(false, true);
       await submitAdditionalHolder(holderId);
       showToast("Form submitted successfully!", "success");
-      setTimeout(() => {
-        window.location.href = "/?additionalHolderId=" + holderId;
-      }, 2000);
     } catch (error: any) {
       showToast(error.message || "Failed to submit form", "error");
     } finally {
       setIsSubmitting(false);
     }
-  }, [holderId, formData, validation, showToast, allSections]);
-
-  const saveCurrentPage = useCallback(async (showNotification = true, silent = false) => {
-    if (showNotification && !silent) {
-      setSaveState({ status: "saving" });
-    }
-    
-    const stepData = currentPage === 1 
-      ? transformAdditionalHolderStep1(formData)
-      : transformAdditionalHolderStep2(formData);
-
-    let lastError: any = null;
-    for (let attempt = 0; attempt < 3; attempt++) {
-      try {
-        let responseData;
-        if (holderId) {
-          const response = await updateAdditionalHolderStep(holderId, currentPage, stepData);
-          responseData = response.data;
-        } else {
-          if (currentPage !== 1) {
-            throw new Error("Please complete Page 1 to create an additional holder before saving other pages.");
-          }
-          const response = await createAdditionalHolder(stepData);
-          responseData = response.data;
-          const newHolderId = response.data.id;
-          setHolderId(newHolderId);
-          navigate(`/app/additional-holder/${newHolderId}`, { replace: true });
-        }
-
-        const statusMap = (responseData as any).pageCompletionStatus || {};
-        const completed = new Set<number>();
-        Object.entries(statusMap).forEach(([key, value]) => {
-          const num = parseInt(key, 10);
-          if ((value as any)?.completed) {
-            completed.add(num);
-          }
-        });
-        setCompletedPages(completed);
-
-        setSaveState({ status: "success", timestamp: new Date() });
-        if (showNotification && !silent) {
-          showToast(`Page ${currentPage} saved successfully`, "success");
-        }
-        return;
-      } catch (error: any) {
-        lastError = error;
-        await new Promise((resolve) => setTimeout(resolve, 300 * Math.pow(2, attempt)));
-      }
-    }
-
-    const message = lastError?.message || "Failed to save page";
-    setSaveState({ status: "error", error: message });
-    if (!silent) {
-      showToast(message, "error");
-    }
-    console.error("Error saving page:", lastError);
-  }, [formData, holderId, currentPage, showToast, navigate]);
+  }, [holderId, formData, validation, showToast, allSections, saveCurrentPage]);
 
   const handleManualSave = useCallback(async () => {
     await saveCurrentPage(true);
@@ -293,6 +321,18 @@ export default function AdditionalHolderForm() {
       />
     );
   }, [formData, updateField, validation, isSubmitting, handleFieldBlur]);
+
+  if (isLoading) {
+    return (
+      <div className="form-root">
+        <div className="form-container">
+          <div className="form-content">
+            <FormSkeleton fieldCount={8} showSectionHeader={true} />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!currentSection) {
     return (
@@ -705,6 +745,7 @@ export default function AdditionalHolderForm() {
               onNext={handleNext}
               onSubmit={handleSubmit}
               isSubmitting={isSubmitting}
+              isSavingNext={isSavingNext}
             />
           </div>
         </div>

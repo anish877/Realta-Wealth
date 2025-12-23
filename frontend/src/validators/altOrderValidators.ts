@@ -281,11 +281,34 @@ export const internalUseSchema = z.object({
 });
 
 /**
+ * Normalize form data by converting null values to undefined
+ * Zod's .optional() allows undefined but not null
+ */
+function normalizeFormData(formData: Record<string, any>): Record<string, any> {
+  const normalized: Record<string, any> = {};
+  for (const [key, value] of Object.entries(formData)) {
+    // Convert null to undefined for Zod validation
+    if (value === null) {
+      normalized[key] = undefined;
+    } else if (typeof value === "object" && value !== null && !Array.isArray(value)) {
+      // Recursively normalize nested objects
+      normalized[key] = normalizeFormData(value);
+    } else {
+      normalized[key] = value;
+    }
+  }
+  return normalized;
+}
+
+/**
  * Validate the entire form by running each schema separately and aggregating errors
  */
 export function validateAltOrderForm(
   formData: Record<string, any>
 ): { isValid: boolean; errors: Record<string, string> } {
+  // Normalize null values to undefined before validation
+  const normalizedData = normalizeFormData(formData);
+  
   const schemas = [
     customerAccountInfoSchema,
     customerOrderInfoSchema,
@@ -296,7 +319,7 @@ export function validateAltOrderForm(
   const errors: Record<string, string> = {};
 
   schemas.forEach((schema) => {
-    const result = schema.safeParse(formData);
+    const result = schema.safeParse(normalizedData);
     if (!result.success) {
       result.error.errors.forEach((err) => {
         const path = err.path.join(".");

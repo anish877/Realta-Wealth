@@ -166,11 +166,12 @@ export interface ProfileListResponse {
 }
 
 // Investor Profile API Functions
-export async function createProfile(step1Data: any): Promise<{ data: InvestorProfile }> {
+export async function createProfile(step1Data: any, clientId?: string): Promise<{ data: InvestorProfile }> {
+  const body = clientId ? { ...step1Data, clientId } : step1Data;
   const res = await fetch(getApiUrl("/api/investor-profiles"), {
     method: "POST",
     headers: getAuthHeaders(),
-    body: JSON.stringify(step1Data),
+    body: JSON.stringify(body),
   });
   const response = await handleResponse<{ success: boolean; data: InvestorProfile }>(res);
   return { data: response.data };
@@ -223,11 +224,13 @@ export async function submitProfile(profileId: string): Promise<{ data: Investor
 
 export async function getProfilesByUser(
   filters?: { status?: string; search?: string },
-  pagination?: { page: number; limit: number }
+  pagination?: { page: number; limit: number },
+  clientId?: string
 ): Promise<ProfileListResponse> {
   const params = new URLSearchParams();
   if (filters?.status) params.append("status", filters.status);
   if (filters?.search) params.append("search", filters.search);
+  if (clientId) params.append("clientId", clientId);
   if (pagination) {
     params.append("page", pagination.page.toString());
     params.append("limit", pagination.limit.toString());
@@ -306,21 +309,23 @@ export interface StatementProfile {
   submittedAt?: string;
 }
 
-export async function createStatement(step1Data: any): Promise<{ data: StatementProfile }> {
+export async function createStatement(step1Data: any, clientId?: string): Promise<{ data: StatementProfile }> {
+  const body = clientId ? { ...step1Data, clientId } : step1Data;
   const res = await fetch(getApiUrl("/api/statements"), {
     method: "POST",
     headers: getAuthHeaders(),
-    body: JSON.stringify(step1Data),
+    body: JSON.stringify(body),
   });
   const response = await handleResponse<{ success: boolean; data: StatementProfile }>(res);
   return { data: response.data };
 }
 
-export async function getStatements(options?: { page?: number; limit?: number; status?: string }): Promise<{ statements: StatementProfile[]; pagination?: any }> {
+export async function getStatements(options?: { page?: number; limit?: number; status?: string; clientId?: string }): Promise<{ statements: StatementProfile[]; pagination?: any }> {
   const params = new URLSearchParams();
   if (options?.page) params.append("page", options.page.toString());
   if (options?.limit) params.append("limit", options.limit.toString());
   if (options?.status) params.append("status", options.status);
+  if (options?.clientId) params.append("clientId", options.clientId);
   
   const queryString = params.toString();
   const url = `/api/statements${queryString ? `?${queryString}` : ""}`;
@@ -478,21 +483,23 @@ export interface AdditionalHolderProfile {
   }>;
 }
 
-export async function createAdditionalHolder(step1Data: any): Promise<{ data: AdditionalHolderProfile }> {
+export async function createAdditionalHolder(step1Data: any, clientId?: string): Promise<{ data: AdditionalHolderProfile }> {
+  const body = clientId ? { ...step1Data, clientId } : step1Data;
   const res = await fetch(getApiUrl("/api/additional-holders"), {
     method: "POST",
     headers: getAuthHeaders(),
-    body: JSON.stringify(step1Data),
+    body: JSON.stringify(body),
   });
   const response = await handleResponse<{ success: boolean; data: AdditionalHolderProfile }>(res);
   return { data: response.data };
 }
 
-export async function getAdditionalHolders(options?: { page?: number; limit?: number; status?: string }): Promise<{ profiles: AdditionalHolderProfile[]; pagination?: any }> {
+export async function getAdditionalHolders(options?: { page?: number; limit?: number; status?: string; clientId?: string }): Promise<{ profiles: AdditionalHolderProfile[]; pagination?: any }> {
   const params = new URLSearchParams();
   if (options?.page) params.append("page", options.page.toString());
   if (options?.limit) params.append("limit", options.limit.toString());
   if (options?.status) params.append("status", options.status);
+  if (options?.clientId) params.append("clientId", options.clientId);
   
   const queryString = params.toString();
   const url = `/api/additional-holders${queryString ? `?${queryString}` : ""}`;
@@ -606,21 +613,23 @@ export interface AltOrderProfile {
   submittedAt?: string;
 }
 
-export async function createAltOrder(orderData: any): Promise<{ data: AltOrderProfile }> {
+export async function createAltOrder(orderData: any, clientId?: string): Promise<{ data: AltOrderProfile }> {
+  const body = clientId ? { ...orderData, clientId } : orderData;
   const res = await fetch(getApiUrl("/api/alt-orders"), {
     method: "POST",
     headers: getAuthHeaders(),
-    body: JSON.stringify(orderData),
+    body: JSON.stringify(body),
   });
   const response = await handleResponse<{ success: boolean; data: AltOrderProfile }>(res);
   return { data: response.data };
 }
 
-export async function getAltOrders(options?: { page?: number; limit?: number; status?: string }): Promise<{ profiles: AltOrderProfile[]; pagination?: any }> {
+export async function getAltOrders(options?: { page?: number; limit?: number; status?: string; clientId?: string }): Promise<{ profiles: AltOrderProfile[]; pagination?: any }> {
   const params = new URLSearchParams();
   if (options?.page) params.append("page", options.page.toString());
   if (options?.limit) params.append("limit", options.limit.toString());
   if (options?.status) params.append("status", options.status);
+  if (options?.clientId) params.append("clientId", options.clientId);
   
   const queryString = params.toString();
   const url = `/api/alt-orders${queryString ? `?${queryString}` : ""}`;
@@ -709,21 +718,23 @@ export interface AccreditationProfile {
   submittedAt?: string;
 }
 
-export async function createAccreditation(accreditationData: any): Promise<{ data: AccreditationProfile }> {
+export async function createAccreditation(accreditationData: any, clientId?: string): Promise<{ data: AccreditationProfile }> {
+  const body = clientId ? { ...accreditationData, clientId } : accreditationData;
   const res = await fetch(getApiUrl("/api/accreditations"), {
     method: "POST",
     headers: getAuthHeaders(),
-    body: JSON.stringify(accreditationData),
+    body: JSON.stringify(body),
   });
   const response = await handleResponse<{ success: boolean; data: AccreditationProfile }>(res);
   return { data: response.data };
 }
 
-export async function getAccreditations(options?: { page?: number; limit?: number; status?: string }): Promise<{ profiles: AccreditationProfile[]; pagination?: any }> {
+export async function getAccreditations(options?: { page?: number; limit?: number; status?: string; clientId?: string }): Promise<{ profiles: AccreditationProfile[]; pagination?: any }> {
   const params = new URLSearchParams();
   if (options?.page) params.append("page", options.page.toString());
   if (options?.limit) params.append("limit", options.limit.toString());
   if (options?.status) params.append("status", options.status);
+  if (options?.clientId) params.append("clientId", options.clientId);
   
   const queryString = params.toString();
   const url = `/api/accreditations${queryString ? `?${queryString}` : ""}`;
@@ -778,6 +789,174 @@ export async function generateAccreditationPdf(
     success: boolean;
     data: { message: string; accreditationId: string };
   }>(res);
+  return { data: response.data };
+}
+
+// ============================================
+// Client Management API
+// ============================================
+
+export interface Client {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+  investorProfiles?: InvestorProfile[];
+  statementProfiles?: StatementProfile[];
+  additionalHolderProfiles?: AdditionalHolderProfile[];
+  altOrderProfiles?: AltOrderProfile[];
+  accreditationProfiles?: AccreditationProfile[];
+}
+
+export interface ClientListResponse {
+  clients: Client[];
+  pagination?: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
+}
+
+export async function getClients(options?: { page?: number; limit?: number; search?: string }): Promise<ClientListResponse> {
+  const params = new URLSearchParams();
+  if (options?.page) params.append("page", options.page.toString());
+  if (options?.limit) params.append("limit", options.limit.toString());
+  if (options?.search) params.append("search", options.search);
+  
+  const queryString = params.toString();
+  const url = `/api/clients${queryString ? `?${queryString}` : ""}`;
+  
+  const res = await fetch(getApiUrl(url), {
+    method: "GET",
+    headers: getAuthHeaders(),
+  });
+  const response = await handleResponse<{ success: boolean; data: ClientListResponse }>(res);
+  return response.data;
+}
+
+export async function getClient(clientId: string): Promise<{ data: Client }> {
+  const res = await fetch(getApiUrl(`/api/clients/${clientId}`), {
+    method: "GET",
+    headers: getAuthHeaders(),
+  });
+  const response = await handleResponse<{ success: boolean; data: Client }>(res);
+  return { data: response.data };
+}
+
+export async function createClient(clientData: { name: string; email?: string; phone?: string }): Promise<{ data: Client }> {
+  const res = await fetch(getApiUrl("/api/clients"), {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(clientData),
+  });
+  const response = await handleResponse<{ success: boolean; data: Client }>(res);
+  return { data: response.data };
+}
+
+export async function updateClient(
+  clientId: string,
+  clientData: { name?: string; email?: string; phone?: string }
+): Promise<{ data: Client }> {
+  const res = await fetch(getApiUrl(`/api/clients/${clientId}`), {
+    method: "PUT",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(clientData),
+  });
+  const response = await handleResponse<{ success: boolean; data: Client }>(res);
+  return { data: response.data };
+}
+
+export async function deleteClient(clientId: string): Promise<{ data: { success: boolean } }> {
+  const res = await fetch(getApiUrl(`/api/clients/${clientId}`), {
+    method: "DELETE",
+    headers: getAuthHeaders(),
+  });
+  const response = await handleResponse<{ success: boolean; data: { success: boolean } }>(res);
+  return { data: response.data };
+}
+
+// ============================================
+// Analytics API
+// ============================================
+
+export interface DashboardAnalytics {
+  totalClients: number;
+  formsCompleted: {
+    investorProfile: number;
+    statement: number;
+    additionalHolder: number;
+    altOrder: number;
+    accreditation: number;
+    total: number;
+  };
+  formsInProgress: {
+    investorProfile: number;
+    statement: number;
+    additionalHolder: number;
+    altOrder: number;
+    accreditation: number;
+    total: number;
+  };
+  completionRates: {
+    investorProfile: number;
+    statement: number;
+    additionalHolder: number;
+    altOrder: number;
+    accreditation: number;
+  };
+  recentActivity: Array<{
+    id: string;
+    status: string;
+    updatedAt: string;
+    client?: { id: string; name: string };
+    formType: string;
+  }>;
+  statusBreakdown: {
+    investorProfile: { draft: number; submitted: number; approved: number; rejected: number };
+    statement: { draft: number; submitted: number; approved: number; rejected: number };
+    additionalHolder: { draft: number; submitted: number; approved: number; rejected: number };
+    altOrder: { draft: number; submitted: number; approved: number; rejected: number };
+    accreditation: { draft: number; submitted: number; approved: number; rejected: number };
+  };
+}
+
+export interface ClientAnalytics {
+  client: Client;
+  forms: {
+    investorProfile: InvestorProfile | null;
+    statement: StatementProfile | null;
+    additionalHolder: AdditionalHolderProfile | null;
+    altOrder: AltOrderProfile | null;
+    accreditation: AccreditationProfile | null;
+  };
+  completionStatus: {
+    completed: number;
+    total: number;
+    percentage: number;
+  };
+}
+
+export async function getDashboardAnalytics(): Promise<{ data: DashboardAnalytics }> {
+  const res = await fetch(getApiUrl("/api/analytics/dashboard"), {
+    method: "GET",
+    headers: getAuthHeaders(),
+  });
+  const response = await handleResponse<{ success: boolean; data: DashboardAnalytics }>(res);
+  return { data: response.data };
+}
+
+export async function getClientAnalytics(clientId: string): Promise<{ data: ClientAnalytics }> {
+  const res = await fetch(getApiUrl(`/api/analytics/clients/${clientId}`), {
+    method: "GET",
+    headers: getAuthHeaders(),
+  });
+  const response = await handleResponse<{ success: boolean; data: ClientAnalytics }>(res);
   return { data: response.data };
 }
 

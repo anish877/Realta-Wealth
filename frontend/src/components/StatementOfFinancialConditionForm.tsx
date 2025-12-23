@@ -32,6 +32,7 @@ import {
 import { useAuth } from "../contexts/AuthContext";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useToast, ToastContainer } from "./Toast";
+import { FormSkeleton } from "./FormSkeleton";
 import type { StatementSection, StatementField, FieldValue } from "../types/statementForm";
 
 type SaveState =
@@ -66,15 +67,28 @@ interface Field {
   }>;
 }
 
-export default function StatementOfFinancialConditionForm() {
+interface StatementOfFinancialConditionFormProps {
+  clientId?: string;
+}
+
+export default function StatementOfFinancialConditionForm({ clientId }: StatementOfFinancialConditionFormProps = {}) {
   const { isAuthenticated } = useAuth();
   const { toasts, showToast, removeToast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Extract clientId from URL if not provided as prop
+  const clientIdFromUrl = useMemo(() => {
+    const pathMatch = location.pathname.match(/\/clients\/([^/]+)/);
+    return pathMatch ? pathMatch[1] : null;
+  }, [location.pathname]);
+
+  const effectiveClientId = clientId || clientIdFromUrl;
+
   const [currentPage, setCurrentPage] = useState(1);
   const [formData, setFormData] = useState<Record<string, FieldValue>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSavingNext, setIsSavingNext] = useState(false);
   const [statementId, setStatementId] = useState<string | null>(null);
   const [hasLoadedStatement, setHasLoadedStatement] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -116,9 +130,9 @@ export default function StatementOfFinancialConditionForm() {
     });
   }, [formData.customer_names, formData.account_type]);
 
-  // Derive statementId from URL if present (e.g., /app/statement/:id)
+  // Derive statementId from URL if present (e.g., /app/statement/:id or /app/clients/:clientId/forms/statement/:id)
   const statementIdFromUrl = useMemo(() => {
-    const pathMatch = location.pathname.match(/\/statement\/(.+)$/);
+    const pathMatch = location.pathname.match(/\/statement\/([^/]+)/);
     if (pathMatch && pathMatch[1]) {
       const id = pathMatch[1];
       return id === "new" ? null : id;
@@ -214,13 +228,23 @@ export default function StatementOfFinancialConditionForm() {
     }
   }, [currentPage]);
 
-  const handleNext = useCallback(() => {
+  const handleNext = useCallback(async () => {
     // Allow navigation without validation - users can save incomplete forms
     // Validation will only be enforced on submit
     if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
+      setIsSavingNext(true);
+      try {
+        // Save current page before navigating
+        await saveCurrentPage(false, true);
+        setCurrentPage(currentPage + 1);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } catch (error) {
+        showToast("Failed to save page. Please try again.", "error");
+      } finally {
+        setIsSavingNext(false);
+      }
     }
-  }, [currentPage, totalPages]);
+  }, [currentPage, totalPages, saveCurrentPage, showToast]);
 
   const saveCurrentPage = useCallback(
     async (showNotification = true, silent = false) => {
@@ -263,12 +287,16 @@ export default function StatementOfFinancialConditionForm() {
             if (pageIndex !== 0) {
               throw new Error("Please complete Page 1 to create a statement before saving other pages.");
             }
-            const response = await createStatement(payload);
+            const response = await createStatement(payload, effectiveClientId);
             responseData = response.data;
             const newStatementId = response.data.id;
             setStatementId(newStatementId);
             // Update URL to include statementId so form reloads correctly when navigating back
-            navigate(`/app/statement/${newStatementId}`, { replace: true });
+            if (effectiveClientId) {
+              navigate(`/app/clients/${effectiveClientId}/forms/statement/${newStatementId}`, { replace: true });
+            } else {
+              navigate(`/app/statement/${newStatementId}`, { replace: true });
+            }
           }
 
           setSaveState({ status: "success", timestamp: new Date() });
@@ -360,11 +388,15 @@ export default function StatementOfFinancialConditionForm() {
       if (currentStatementId) {
         await updateStatementStep(currentStatementId, 1, step1Payload);
       } else {
-        const response = await createStatement(step1Payload);
+        const response = await createStatement(step1Payload, effectiveClientId);
         currentStatementId = response.data.id;
         setStatementId(currentStatementId);
         // Ensure URL reflects the created statement
-        navigate(`/app/statement/${currentStatementId}`, { replace: true });
+        if (effectiveClientId) {
+          navigate(`/app/clients/${effectiveClientId}/forms/statement/${currentStatementId}`, { replace: true });
+        } else {
+          navigate(`/app/statement/${currentStatementId}`, { replace: true });
+        }
       }
 
       // Persist Step 2 (additional notes + signatures) with latest formData
@@ -379,11 +411,6 @@ export default function StatementOfFinancialConditionForm() {
       }
       await submitStatement(currentStatementId);
       showToast("Statement submitted successfully!", "success");
-      
-      // Optionally redirect after a delay
-      setTimeout(() => {
-        window.location.href = "/?statementId=" + currentStatementId;
-      }, 2000);
     } catch (error: any) {
       showToast(error.message || "Failed to submit statement", "error");
       console.error("Error submitting statement:", error);
@@ -708,7 +735,19 @@ export default function StatementOfFinancialConditionForm() {
     );
   }
 
-  if (isLoading || !currentSection) {
+  if (isLoading) {
+    return (
+      <div className="form-root">
+        <div className="form-container">
+          <div className="form-content">
+            <FormSkeleton fieldCount={8} showSectionHeader={true} />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!currentSection) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-12 px-4 flex items-center justify-center">
         <div className="text-center text-slate-600">Loading statement...</div>
@@ -896,6 +935,7 @@ export default function StatementOfFinancialConditionForm() {
         onNext={handleNext}
         onSubmit={handleSubmit}
         isSubmitting={isSubmitting}
+        isSavingNext={isSavingNext}
       />
     </div>
   );

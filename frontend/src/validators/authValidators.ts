@@ -13,13 +13,13 @@ export const loginSchema = z.object({
 /**
  * Register validation schema
  * Matches backend validation from backend/src/routes/auth.ts
- * All signups are client-only for now
+ * All signups are admin-only
  */
 export const registerSchema = z.object({
   email: emailSchema,
   password: passwordSchema,
   fullName: nameSchema,
-  role: z.enum(["advisor", "client", "admin"]).default("client"),
+  role: z.enum(["advisor", "client", "admin"]).default("admin"),
 });
 
 /**

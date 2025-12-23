@@ -4,6 +4,38 @@
 
 import type { AdditionalHolderFormData, RangeCurrencyValue } from "../types/additionalHolderForm";
 
+// Map frontend investment labels to backend enum values
+const investmentLabelToEnum: Record<string, string> = {
+  "Commodities, Futures": "commodities_futures",
+  "Equities": "equities",
+  "Exchange Traded Funds": "etf",
+  "Fixed Annuities": "fixed_annuities",
+  "Fixed Insurance": "fixed_insurance",
+  "Mutual Funds": "mutual_funds",
+  "Options": "options",
+  "Precious Metals": "precious_metals",
+  "Real Estate": "real_estate",
+  "Unit Investment Trusts": "unit_investment_trusts",
+  "Variable Annuities": "variable_annuities",
+  "Leveraged/Inverse ETF's": "leveraged_inverse_etfs",
+  "Complex Products": "complex_products",
+  "Alternative Investments": "alternative_investments",
+  "Other": "other",
+};
+
+const normalizeInvestmentType = (label: string | undefined, fallbackOtherLabel?: string) => {
+  if (!label) return undefined;
+  const mapped = investmentLabelToEnum[label] || investmentLabelToEnum[fallbackOtherLabel || ""] || investmentLabelToEnum["Other"];
+  return mapped || "other";
+};
+
+const taxBracketLabelToEnum: Record<string, string> = {
+  "≤15%": "zero_to_15",
+  "15% - 32%": "fifteen_1_to_32",
+  "33% - 50%": "thirtytwo_1_to_50",
+  "> 50% +": "fifty_1_plus",
+};
+
 type FormData = AdditionalHolderFormData;
 
 /**
@@ -53,7 +85,7 @@ export function transformAdditionalHolderToBackend(formData: FormData) {
   [...page1Investments, ...page2Investments].forEach((inv) => {
     if (Array.isArray(inv.knowledge) && inv.knowledge.length > 0) {
       investmentKnowledge.push({
-        investmentType: inv.type,
+        investmentType: normalizeInvestmentType(inv.type, formData.other_investments_label),
         knowledgeLevel: inv.knowledge[0], // Take first selection
         sinceYear: inv.since ? Number(inv.since) : undefined,
       });
@@ -155,7 +187,10 @@ export function transformAdditionalHolderToBackend(formData: FormData) {
     annualIncome: transformRangeCurrency(formData.annual_income),
     netWorth: transformRangeCurrency(formData.net_worth),
     liquidNetWorth: transformRangeCurrency(formData.liquid_net_worth),
-    taxBracket: Array.isArray(formData.tax_bracket) && formData.tax_bracket.length > 0 ? formData.tax_bracket[0] : undefined,
+  taxBracket:
+    Array.isArray(formData.tax_bracket) && formData.tax_bracket.length > 0
+      ? taxBracketLabelToEnum[formData.tax_bracket[0]] || taxBracketLabelToEnum["≤15%"]
+      : undefined,
 
     // Government IDs
     governmentIds,
