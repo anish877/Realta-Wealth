@@ -13,14 +13,28 @@ type ProfileStatus = "draft" | "submitted" | "approved" | "rejected";
 export class InvestorProfileService {
   /**
    * Create a new investor profile or update existing profile
-   * Ensures only one profile exists per user - always updates if profile exists
+   * Ensures only one profile exists per user/client - always updates if profile exists
    */
-  async createProfile(userId: string, step1Data: any) {
-    // Check if user already has ANY profile (regardless of status)
+  async createProfile(userId: string | undefined, clientId: string | undefined, step1Data: any) {
+    if (!userId && !clientId) {
+      throw new ValidationError("Either userId or clientId must be provided");
+    }
+
+    // Check if user/client already has ANY profile (regardless of status)
+    const whereClause: any = {};
+    if (clientId) {
+      whereClause.clientId = clientId;
+    } else if (userId) {
+      whereClause.userId = userId;
+    }
+
+    // Ensure we don't accidentally include both
+    if (clientId && whereClause.userId) {
+      delete whereClause.userId;
+    }
+
     const existingProfile = await prisma.investorProfile.findFirst({
-      where: {
-        userId,
-      },
+      where: whereClause,
       orderBy: {
         createdAt: "desc", // Get the most recent profile
       },
@@ -50,7 +64,8 @@ export class InvestorProfileService {
         // Create profile
         const profile = await tx.investorProfile.create({
           data: {
-            userId,
+            userId: userId || null,
+            clientId: clientId || null,
             rrName: step1Data.rrName,
             rrNo: step1Data.rrNo,
             customerNames: step1Data.customerNames,
@@ -720,12 +735,24 @@ export class InvestorProfileService {
   }
 
   /**
-   * Get the user's profile (only one profile per user)
+   * Get the user's/client's profile (only one profile per user/client)
    * Returns the most recent profile if multiple exist (shouldn't happen with new logic)
    */
-  async getProfileByUser(userId: string) {
+  async getProfileByUser(userId: string | undefined, clientId: string | undefined) {
+    const whereClause: any = {};
+    if (clientId) {
+      whereClause.clientId = clientId;
+    } else if (userId) {
+      whereClause.userId = userId;
+    }
+
+    // Ensure we don't accidentally include both
+    if (clientId && whereClause.userId) {
+      delete whereClause.userId;
+    }
+
     const profile = await prisma.investorProfile.findFirst({
-      where: { userId },
+      where: whereClause,
       orderBy: { createdAt: "desc" },
       include: {
         accountTypes: true,
@@ -744,7 +771,8 @@ export class InvestorProfileService {
    * Maintains compatibility with existing API but ensures only one profile per user
    */
   async getProfilesByUser(
-    userId: string,
+    userId: string | undefined,
+    clientId: string | undefined,
     filters: {
       status?: ProfileStatus;
       search?: string;
@@ -754,8 +782,12 @@ export class InvestorProfileService {
       limit: PAGINATION.DEFAULT_LIMIT,
     }
   ) {
-    // Since each user should only have one profile, we get the single profile
-    const profile = await this.getProfileByUser(userId);
+    if (!userId && !clientId) {
+      throw new ValidationError("Either userId or clientId must be provided");
+    }
+
+    // Since each user/client should only have one profile, we get the single profile
+    const profile = await this.getProfileByUser(userId, clientId);
     
     // Apply filters if profile exists
     let filteredProfile = profile;
@@ -785,6 +817,97 @@ export class InvestorProfileService {
   }
 
   /**
+   * Format investor profile data for n8n PDF generation
+   */
+  formatProfileForN8N(profile: any): any {
+    const result: any = {
+      form_type: "investor_profile",
+      form_id: "REI-Investor-Profile",
+      profile_id: profile.id,
+      status: profile.status,
+      fields: {},
+      conditional_fields: {},
+      field_metadata: {}
+    };
+
+    // Helper to format date
+    const formatDate = (value: any) => {
+      if (!value) return null;
+      try {
+        return new Date(value).toISOString().split('T')[0];
+      } catch {
+        return value;
+      }
+    };
+
+    // Step 1: Basic Information
+    result.fields.rr_name = { value: profile.rrName || null, label: "RR Name", type: "text" };
+    result.fields.rr_no = { value: profile.rrNo || null, label: "RR No.", type: "text" };
+    result.fields.customer_names = { value: profile.customerNames || null, label: "Customer Names(s)", type: "text" };
+    result.fields.account_no = { value: profile.accountNo || null, label: "Account No.", type: "text" };
+    
+    // Account Types - handle "Other" checkbox
+    const accountTypes = (profile.accountTypes || []).map((at: any) => at.accountType);
+    if (accountTypes.length > 0) {
+      // Check if "Other" is in the array
+      const hasOther = accountTypes.includes("Other");
+      if (hasOther) {
+        // Set other checkbox to true
+        result.fields.account_types_other = { value: true, type: "checkbox", is_checked: true, label: "Other" };
+        // Include other text as separate field
+        if (profile.otherAccountTypeText) {
+          result.fields.other_account_type_text = { value: profile.otherAccountTypeText, type: "text", label: "Other Account Type Text" };
+        }
+        // Include other account types (excluding "Other")
+        const otherTypes = accountTypes.filter((t: string) => t !== "Other");
+        if (otherTypes.length > 0) {
+          result.fields.account_types = { value: otherTypes, type: "array", label: "Account Types" };
+        }
+      } else {
+        result.fields.account_types = { value: accountTypes, type: "array", label: "Account Types" };
+      }
+    }
+
+    // Step 2: Source of Funds - handle "Other" checkbox
+    const patriotActInfo = profile.patriotActInformation;
+    if (patriotActInfo) {
+      const sourceOfFunds = patriotActInfo.initialSourceOfFunds || [];
+      if (sourceOfFunds.length > 0) {
+        const hasOther = sourceOfFunds.includes("Other");
+        if (hasOther) {
+          // Set other checkbox to true
+          result.fields.initial_source_of_funds_other = { value: true, type: "checkbox", is_checked: true, label: "Other" };
+          // Include other text as separate field
+          if (patriotActInfo.otherSourceOfFundsText) {
+            result.fields.other_source_of_funds_text = { value: patriotActInfo.otherSourceOfFundsText, type: "text", label: "Other Source of Funds Text" };
+          }
+          // Include other sources (excluding "Other")
+          const otherSources = sourceOfFunds.filter((s: string) => s !== "Other");
+          if (otherSources.length > 0) {
+            result.fields.initial_source_of_funds = { value: otherSources, type: "array", label: "Initial Source of Funds" };
+          }
+        } else {
+          result.fields.initial_source_of_funds = { value: sourceOfFunds, type: "array", label: "Initial Source of Funds" };
+        }
+      }
+    }
+
+    // Additional designations
+    if (profile.additionalDesignations && profile.additionalDesignations.length > 0) {
+      result.fields.additional_designations = {
+        value: profile.additionalDesignations.map((ad: any) => ad.designationType),
+        type: "array",
+        label: "Additional Designations"
+      };
+    }
+
+    // Add more fields as needed (account holders, etc.)
+    // This is a basic implementation - can be expanded
+
+    return result;
+  }
+
+  /**
    * Generate PDF for a profile by sending data to n8n webhook
    */
   async generatePdf(profileId: string) {
@@ -795,17 +918,16 @@ export class InvestorProfileService {
       throw new NotFoundError("Profile", profileId);
     }
 
+    // Format the profile data for n8n
+    const formattedData = this.formatProfileForN8N(profile);
+
     // Send to n8n webhook
     const webhookResponse = await fetch(config.n8nWebhookUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        profileId: profileId,
-        profileData: profile,
-        timestamp: new Date().toISOString(),
-      }),
+      body: JSON.stringify(formattedData),
     });
 
     if (!webhookResponse.ok) {

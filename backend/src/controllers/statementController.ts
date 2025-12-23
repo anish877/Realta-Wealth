@@ -9,8 +9,9 @@ export class StatementController {
    */
   async createStatement(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
-      const userId = req.user!.sub;
-      const statement = await statementService.createStatement(userId, req.body);
+      const userId = req.body.clientId ? undefined : req.user!.sub;
+      const clientId = req.body.clientId || undefined;
+      const statement = await statementService.createStatement(userId, clientId, req.body);
       sendSuccess(res, statement, 201);
     } catch (error) {
       next(error);
@@ -31,14 +32,16 @@ export class StatementController {
   }
 
   /**
-   * List statements for current user (at most one, for parity with profiles)
+   * List statements for current user/client (at most one, for parity with profiles)
    */
   async listStatements(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
-      const userId = req.user!.sub;
+      const clientId = req.query.clientId as string | undefined;
+      const userId = clientId ? undefined : req.user!.sub;
       const { page, limit, status } = req.query as any;
       const result = await statementService.getStatementsByUser(
         userId,
+        clientId,
         { status },
         { page: parseInt(page) || 1, limit: parseInt(limit) || 20 }
       );

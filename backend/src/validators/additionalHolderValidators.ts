@@ -102,8 +102,8 @@ export const step1Schema = z.object({
   primaryCitizenship: z.string().trim().max(100).optional(),
   additionalCitizenship: z.string().trim().max(100).optional(),
   gender: genderSchema.optional(),
-  maritalStatus: z.array(maritalStatusSchema).optional(),
-  employmentStatus: z.array(employmentStatusSchema).optional(),
+  maritalStatus: z.array(maritalStatusSchema).max(1).optional(),
+  employmentStatus: z.array(employmentStatusSchema).max(1).optional(),
   occupation: z.string().trim().max(100).optional(),
   yearsEmployed: z.number().int().min(0).max(100).optional(),
   typeOfBusiness: z.string().trim().max(100).optional(),
@@ -113,6 +113,62 @@ export const step1Schema = z.object({
   employerAddress: addressSchema,
   overallInvestmentKnowledge: investmentKnowledgeLevelSchema.optional(),
   investmentKnowledge: investmentKnowledgeSchema,
+}).superRefine((data, ctx) => {
+  // Enforce single-choice fields (already limited via max) for safety
+  if (data.maritalStatus && data.maritalStatus.length > 1) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Select only one marital status",
+      path: ["maritalStatus"],
+    });
+  }
+
+  if (data.employmentStatus && data.employmentStatus.length > 1) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Select only one employment status",
+      path: ["employmentStatus"],
+    });
+  }
+
+  // SSN required when Person
+  if (data.personEntity === "Person" && !data.ssn) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "SSN is required when Person is selected",
+      path: ["ssn"],
+    });
+  }
+
+  // EIN required when Entity
+  if (data.personEntity === "Entity" && !data.ein) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "EIN is required when Entity is selected",
+      path: ["ein"],
+    });
+  }
+
+  // Employment follow-ups required when employed/self-employed
+  if (
+    data.employmentStatus &&
+    (data.employmentStatus.includes("Employed") || data.employmentStatus.includes("SelfEmployed"))
+  ) {
+    if (!data.occupation) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Occupation is required when employed",
+        path: ["occupation"],
+      });
+    }
+    if (!data.employerName) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Employer Name is required when employed",
+        path: ["employerName"],
+      });
+    }
+  }
 });
 
 // Step 2 Schema - all fields optional for draft saves
@@ -143,6 +199,130 @@ export const step2Schema = z.object({
   signature: z.string().optional(),
   printedName: z.string().trim().max(120).optional(),
   signatureDate: z.string().datetime().optional(),
+}).superRefine((data, ctx) => {
+  // Government ID completeness when any field is provided
+  if (data.governmentIds) {
+    data.governmentIds.forEach((govId, index) => {
+      const hasAny =
+        govId?.type ||
+        govId?.idNumber ||
+        govId?.countryOfIssue ||
+        govId?.dateOfIssue ||
+        govId?.dateOfExpiration;
+      if (hasAny) {
+        const requiredFields: Array<keyof NonNullable<typeof govId>> = [
+          "type",
+          "idNumber",
+          "countryOfIssue",
+          "dateOfIssue",
+          "dateOfExpiration",
+        ];
+        requiredFields.forEach((field) => {
+          if (!govId?.[field]) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: "All government ID fields must be completed together",
+              path: ["governmentIds", index, field],
+            });
+          }
+        });
+        if (govId?.dateOfIssue && govId?.dateOfExpiration) {
+          const issue = new Date(govId.dateOfIssue);
+          const exp = new Date(govId.dateOfExpiration);
+          if (exp <= issue) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: "Expiration date must be after issue date",
+              path: ["governmentIds", index, "dateOfExpiration"],
+            });
+          }
+        }
+      }
+    });
+  }
+
+  // Follow-up requirements for yes/no questions
+  if (data.relatedToEmployeeAtThisBrokerDealer === "Yes") {
+    if (!data.employeeName) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Employee Name is required",
+        path: ["employeeName"],
+      });
+    }
+    if (!data.relationship) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Relationship is required",
+        path: ["relationship"],
+      });
+    }
+  }
+
+  if (data.employeeOfAnotherBrokerDealer === "Yes" && !data.brokerDealerName) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Broker Dealer Name is required",
+      path: ["brokerDealerName"],
+    });
+  }
+
+  if (data.relatedToEmployeeAtAnotherBrokerDealer === "Yes") {
+    if (!data.brokerDealerName2) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Broker Dealer Name is required",
+        path: ["brokerDealerName2"],
+      });
+    }
+    if (!data.employeeName2) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Employee Name is required",
+        path: ["employeeName2"],
+      });
+    }
+    if (!data.relationship2) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Relationship is required",
+        path: ["relationship2"],
+      });
+    }
+  }
+
+  if (data.maintainingOtherBrokerageAccounts === "Yes") {
+    if (!data.withWhatFirms) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Firm name(s) are required",
+        path: ["withWhatFirms"],
+      });
+    }
+    if (!data.yearsOfInvestmentExperience && data.yearsOfInvestmentExperience !== 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Years of Investment Experience is required",
+        path: ["yearsOfInvestmentExperience"],
+      });
+    }
+  }
+
+  if (data.affiliatedWithExchangeOrFinra === "Yes" && !data.whatIsTheAffiliation) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Affiliation details are required",
+      path: ["whatIsTheAffiliation"],
+    });
+  }
+
+  if (data.seniorOfficerDirectorShareholder === "Yes" && !data.companyNames) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Company Name(s) are required",
+      path: ["companyNames"],
+    });
+  }
 });
 
 // Create Additional Holder Schema (for POST /)

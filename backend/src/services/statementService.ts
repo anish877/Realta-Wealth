@@ -16,18 +16,34 @@ type StatementStatus = "draft" | "submitted" | "approved" | "rejected";
 
 export class StatementService {
   /**
-   * Create a new statement or update existing statement for user (one per user)
+   * Create a new statement or update existing statement for user/client (one per user/client)
    */
-  async createStatement(userId: string, step1Data: any) {
+  async createStatement(userId: string | undefined, clientId: string | undefined, step1Data: any) {
+    if (!userId && !clientId) {
+      throw new ValidationError("Either userId or clientId must be provided");
+    }
+
     // Validate Step 1 data (draft schema - allows incomplete data for saves)
     const result = statementStep1DraftSchema.safeParse(step1Data);
     if (!result.success) {
       throw new ValidationError("Statement Step 1 validation failed", result.error.errors);
     }
 
-    // Check if user already has a statement
+    // Check if user/client already has a statement
+    const whereClause: any = {};
+    if (clientId) {
+      whereClause.clientId = clientId;
+    } else if (userId) {
+      whereClause.userId = userId;
+    }
+
+    // Ensure we don't accidentally include both
+    if (clientId && whereClause.userId) {
+      delete whereClause.userId;
+    }
+
     const existing = await prisma.statementProfile.findFirst({
-      where: { userId },
+      where: whereClause,
       orderBy: { createdAt: "desc" },
     });
 
@@ -50,7 +66,8 @@ export class StatementService {
       async (tx) => {
         const statement = await tx.statementProfile.create({
           data: {
-            userId,
+            userId: userId || null,
+            clientId: clientId || null,
             rrName: parsed.rrName,
             rrNo: parsed.rrNo,
             customerNames: parsed.customerNames,
@@ -330,11 +347,23 @@ export class StatementService {
   }
 
   /**
-   * Get the user's statement (one per user)
+   * Get the user's/client's statement (one per user/client)
    */
-  async getStatementByUser(userId: string) {
+  async getStatementByUser(userId: string | undefined, clientId: string | undefined) {
+    const whereClause: any = {};
+    if (clientId) {
+      whereClause.clientId = clientId;
+    } else if (userId) {
+      whereClause.userId = userId;
+    }
+
+    // Ensure we don't accidentally include both
+    if (clientId && whereClause.userId) {
+      delete whereClause.userId;
+    }
+
     const statement = await prisma.statementProfile.findFirst({
-      where: { userId },
+      where: whereClause,
       orderBy: { createdAt: "desc" },
     });
     return statement;
@@ -344,7 +373,8 @@ export class StatementService {
    * Get statements by user - returns array with at most one statement
    */
   async getStatementsByUser(
-    userId: string,
+    userId: string | undefined,
+    clientId: string | undefined,
     filters: {
       status?: StatementStatus;
     } = {},
@@ -353,7 +383,11 @@ export class StatementService {
       limit: PAGINATION.DEFAULT_LIMIT,
     }
   ) {
-    const statement = await this.getStatementByUser(userId);
+    if (!userId && !clientId) {
+      throw new ValidationError("Either userId or clientId must be provided");
+    }
+
+    const statement = await this.getStatementByUser(userId, clientId);
 
     let filteredStatement = statement;
     if (statement) {
@@ -373,12 +407,53 @@ export class StatementService {
   /**
    * Generate PDF for a statement by sending data to n8n webhook
    */
+  /**
+   * Format statement data for n8n PDF generation
+   */
+  formatStatementForN8N(statement: any): any {
+    const result: any = {
+      form_type: "statement_of_financial_condition",
+      form_id: "REI-Statement-of-Financial-Condition",
+      statement_id: statement.id,
+      status: statement.status,
+      fields: {},
+      conditional_fields: {},
+      field_metadata: {}
+    };
+
+    // Helper to format currency
+    const formatCurrency = (value: any) => {
+      if (!value) return null;
+      const num = typeof value === 'string' ? parseFloat(value) : value;
+      return `$${num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    };
+
+    // Helper to format date
+    const formatDate = (value: any) => {
+      if (!value) return null;
+      try {
+        return new Date(value).toISOString().split('T')[0];
+      } catch {
+        return value;
+      }
+    };
+
+    // Add all statement fields - basic structure
+    // This is a placeholder - expand based on actual statement fields
+    // Handle checkbox fields with sub-values similar to other forms
+
+    return result;
+  }
+
   async generatePdf(statementId: string) {
     const statement = await this.getStatementById(statementId, true);
 
     if (!statement) {
       throw new NotFoundError("StatementProfile", statementId);
     }
+
+    // Format the statement data for n8n
+    const formattedData = this.formatStatementForN8N(statement);
 
     const webhookUrl = "https://n8n.srv891599.hstgr.cloud/webhook/7b947ec6-e173-45f9-aee9-a1c8f44ceae6";
     
@@ -387,11 +462,7 @@ export class StatementService {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        statementId,
-        statementData: statement,
-        timestamp: new Date().toISOString(),
-      }),
+      body: JSON.stringify(formattedData),
     });
 
     if (!webhookResponse.ok) {

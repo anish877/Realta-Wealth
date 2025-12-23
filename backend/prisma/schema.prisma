@@ -214,13 +214,37 @@ model User {
   additionalHolderProfiles AdditionalHolderProfile[]
   altOrderProfiles AltOrderProfile[]
   accreditationProfiles AccreditationProfile[]
+  createdClients Client[]
   
   @@map("users")
 }
 
+model Client {
+  id          String            @id @default(uuid())
+  name        String
+  email       String?
+  phone       String?
+  createdBy   String            @map("created_by")
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @updatedAt @map("updated_at")
+  
+  creator     User               @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  
+  investorProfiles InvestorProfile[]
+  statementProfiles StatementProfile[]
+  additionalHolderProfiles AdditionalHolderProfile[]
+  altOrderProfiles AltOrderProfile[]
+  accreditationProfiles AccreditationProfile[]
+  
+  @@index([createdBy])
+  @@index([createdAt])
+  @@map("clients")
+}
+
 model InvestorProfile {
   id              String            @id @default(uuid())
-  userId          String            @map("user_id")
+  userId          String?           @map("user_id")
+  clientId        String?            @map("client_id")
   status          ProfileStatus     @default(draft)
   lastCompletedStep Int              @default(0) @map("last_completed_step")
   stepCompletionStatus Json?         @map("step_completion_status")
@@ -238,7 +262,8 @@ model InvestorProfile {
   updatedAt       DateTime          @updatedAt @map("updated_at")
   submittedAt     DateTime?         @map("submitted_at")
   
-  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user            User?             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  client          Client?           @relation(fields: [clientId], references: [id], onDelete: Cascade)
   
   accountTypes    InvestorProfileAccountType[]
   additionalDesignations InvestorProfileAdditionalDesignation[]
@@ -254,6 +279,7 @@ model InvestorProfile {
   signatures     Signature[]
   
   @@index([userId])
+  @@index([clientId])
   @@index([status])
   @@index([createdAt])
   @@map("investor_profiles")
@@ -265,7 +291,8 @@ model InvestorProfile {
 
 model StatementProfile {
   id                 String          @id @default(uuid())
-  userId             String          @map("user_id")
+  userId             String?         @map("user_id")
+  clientId           String?         @map("client_id")
   status             ProfileStatus   @default(draft)
   lastCompletedPage  Int             @default(0) @map("last_completed_page")
   pageCompletionStatus Json?         @map("page_completion_status")
@@ -283,12 +310,14 @@ model StatementProfile {
   updatedAt          DateTime        @updatedAt @map("updated_at")
   submittedAt        DateTime?       @map("submitted_at")
 
-  user               User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user               User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  client             Client?          @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
   financialRows      StatementFinancialRow[]
   signatures         StatementSignature[]
 
   @@index([userId])
+  @@index([clientId])
   @@index([status])
   @@index([createdAt])
   @@map("statement_profiles")
@@ -332,7 +361,8 @@ model StatementSignature {
 
 model AdditionalHolderProfile {
   id                 String          @id @default(uuid())
-  userId             String          @map("user_id")
+  userId             String?         @map("user_id")
+  clientId           String?         @map("client_id")
   status             ProfileStatus   @default(draft)
   lastCompletedPage  Int             @default(0) @map("last_completed_page")
   pageCompletionStatus Json?         @map("page_completion_status")
@@ -395,7 +425,8 @@ model AdditionalHolderProfile {
   updatedAt           DateTime       @updatedAt @map("updated_at")
   submittedAt         DateTime?      @map("submitted_at")
 
-  user                User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  client              Client?        @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
   addresses           AdditionalHolderAddress[]
   phones              AdditionalHolderPhone[]
@@ -403,6 +434,7 @@ model AdditionalHolderProfile {
   investmentKnowledge AdditionalHolderInvestmentKnowledge[]
 
   @@index([userId])
+  @@index([clientId])
   @@index([status])
   @@index([createdAt])
   @@map("additional_holder_profiles")
@@ -474,7 +506,8 @@ model AdditionalHolderInvestmentKnowledge {
 
 model AltOrderProfile {
   id                 String          @id @default(uuid())
-  userId             String          @map("user_id")
+  userId             String?         @map("user_id")
+  clientId           String?         @map("client_id")
   status             ProfileStatus   @default(draft)
   lastCompletedPage  Int             @default(0) @map("last_completed_page")
   pageCompletionStatus Json?         @map("page_completion_status")
@@ -531,9 +564,11 @@ model AltOrderProfile {
   updatedAt          DateTime        @updatedAt @map("updated_at")
   submittedAt         DateTime?       @map("submitted_at")
 
-  user                User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  client              Client?        @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@index([clientId])
   @@index([status])
   @@index([createdAt])
   @@map("alt_order_profiles")
@@ -545,7 +580,8 @@ model AltOrderProfile {
 
 model AccreditationProfile {
   id                 String          @id @default(uuid())
-  userId             String          @map("user_id")
+  userId             String?         @map("user_id")
+  clientId           String?         @map("client_id")
   status             ProfileStatus   @default(draft)
   lastCompletedPage  Int             @default(0) @map("last_completed_page")
   pageCompletionStatus Json?         @map("page_completion_status")
@@ -574,9 +610,11 @@ model AccreditationProfile {
   updatedAt          DateTime        @updatedAt @map("updated_at")
   submittedAt         DateTime?       @map("submitted_at")
 
-  user                User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  client              Client?         @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@index([clientId])
   @@index([status])
   @@index([createdAt])
   @@map("accreditation_profiles")

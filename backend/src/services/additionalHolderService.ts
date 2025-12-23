@@ -12,14 +12,28 @@ type ProfileStatus = "draft" | "submitted" | "approved" | "rejected";
 export class AdditionalHolderService {
   /**
    * Create a new additional holder profile or update existing profile
-   * Ensures only one profile exists per user - always updates if profile exists
+   * Ensures only one profile exists per user/client - always updates if profile exists
    */
-  async createAdditionalHolder(userId: string, step1Data: any) {
-    // Check if user already has ANY profile (regardless of status)
+  async createAdditionalHolder(userId: string | undefined, clientId: string | undefined, step1Data: any) {
+    if (!userId && !clientId) {
+      throw new ValidationError("Either userId or clientId must be provided");
+    }
+
+    // Check if user/client already has ANY profile (regardless of status)
+    const whereClause: any = {};
+    if (clientId) {
+      whereClause.clientId = clientId;
+    } else if (userId) {
+      whereClause.userId = userId;
+    }
+
+    // Ensure we don't accidentally include both
+    if (clientId && whereClause.userId) {
+      delete whereClause.userId;
+    }
+
     const existingProfile = await prisma.additionalHolderProfile.findFirst({
-      where: {
-        userId,
-      },
+      where: whereClause,
       orderBy: {
         createdAt: "desc",
       },
@@ -48,7 +62,8 @@ export class AdditionalHolderService {
         // Create profile
         const profile = await tx.additionalHolderProfile.create({
           data: {
-            userId,
+            userId: userId || null,
+            clientId: clientId || null,
             accountRegistration: step1Data.accountRegistration,
             rrName: step1Data.rrName,
             rrNo: step1Data.rrNo,
@@ -469,12 +484,17 @@ export class AdditionalHolderService {
    * Get additional holders by user with pagination and filtering
    */
   async getAdditionalHoldersByUser(
-    userId: string,
+    userId: string | undefined,
+    clientId: string | undefined,
     filters: { status?: string } = {},
     pagination: { page: number; limit: number } = { page: 1, limit: PAGINATION.DEFAULT_LIMIT }
   ) {
+    if (!userId && !clientId) {
+      throw new ValidationError("Either userId or clientId must be provided");
+    }
+
     const where: Prisma.AdditionalHolderProfileWhereInput = {
-      userId,
+      ...(clientId ? { clientId } : userId ? { userId } : {}),
       ...(filters.status && { status: filters.status as ProfileStatus }),
     };
 
@@ -513,8 +533,42 @@ export class AdditionalHolderService {
   /**
    * Generate PDF via n8n webhook
    */
+  /**
+   * Format additional holder data for n8n PDF generation
+   */
+  formatAdditionalHolderForN8N(profile: any): any {
+    const result: any = {
+      form_type: "additional_holder",
+      form_id: "REI-Additional-Holder",
+      profile_id: profile.id,
+      status: profile.status,
+      fields: {},
+      conditional_fields: {},
+      field_metadata: {}
+    };
+
+    // Helper to format date
+    const formatDate = (value: any) => {
+      if (!value) return null;
+      try {
+        return new Date(value).toISOString().split('T')[0];
+      } catch {
+        return value;
+      }
+    };
+
+    // Add all additional holder fields - basic structure
+    // Handle checkbox fields with sub-values similar to other forms
+    // When checkbox array includes "Other", set checkbox_name_other: true and include sub-value separately
+
+    return result;
+  }
+
   async generatePdf(profileId: string) {
     const profile = await this.getAdditionalHolderById(profileId, true);
+
+    // Format the profile data for n8n
+    const formattedData = this.formatAdditionalHolderForN8N(profile);
 
     const webhookUrl = "https://n8n.srv891599.hstgr.cloud/webhook/137ba27b-814e-4430-812f-c61979d0c086";
 
@@ -523,11 +577,7 @@ export class AdditionalHolderService {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        profileId,
-        type: "additionalHolder",
-        data: profile,
-      }),
+      body: JSON.stringify(formattedData),
     });
 
     if (!response.ok) {

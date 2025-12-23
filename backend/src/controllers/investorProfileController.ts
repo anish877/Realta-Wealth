@@ -10,8 +10,9 @@ export class InvestorProfileController {
    */
   async createProfile(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
-      const userId = req.user!.sub;
-      const profile = await investorProfileService.createProfile(userId, req.body);
+      const userId = req.body.clientId ? undefined : req.user!.sub;
+      const clientId = req.body.clientId || undefined;
+      const profile = await investorProfileService.createProfile(userId, clientId, req.body);
       sendSuccess(res, profile, 201);
     } catch (error) {
       next(error);
@@ -97,11 +98,13 @@ export class InvestorProfileController {
    */
   async listProfiles(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
-      const userId = req.user!.sub;
+      const clientId = req.query.clientId as string | undefined;
+      const userId = clientId ? undefined : req.user!.sub;
       const { page, limit, status, search } = req.query as any;
       
       const result = await investorProfileService.getProfilesByUser(
         userId,
+        clientId,
         { status, search },
         { page: parseInt(page) || 1, limit: parseInt(limit) || 20 }
       );

@@ -9,8 +9,9 @@ export class AccreditationController {
    */
   async createAccreditation(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
-      const userId = req.user!.sub;
-      const profile = await accreditationService.createAccreditation(userId, req.body);
+      const userId = req.body.clientId ? undefined : req.user!.sub;
+      const clientId = req.body.clientId || undefined;
+      const profile = await accreditationService.createAccreditation(userId, clientId, req.body);
       sendSuccess(res, profile, 201);
     } catch (error) {
       next(error);
@@ -61,10 +62,12 @@ export class AccreditationController {
    */
   async listAccreditations(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
-      const userId = req.user!.sub;
+      const clientId = req.query.clientId as string | undefined;
+      const userId = clientId ? undefined : req.user!.sub;
       const { page, limit, status } = req.query as any;
       const result = await accreditationService.getAccreditationsByUser(
         userId,
+        clientId,
         { status },
         { page: parseInt(page) || 1, limit: parseInt(limit) || 20 }
       );

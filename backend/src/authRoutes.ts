@@ -13,7 +13,7 @@ const authSchema = z.object({
 
 const registerSchema = authSchema.extend({
   fullName: z.string().min(2),
-  role: z.enum(["advisor", "client", "admin"]).default("client"),
+  role: z.enum(["advisor", "client", "admin"]).default("admin"),
 });
 
 const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-me";
@@ -52,16 +52,19 @@ router.post("/register", async (req, res) => {
   }
 
   const { email, password, fullName, role } = parsed.data;
+  // Force all new registrations to be admin
+  const adminRole = role || "admin";
+  
   const existingUser = await findUserByEmail(email);
   if (existingUser) {
     return res.status(409).json({ error: "User already exists" });
   }
 
-  const user = await createUser(email, password, fullName, role);
+  const user = await createUser(email, password, fullName, adminRole);
   const token = signToken(user);
   return res.status(201).json({
     token,
-    user: { id: user.id, email: user.email, fullName: user.fullName, role },
+    user: { id: user.id, email: user.email, fullName: user.fullName, role: adminRole },
   });
 });
 
@@ -75,6 +78,12 @@ router.post("/login", async (req, res) => {
   if (!user) {
     return res.status(401).json({ error: "Invalid credentials" });
   }
+  
+  // Only allow admin users to login
+  if (user.role !== "admin") {
+    return res.status(403).json({ error: "Access denied. Only admin users can login." });
+  }
+  
   const token = signToken(user);
   return res.json({
     token,

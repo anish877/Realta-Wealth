@@ -35,6 +35,13 @@ router.get(
   altOrderController.getAltOrder.bind(altOrderController)
 );
 
+// Get alt order formatted for n8n PDF filling
+router.get(
+  "/:id/n8n",
+  validateParams(altOrderParamsSchema),
+  altOrderController.getAltOrderForN8N.bind(altOrderController)
+);
+
 // Update alt order
 router.patch(
   "/:id",
