@@ -2,7 +2,7 @@
   "document": {
     "title": "Brokerage Accredited Investor Verification Form for SEC Rule 506C",
     "source_file": "506c-Policy-and-Accreditation-Form-v20240101.pdf",
-    "document_family": "Realta Wealth / Realta Equities, Inc.",
+    "document_family": "Tax Alpha / Realta Equities, Inc.",
     "version_code_on_form": "CEI506CAI 20240101",
     "revision_date_marker": "Revised 20240101",
     "topic": "Brokerage Accredited Investor Verification Form for SEC Rule 506C + Accreditation Policy – 506c",
@@ -94,27 +94,27 @@
           "type": "verification_options",
           "page": 2,
           "content": {
-            "intro": "Realta Wealth offers advisors and their end-clients two (2) options regarding the accreditation verification method required under SEC Rule 506c.",
+            "intro": "Tax Alpha offers advisors and their end-clients two (2) options regarding the accreditation verification method required under SEC Rule 506c.",
             "options": [
               {
                 "option_name": "Third-Party Attestation Method",
-                "description": "This verification method requires Realta Wealth to receive a signed, third￾party attestation from a certified public accountant, licensed attorney, a non-Realta registered broker-dealer, or a Realta non- registered financial professional.",
+                "description": "This verification method requires Tax Alpha to receive a signed, third￾party attestation from a certified public accountant, licensed attorney, a non-Realta registered broker-dealer, or a Realta non- registered financial professional.",
                 "requirements": [
                   "This third-party attestation must specifically attest to the net worth, income, or other criteria the third-party is relying on to offer their attestation.",
-                  "This attestation must be in writing, can be delivered to Realta Wealth via electronic means, and should be dated within one year."
+                  "This attestation must be in writing, can be delivered to Tax Alpha via electronic means, and should be dated within one year."
                 ]
               },
               {
                 "option_name": "Accredited Investor Verification Form Method",
-                "description": "This method requires you and your customer attest on the Realta Wealth Accredited Investor Verification Form that the income and/or net worth requirements to qualify as an accredited investor have been met, and that you and your customer have carefully reviewed SEC Rule 506c.",
+                "description": "This method requires you and your customer attest on the Tax Alpha Accredited Investor Verification Form that the income and/or net worth requirements to qualify as an accredited investor have been met, and that you and your customer have carefully reviewed SEC Rule 506c.",
                 "advisor_obligations": [
-                  "As a Realta Wealth financial professional providing this verification, you are required to review certain relevant documentation regarding the investor you are offering your verification on behalf of."
+                  "As a Tax Alpha financial professional providing this verification, you are required to review certain relevant documentation regarding the investor you are offering your verification on behalf of."
                 ],
                 "submission_rules": [
                   "This Verification Form must be completed by the client and the advisor and should be submitted with every 506c alternative transaction that is submitted.",
                   "This form is valid for one year from the date of signing."
                 ],
-                "recordkeeping_note": "Note that the supporting documentation an advisor utilizes to verify a client’s accreditation status must be retained in the client file by the financial professional, however it SHOULD NOT be sent to Realta Wealth along with the completed Verification From."
+                "recordkeeping_note": "Note that the supporting documentation an advisor utilizes to verify a client’s accreditation status must be retained in the client file by the financial professional, however it SHOULD NOT be sent to Tax Alpha along with the completed Verification From."
               }
             ]
           }

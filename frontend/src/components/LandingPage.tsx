@@ -354,7 +354,7 @@ export default function LandingPage() {
         {/* Hero */}
         <main className="hero">
           <div>
-            <div className="kicker">Realta Wealth</div>
+            <div className="kicker">Tax Alpha</div>
             <h1 className="title">
               Wealth that feels
               <br />
@@ -379,7 +379,7 @@ export default function LandingPage() {
         <section className="trusted">
           <div className="trusted-card">
             <p className="trusted-kicker">Trusted</p>
-            <h2 className="trusted-title">Realta Wealth, built for clarity and speed.</h2>
+            <h2 className="trusted-title">Tax Alpha, built for clarity and speed.</h2>
             <p className="trusted-sub">
               Guided investor onboarding, advisor-ready controls, and secure data flows. Everything your team needs to keep profiles current and compliant.
             </p>
@@ -395,7 +395,7 @@ export default function LandingPage() {
         {/* Header */}
         <header className="lp-header">
           <Link to="/" className="lp-brand" style={{ textDecoration: "none", color: "inherit" }}>
-            Realta Wealth
+            Tax Alpha
           </Link>
           <div className="lp-actions">
             {isAuthenticated && user ? (

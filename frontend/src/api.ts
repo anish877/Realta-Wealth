@@ -381,14 +381,19 @@ export async function getStatementProgress(statementId: string): Promise<{ data:
 export async function generateStatementPdf(
   statementId: string
 ): Promise<{ data: { message: string; statementId: string } }> {
-  const res = await fetch(getApiUrl(`/api/statements/${statementId}/generate-pdf`), {
+  const url = getApiUrl(`/api/statements/${statementId}/generate-pdf`);
+  console.log('[API] generateStatementPdf called with statementId:', statementId);
+  console.log('[API] Request URL:', url);
+  const res = await fetch(url, {
     method: "POST",
     headers: getAuthHeaders(),
   });
+  console.log('[API] generateStatementPdf response status:', res.status);
   const response = await handleResponse<{
     success: boolean;
     data: { message: string; statementId: string };
   }>(res);
+  console.log('[API] generateStatementPdf response data:', response);
   return { data: response.data };
 }
 

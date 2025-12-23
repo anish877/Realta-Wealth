@@ -35,20 +35,41 @@ export function FinancialTableField({
   const totalRow = rows.find((row) => row.is_total);
   const dataRows = rows.filter((row) => !row.is_total);
 
+  // Get dynamic rows if allowAddRows is enabled
+  const dynamicRows = allowAddRows 
+    ? (formData[`${id}_rows`] as Array<{ id: string; label?: string; value?: string }>) || []
+    : [];
+
   // Calculate total when data changes
-  // Create a dependency string from all data row values
+  // Create a dependency string from all data row values (including dynamic rows)
   const dataFieldValuesKey = useMemo(() => {
-    return dataRows.map((row) => {
+    const defaultRowKeys = dataRows.map((row) => {
       const fieldId = getFieldId(row.id);
       const value = formData[fieldId];
       return `${fieldId}:${String(value || "")}`;
-    }).join("|");
-  }, [dataRows, formData, id]);
+    });
+    
+    const dynamicRowKeys = dynamicRows.map((dynamicRow) => {
+      const fieldId = getFieldId(dynamicRow.id);
+      const value = formData[fieldId];
+      return `${fieldId}:${String(value || "")}`;
+    });
+    
+    return [...defaultRowKeys, ...dynamicRowKeys].join("|");
+  }, [dataRows, dynamicRows, formData, id]);
 
   useEffect(() => {
     if (totalRow) {
-      const fieldIds = dataRows.map((row) => getFieldId(row.id));
-      const calculated = calculateTotal(fieldIds, formData as Record<string, string | number | null | undefined>, getFieldId(totalRow.id));
+      // Get field IDs from default rows
+      const defaultFieldIds = dataRows.map((row) => getFieldId(row.id));
+      
+      // Get field IDs from dynamic rows
+      const dynamicFieldIds = dynamicRows.map((dynamicRow) => getFieldId(dynamicRow.id));
+      
+      // Combine all field IDs for total calculation
+      const allFieldIds = [...defaultFieldIds, ...dynamicFieldIds];
+      
+      const calculated = calculateTotal(allFieldIds, formData as Record<string, string | number | null | undefined>, getFieldId(totalRow.id));
       const totalFieldId = getFieldId(totalRow.id);
       const currentTotal = formData[totalFieldId];
       
@@ -76,7 +97,7 @@ export function FinancialTableField({
         }
       }
     }
-  }, [dataFieldValuesKey, totalRow?.id, updateField]);
+  }, [dataFieldValuesKey, totalRow?.id, updateField, dataRows, dynamicRows]);
 
   const handleCurrencyChange = (fieldId: string, value: string) => {
     // Normalize input
@@ -94,8 +115,11 @@ export function FinancialTableField({
     
     // Validate total if this is a data row and total row exists
     if (totalRow && !fieldId.includes(totalRow.id)) {
-      const fieldIds = dataRows.map((row) => getFieldId(row.id));
-      const calculated = calculateTotal(fieldIds, formData as Record<string, string | number | null | undefined>, getFieldId(totalRow.id));
+      // Include both default and dynamic rows in total calculation for validation
+      const defaultFieldIds = dataRows.map((row) => getFieldId(row.id));
+      const dynamicFieldIds = dynamicRows.map((dynamicRow) => getFieldId(dynamicRow.id));
+      const allFieldIds = [...defaultFieldIds, ...dynamicFieldIds];
+      const calculated = calculateTotal(allFieldIds, formData as Record<string, string | number | null | undefined>, getFieldId(totalRow.id));
       const enteredTotal = formData[getFieldId(totalRow.id)];
       const totalValidation = validateTotalMatches(calculated, String(enteredTotal || ""), 0.01);
       
@@ -117,7 +141,19 @@ export function FinancialTableField({
   const handleRemoveRow = (rowId: string) => {
     if (!allowAddRows) return;
     const currentRows = (formData[`${id}_rows`] as Array<{ id: string; label?: string; value?: string }>) || [];
-    updateField(`${id}_rows`, currentRows.filter((row) => row.id !== rowId));
+    // Remove from dynamic rows array
+    const updatedRows = currentRows.filter((row) => row.id !== rowId);
+    updateField(`${id}_rows`, updatedRows);
+    
+    // Also clear the value field for the removed row
+    const fieldId = getFieldId(rowId);
+    updateField(fieldId, "");
+    
+    // Clear the label field if it exists
+    const labelFieldId = `${fieldId}_label`;
+    if (formData[labelFieldId]) {
+      updateField(labelFieldId, "");
+    }
   };
 
   const handleRowLabelChange = (rowId: string, label: string) => {
@@ -127,8 +163,6 @@ export function FinancialTableField({
     );
     updateField(`${id}_rows`, updatedRows);
   };
-
-  const dynamicRows = (formData[`${id}_rows`] as Array<{ id: string; label?: string; value?: string }>) || [];
 
   return (
     <div className="mb-8">
@@ -216,14 +250,8 @@ export function FinancialTableField({
                   </td>
                   {allowAddRows && !isTotal && (
                     <td className="border border-slate-300 px-4 py-3">
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveRow(row.id)}
-                        disabled={disabled}
-                        className="text-red-600 hover:text-red-800 text-sm font-medium"
-                      >
-                        Remove
-                      </button>
+                      {/* Default rows should not have remove button - they're part of the schema */}
+                      {/* Only dynamic rows can be removed */}
                     </td>
                   )}
                   {allowAddRows && isTotal && <td className="border border-slate-300 px-4 py-3"></td>}

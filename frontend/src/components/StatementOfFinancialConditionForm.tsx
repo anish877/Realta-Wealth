@@ -22,6 +22,7 @@ import {
 } from "../utils/statementComputedFields";
 import { normalizeCurrency } from "../utils/statementValidation";
 import { buildStatementStep1Payload, buildStatementStep2Payload } from "../utils/statementFormDataToBackend";
+import { loadFinancialRowsToFormData, loadSignaturesToFormData } from "../utils/statementBackendToFormData";
 import {
   createStatement,
   getStatement,
@@ -154,14 +155,30 @@ export default function StatementOfFinancialConditionForm({ clientId }: Statemen
             financialRows?: any[];
             signatures?: any[];
           };
-          // For now, we only hydrate header + notes; financial rows remain on client
-          setFormData((prev) => ({
-            ...prev,
+          // Load all form data including financial rows and signatures
+          const loadedFormData: Record<string, FieldValue> = {
             rr_name: backendData.rrName || "",
             rr_no: backendData.rrNo || "",
             customer_names: backendData.customerNames || "",
             notes_page1: backendData.notesPage1 || "",
             additional_notes: backendData.additionalNotes || "",
+          };
+
+          // Load financial rows into formData
+          if (backendData.financialRows && backendData.financialRows.length > 0) {
+            const financialRowsData = loadFinancialRowsToFormData(backendData.financialRows);
+            Object.assign(loadedFormData, financialRowsData);
+          }
+
+          // Load signatures into formData
+          if (backendData.signatures && backendData.signatures.length > 0) {
+            const signaturesData = loadSignaturesToFormData(backendData.signatures);
+            Object.assign(loadedFormData, signaturesData);
+          }
+
+          setFormData((prev) => ({
+            ...prev,
+            ...loadedFormData,
           }));
           setHasLoadedStatement(statementIdFromUrl);
         } catch (error: any) {
@@ -227,24 +244,6 @@ export default function StatementOfFinancialConditionForm({ clientId }: Statemen
       setCurrentPage(currentPage - 1);
     }
   }, [currentPage]);
-
-  const handleNext = useCallback(async () => {
-    // Allow navigation without validation - users can save incomplete forms
-    // Validation will only be enforced on submit
-    if (currentPage < totalPages) {
-      setIsSavingNext(true);
-      try {
-        // Save current page before navigating
-        await saveCurrentPage(false, true);
-        setCurrentPage(currentPage + 1);
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      } catch (error) {
-        showToast("Failed to save page. Please try again.", "error");
-      } finally {
-        setIsSavingNext(false);
-      }
-    }
-  }, [currentPage, totalPages, saveCurrentPage, showToast]);
 
   const saveCurrentPage = useCallback(
     async (showNotification = true, silent = false) => {
@@ -319,6 +318,24 @@ export default function StatementOfFinancialConditionForm({ clientId }: Statemen
     },
     [currentPage, formData, statementId, navigate, showToast]
   );
+
+  const handleNext = useCallback(async () => {
+    // Allow navigation without validation - users can save incomplete forms
+    // Validation will only be enforced on submit
+    if (currentPage < totalPages) {
+      setIsSavingNext(true);
+      try {
+        // Save current page before navigating
+        await saveCurrentPage(false, true);
+        setCurrentPage(currentPage + 1);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } catch (error) {
+        showToast("Failed to save page. Please try again.", "error");
+      } finally {
+        setIsSavingNext(false);
+      }
+    }
+  }, [currentPage, totalPages, saveCurrentPage, showToast]);
 
   const handleManualSave = useCallback(async () => {
     await saveCurrentPage(true);

@@ -69,6 +69,12 @@ router.get(
 // Generate PDF for statement
 router.post(
   "/:id/generate-pdf",
+  (req, res, next) => {
+    console.log('[Statements Route] POST /:id/generate-pdf hit');
+    console.log('[Statements Route] Request params:', req.params);
+    console.log('[Statements Route] Request body:', req.body);
+    next();
+  },
   validateParams(statementParamsSchema),
   statementController.generatePdf.bind(statementController)
 );

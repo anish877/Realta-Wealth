@@ -422,7 +422,7 @@ export default function InvestorProfileForm({ clientId }: InvestorProfileFormPro
         <div className="form-container">
           <div className="form-content">
             <FormSkeleton fieldCount={8} showSectionHeader={true} />
-          </div>
+            </div>
         </div>
       </div>
     );

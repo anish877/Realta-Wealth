@@ -4,7 +4,15 @@ import { getProfilesByUser, getStatements, getAdditionalHolders, getAltOrders, g
 import { getClient } from "../api";
 import { useToast } from "./Toast";
 
-export default function ClientFormsHub() {
+type FormSelectionHandler = (formType: string) => void;
+
+export default function ClientFormsHub({
+  selectedForms = new Set<string>(),
+  onToggleFormSelection,
+}: {
+  selectedForms?: Set<string>;
+  onToggleFormSelection?: FormSelectionHandler;
+}) {
   const location = useLocation();
   const navigate = useNavigate();
   const { showToast } = useToast();
@@ -27,7 +35,6 @@ export default function ClientFormsHub() {
   const [altOrdersLoading, setAltOrdersLoading] = useState(false);
   const [accreditations, setAccreditations] = useState<AccreditationProfile[]>([]);
   const [accreditationsLoading, setAccreditationsLoading] = useState(false);
-  const [selectedForms, setSelectedForms] = useState<Set<string>>(new Set());
 
   // Redirect to dashboard if clientId is missing or undefined
   useEffect(() => {
@@ -226,17 +233,7 @@ export default function ClientFormsHub() {
                 <input
                   type="checkbox"
                   checked={selectedForms.has("investorProfile")}
-                  onChange={() => {
-                    setSelectedForms((prev) => {
-                      const next = new Set(prev);
-                      if (next.has("investorProfile")) {
-                        next.delete("investorProfile");
-                      } else {
-                        next.add("investorProfile");
-                      }
-                      return next;
-                    });
-                  }}
+                  onChange={() => onToggleFormSelection?.("investorProfile")}
                   className="w-5 h-5 rounded border-2 border-[rgba(11,92,255,0.3)] text-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-1 transition-all cursor-pointer group-hover:border-[var(--primary)]"
                 />
               </label>
@@ -289,17 +286,7 @@ export default function ClientFormsHub() {
                 <input
                   type="checkbox"
                   checked={selectedForms.has("statement")}
-                  onChange={() => {
-                    setSelectedForms((prev) => {
-                      const next = new Set(prev);
-                      if (next.has("statement")) {
-                        next.delete("statement");
-                      } else {
-                        next.add("statement");
-                      }
-                      return next;
-                    });
-                  }}
+                  onChange={() => onToggleFormSelection?.("statement")}
                   className="w-5 h-5 rounded border-2 border-[rgba(11,92,255,0.3)] text-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-1 transition-all cursor-pointer group-hover:border-[var(--primary)]"
                 />
               </label>
@@ -342,17 +329,7 @@ export default function ClientFormsHub() {
                 <input
                   type="checkbox"
                   checked={selectedForms.has("additionalHolder")}
-                  onChange={() => {
-                    setSelectedForms((prev) => {
-                      const next = new Set(prev);
-                      if (next.has("additionalHolder")) {
-                        next.delete("additionalHolder");
-                      } else {
-                        next.add("additionalHolder");
-                      }
-                      return next;
-                    });
-                  }}
+                  onChange={() => onToggleFormSelection?.("additionalHolder")}
                   className="w-5 h-5 rounded border-2 border-[rgba(11,92,255,0.3)] text-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-1 transition-all cursor-pointer group-hover:border-[var(--primary)]"
                 />
               </label>
@@ -395,17 +372,7 @@ export default function ClientFormsHub() {
                 <input
                   type="checkbox"
                   checked={selectedForms.has("altOrder")}
-                  onChange={() => {
-                    setSelectedForms((prev) => {
-                      const next = new Set(prev);
-                      if (next.has("altOrder")) {
-                        next.delete("altOrder");
-                      } else {
-                        next.add("altOrder");
-                      }
-                      return next;
-                    });
-                  }}
+                  onChange={() => onToggleFormSelection?.("altOrder")}
                   className="w-5 h-5 rounded border-2 border-[rgba(11,92,255,0.3)] text-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-1 transition-all cursor-pointer group-hover:border-[var(--primary)]"
                 />
               </label>
@@ -448,17 +415,7 @@ export default function ClientFormsHub() {
                 <input
                   type="checkbox"
                   checked={selectedForms.has("accreditation")}
-                  onChange={() => {
-                    setSelectedForms((prev) => {
-                      const next = new Set(prev);
-                      if (next.has("accreditation")) {
-                        next.delete("accreditation");
-                      } else {
-                        next.add("accreditation");
-                      }
-                      return next;
-                    });
-                  }}
+                  onChange={() => onToggleFormSelection?.("accreditation")}
                   className="w-5 h-5 rounded border-2 border-[rgba(11,92,255,0.3)] text-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-1 transition-all cursor-pointer group-hover:border-[var(--primary)]"
                 />
               </label>

@@ -234,18 +234,18 @@ export default function AdditionalHolderForm({ clientId }: AdditionalHolderFormP
 
     setIsSavingNext(true);
     try {
-      // Save before moving forward
-      const saved = await saveCurrentPage(false, true);
-      if (!saved) {
-        return;
-      }
+    // Save before moving forward
+    const saved = await saveCurrentPage(false, true);
+    if (!saved) {
+      return;
+    }
 
-      // Mark page as completed
-      setCompletedPages((prev) => new Set([...prev, currentPage]));
+    // Mark page as completed
+    setCompletedPages((prev) => new Set([...prev, currentPage]));
 
-      if (currentPage < totalPages) {
-        setCurrentPage(currentPage + 1);
-        window.scrollTo({ top: 0, behavior: "smooth" });
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+      window.scrollTo({ top: 0, behavior: "smooth" });
       }
     } catch (error) {
       showToast("Failed to save page. Please try again.", "error");

@@ -294,7 +294,7 @@ function AppShell({
       <div className="app-background">{accentLines}</div>
       <div className="app-container">
         <header className="app-header">
-          <div className="app-brand">Realta Wealth</div>
+          <div className="app-brand">Tax Alpha</div>
           <div className="app-actions">
             {hasProfiles && onGeneratePdf && (
               <button
@@ -622,6 +622,11 @@ function ProtectedApp() {
   };
 
   const handleGenerateSelectedPdfs = async () => {
+    console.log('[App] handleGenerateSelectedPdfs called');
+    console.log('[App] selectedForms:', selectedForms);
+    console.log('[App] selectedForms.size:', selectedForms.size);
+    console.log('[App] selectedForms array:', Array.from(selectedForms));
+    
     if (selectedForms.size === 0) {
       showToast("Please select at least one form to generate PDF", "warning");
       return;
@@ -633,6 +638,10 @@ function ProtectedApp() {
     try {
       // Generate PDFs for each selected form
       for (const formType of selectedForms) {
+        console.log('[App] Processing formType:', formType);
+        console.log('[App] formType type:', typeof formType);
+        console.log('[App] formType === "statement":', formType === "statement");
+        
         try {
           let success = false;
           let message = "";
@@ -650,12 +659,20 @@ function ProtectedApp() {
               break;
             }
             case "statement": {
+              console.log('[App] === STATEMENT CASE HIT ===');
+              console.log('[App] Generating PDF for statement, available statements:', statements);
+              console.log('[App] statements.length:', statements?.length || 0);
               const draftStatement = statements.find(s => s.status === "draft" || s.status === "submitted");
+              console.log('[App] Found statement for PDF:', draftStatement);
+              console.log('[App] draftStatement?.id:', draftStatement?.id);
               if (!draftStatement?.id) {
+                console.log('[App] No statement found, adding error result');
                 results.push({ formType, success: false, message: "No statement found" });
                 continue;
               }
+              console.log('[App] About to call generateStatementPdf with ID:', draftStatement.id);
               await generateStatementPdf(draftStatement.id);
+              console.log('[App] generateStatementPdf completed successfully');
               success = true;
               message = "Statement PDF generated";
               break;
@@ -694,8 +711,14 @@ function ProtectedApp() {
               break;
             }
             default:
-              results.push({ formType, success: false, message: "Unknown form type" });
+              console.error('[App] UNKNOWN FORM TYPE IN SWITCH:', formType);
+              console.error('[App] formType value:', JSON.stringify(formType));
+              console.error('[App] formType === "statement":', formType === "statement");
+              console.error('[App] formType === "investorProfile":', formType === "investorProfile");
+              results.push({ formType, success: false, message: `Unknown form type: ${formType}` });
           }
+          
+          console.log('[App] After switch, success:', success, 'message:', message);
 
           if (success) {
             results.push({ formType, success: true, message });
@@ -785,14 +808,28 @@ function ProtectedApp() {
     );
   }
 
-  // Show client forms hub (same UI as before, but client-scoped)
+  // Show client forms hub (client-scoped)
   if (isAdmin && isClientFormsRoute && !isFormView) {
+    const hasAnyForms =
+      profiles.length > 0 ||
+      statements.length > 0 ||
+      additionalHolders.length > 0 ||
+      altOrders.length > 0 ||
+      accreditations.length > 0;
+
     return (
       <AppShell 
         onLogout={() => logout("/auth")} 
         userName={user?.fullName}
+        onGeneratePdf={handleGenerateSelectedPdfs}
+        isGeneratingPdf={isGeneratingSelectedPdfs}
+        hasProfiles={hasAnyForms}
+        hasSelectedForms={selectedForms.size > 0}
       >
-        <ClientFormsHub />
+        <ClientFormsHub
+          selectedForms={selectedForms}
+          onToggleFormSelection={handleToggleFormSelection}
+        />
         <ToastContainer toasts={toasts} onRemove={removeToast} />
       </AppShell>
     );
@@ -810,7 +847,7 @@ function ProtectedApp() {
       {!isFormView && !isClientFormsRoute && (
         <div className="space-y-10">
           <div className="hub-hero">
-            <div className="hub-kicker">Realta Wealth</div>
+            <div className="hub-kicker">Tax Alpha</div>
             <h1 className="hub-title">Your investor forms, simplified.</h1>
             <p className="hub-sub">Start or continue your forms. Clean, guided, and ready for your clients.</p>
           </div>

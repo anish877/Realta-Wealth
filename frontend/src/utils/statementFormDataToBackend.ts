@@ -34,7 +34,7 @@ function buildFinancialRows(formData: FormData): StatementFinancialRowPayload[] 
     category: StatementFinancialRowPayload["category"],
     tableId: string,
     rowId: string,
-    opts: { label?: string; isTotal?: boolean } = {}
+    opts: { label?: string; isTotal?: boolean; useCustomLabel?: boolean } = {}
   ) => {
     const fieldId = `${tableId}_${rowId}`;
     const raw = formData[fieldId];
@@ -43,10 +43,22 @@ function buildFinancialRows(formData: FormData): StatementFinancialRowPayload[] 
       // Skip zero non-total rows to avoid clutter
       return;
     }
+    
+    // If useCustomLabel is true, read the custom label from formData
+    // Custom labels are stored as ${fieldId}_label
+    let label = opts.label;
+    if (opts.useCustomLabel) {
+      const customLabelFieldId = `${fieldId}_label`;
+      const customLabel = (formData[customLabelFieldId] as string) || "";
+      if (customLabel.trim() !== "") {
+        label = customLabel.trim();
+      }
+    }
+    
     rows.push({
       category,
       rowKey: rowId,
-      label: opts.label,
+      label: label,
       value,
       isTotal: opts.isTotal,
     });
@@ -137,6 +149,7 @@ function buildFinancialRows(formData: FormData): StatementFinancialRowPayload[] 
   });
 
   // Illiquid Qualified Assets (custom labels allowed)
+  const tableId = "illiquid_qualified_assets";
   [
     "illiquid_qualified_1",
     "illiquid_qualified_2",
@@ -144,9 +157,30 @@ function buildFinancialRows(formData: FormData): StatementFinancialRowPayload[] 
     "illiquid_qualified_4",
     "total_illiquid_qualified_assets",
   ].forEach((rowId) => {
-    addRow("illiquid_qualified", "illiquid_qualified_assets", rowId, {
+    addRow("illiquid_qualified", tableId, rowId, {
       isTotal: rowId === "total_illiquid_qualified_assets",
+      useCustomLabel: rowId !== "total_illiquid_qualified_assets", // Allow custom labels for data rows, not total
     });
+  });
+
+  // Handle dynamically added rows for illiquid_qualified_assets
+  const dynamicRowsKey = `${tableId}_rows`;
+  const dynamicRows = (formData[dynamicRowsKey] as Array<{ id: string; label?: string; value?: string }>) || [];
+  dynamicRows.forEach((dynamicRow) => {
+    const fieldId = `${tableId}_${dynamicRow.id}`;
+    const raw = formData[fieldId];
+    const value = parseCurrency(raw);
+    
+    // Only save if value is not zero
+    if (value !== 0) {
+      rows.push({
+        category: "illiquid_qualified",
+        rowKey: dynamicRow.id, // Use the dynamic row's id as rowKey
+        label: dynamicRow.label || "",
+        value,
+        isTotal: false,
+      });
+    }
   });
 
   return rows;

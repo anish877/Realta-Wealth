@@ -106,9 +106,13 @@ export class StatementController {
   async generatePdf(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
+      console.log('[StatementController] generatePdf called with ID:', id);
+      console.log('[StatementController] Calling statementService.generatePdf...');
       const result = await statementService.generatePdf(id);
+      console.log('[StatementController] PDF generation successful, result:', result);
       sendSuccess(res, result);
     } catch (error) {
+      console.error('[StatementController] Error in generatePdf:', error);
       next(error);
     }
   }

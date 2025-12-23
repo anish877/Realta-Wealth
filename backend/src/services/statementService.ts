@@ -109,6 +109,8 @@ export class StatementService {
    * Get statement by ID with optional relations
    */
   async getStatementById(statementId: string, includeRelations: boolean = true) {
+    console.log('[StatementService] getStatementById called with:', { statementId, includeRelations });
+    
     const statement = await prisma.statementProfile.findUnique({
       where: { id: statementId },
       include: includeRelations
@@ -126,6 +128,32 @@ export class StatementService {
           }
         : undefined,
     });
+
+    console.log('[StatementService] Statement found:', !!statement);
+    if (statement) {
+      console.log('[StatementService] Statement basic fields:', {
+        id: statement.id,
+        rrName: statement.rrName,
+        rrNo: statement.rrNo,
+        customerNames: statement.customerNames,
+        hasFinancialRows: !!statement.financialRows,
+        financialRowsCount: statement.financialRows?.length || 0,
+        hasSignatures: !!statement.signatures,
+        signaturesCount: statement.signatures?.length || 0,
+      });
+      
+      if (statement.financialRows && statement.financialRows.length > 0) {
+        console.log('[StatementService] First 3 financial rows:', JSON.stringify(statement.financialRows.slice(0, 3), null, 2));
+      }
+      
+      if (statement.signatures && statement.signatures.length > 0) {
+        console.log('[StatementService] Signatures:', JSON.stringify(statement.signatures.map((s: any) => ({
+          signatureType: s.signatureType,
+          printedName: s.printedName,
+          hasSignature: !!s.signatureData
+        })), null, 2));
+      }
+    }
 
     if (!statement) {
       throw new NotFoundError("StatementProfile", statementId);
@@ -411,6 +439,14 @@ export class StatementService {
    * Format statement data for n8n PDF generation
    */
   formatStatementForN8N(statement: any): any {
+    console.log('[formatStatementForN8N] Called with statement:', {
+      id: statement?.id,
+      hasFinancialRows: !!statement?.financialRows,
+      financialRowsCount: statement?.financialRows?.length || 0,
+      hasSignatures: !!statement?.signatures,
+      signaturesCount: statement?.signatures?.length || 0,
+    });
+    
     const result: any = {
       form_type: "statement_of_financial_condition",
       form_id: "REI-Statement-of-Financial-Condition",
@@ -438,24 +474,155 @@ export class StatementService {
       }
     };
 
-    // Add all statement fields - basic structure
-    // This is a placeholder - expand based on actual statement fields
-    // Handle checkbox fields with sub-values similar to other forms
+    // Header / Registration Information
+    result.fields.rr_name = { value: statement.rrName || null, label: "RR Name", type: "text" };
+    result.fields.rr_no = { value: statement.rrNo || null, label: "RR No.", type: "text" };
+    result.fields.customer_names = { value: statement.customerNames || null, label: "Customer Names(s)", type: "text" };
+    
+    // Notes
+    result.fields.notes_page1 = { value: statement.notesPage1 || null, label: "Notes (Page 1)", type: "text" };
+    result.fields.additional_notes = { value: statement.additionalNotes || null, label: "Additional Notes", type: "text" };
+
+    // Financial Rows - organize by category
+    console.log('[formatStatementForN8N] Processing financial rows:', {
+      hasFinancialRows: !!statement.financialRows,
+      financialRowsLength: statement.financialRows?.length || 0,
+      financialRows: statement.financialRows ? JSON.stringify(statement.financialRows.slice(0, 3)) : 'none'
+    });
+    
+    if (statement.financialRows && statement.financialRows.length > 0) {
+      const rowsByCategory: Record<string, any[]> = {};
+      
+      statement.financialRows.forEach((row: any) => {
+        const category = row.category || 'other';
+        if (!rowsByCategory[category]) {
+          rowsByCategory[category] = [];
+        }
+        rowsByCategory[category].push({
+          rowKey: row.rowKey,
+          label: row.label,
+          value: formatCurrency(row.value),
+          raw_value: row.value,
+          isTotal: row.isTotal || false
+        });
+      });
+
+      console.log('[formatStatementForN8N] Financial rows organized by category:', Object.keys(rowsByCategory));
+
+      // Add financial rows organized by category
+      Object.keys(rowsByCategory).forEach(category => {
+        result.fields[`financial_rows_${category}`] = {
+          value: rowsByCategory[category],
+          label: `Financial Rows - ${category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`,
+          type: "array"
+        };
+      });
+      
+      console.log('[formatStatementForN8N] Added financial rows fields to result:', Object.keys(result.fields).filter(f => f.startsWith('financial_rows_')));
+    } else {
+      console.log('[formatStatementForN8N] No financial rows to process');
+    }
+
+    // Signatures
+    console.log('[formatStatementForN8N] Processing signatures:', {
+      hasSignatures: !!statement.signatures,
+      signaturesLength: statement.signatures?.length || 0
+    });
+    
+    if (statement.signatures && statement.signatures.length > 0) {
+      statement.signatures.forEach((sig: any) => {
+        const sigType = sig.signatureType || 'account_owner';
+        const fieldName = `${sigType}_signature`;
+        
+        result.fields[fieldName] = {
+          value: sig.signatureData || null,
+          label: `${sigType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} Signature`,
+          type: "signature",
+          has_signature: !!sig.signatureData
+        };
+        
+        result.fields[`${sigType}_printed_name`] = {
+          value: sig.printedName || null,
+          label: `${sigType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} Printed Name`,
+          type: "text"
+        };
+        
+        result.fields[`${sigType}_signature_date`] = {
+          value: formatDate(sig.signatureDate),
+          label: `${sigType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} Signature Date`,
+          type: "date",
+          raw_value: sig.signatureDate
+        };
+      });
+      
+      console.log('[formatStatementForN8N] Added signature fields to result:', Object.keys(result.fields).filter(f => f.includes('signature') || f.includes('printed_name') || f.includes('signature_date')));
+    } else {
+      console.log('[formatStatementForN8N] No signatures to process');
+    }
+
+    console.log('[formatStatementForN8N] Final result fields count:', Object.keys(result.fields).length);
+    console.log('[formatStatementForN8N] Final result field keys:', Object.keys(result.fields));
 
     return result;
   }
 
   async generatePdf(statementId: string) {
+    console.log('[StatementService] generatePdf called with statementId:', statementId);
+    console.log('[StatementService] Fetching statement from database...');
+    
     const statement = await this.getStatementById(statementId, true);
+    
+    console.log('[StatementService] Statement fetched:', statement ? 'Found' : 'Not found');
 
     if (!statement) {
+      console.error('[StatementService] Statement not found, throwing NotFoundError');
       throw new NotFoundError("StatementProfile", statementId);
     }
+
+    // Console log: Data extracted from latest save (database)
+    console.log('=== Statement Data Extracted from Database (Latest Save) ===');
+    console.log('Statement ID:', statement.id);
+    console.log('Status:', statement.status);
+    console.log('RR Name:', statement.rrName);
+    console.log('RR No:', statement.rrNo);
+    console.log('Customer Names:', statement.customerNames);
+    console.log('Notes Page 1:', statement.notesPage1);
+    console.log('Additional Notes:', statement.additionalNotes);
+    console.log('Financial Rows Count:', statement.financialRows?.length || 0);
+    console.log('Signatures Count:', statement.signatures?.length || 0);
+    if (statement.financialRows && statement.financialRows.length > 0) {
+      console.log('Financial Rows:', JSON.stringify(statement.financialRows, null, 2));
+    }
+    if (statement.signatures && statement.signatures.length > 0) {
+      console.log('Signatures:', JSON.stringify(statement.signatures.map((s: any) => ({
+        signatureType: s.signatureType,
+        printedName: s.printedName,
+        signatureDate: s.signatureDate,
+        hasSignature: !!s.signatureData
+      })), null, 2));
+    }
+    console.log('=== End Statement Data ===');
 
     // Format the statement data for n8n
     const formattedData = this.formatStatementForN8N(statement);
 
+    // Console log: Data being sent to n8n
+    console.log('=== Formatted Data Being Sent to n8n ===');
+    console.log('Form Type:', formattedData.form_type);
+    console.log('Form ID:', formattedData.form_id);
+    console.log('Statement ID:', formattedData.statement_id);
+    console.log('Status:', formattedData.status);
+    console.log('Fields Count:', Object.keys(formattedData.fields).length);
+    console.log('Fields:', JSON.stringify(formattedData.fields, null, 2));
+    if (formattedData.conditional_fields && Object.keys(formattedData.conditional_fields).length > 0) {
+      console.log('Conditional Fields:', JSON.stringify(formattedData.conditional_fields, null, 2));
+    }
+    console.log('Full Formatted Data:', JSON.stringify(formattedData, null, 2));
+    console.log('=== End Formatted Data ===');
+
     const webhookUrl = "https://n8n.srv891599.hstgr.cloud/webhook/7b947ec6-e173-45f9-aee9-a1c8f44ceae6";
+    console.log('[StatementService] Sending data to n8n webhook:', webhookUrl);
+    console.log('[StatementService] Request body size:', JSON.stringify(formattedData).length, 'bytes');
     
     const webhookResponse = await fetch(webhookUrl, {
       method: "POST",
@@ -465,10 +632,18 @@ export class StatementService {
       body: JSON.stringify(formattedData),
     });
 
+    console.log('[StatementService] Webhook response status:', webhookResponse.status);
+    console.log('[StatementService] Webhook response ok:', webhookResponse.ok);
+
     if (!webhookResponse.ok) {
       const errorText = await webhookResponse.text().catch(() => "Unknown error");
+      console.error('[StatementService] Webhook error response:', errorText);
       throw new Error(`Failed to generate Statement PDF: ${webhookResponse.status} ${errorText}`);
     }
+
+    const responseText = await webhookResponse.text().catch(() => "");
+    console.log('[StatementService] Webhook response body:', responseText);
+    console.log('[StatementService] PDF generation request sent successfully');
 
     return {
       message: "Statement PDF generation request sent successfully",
