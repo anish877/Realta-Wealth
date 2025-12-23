@@ -231,7 +231,7 @@ export default function InvestorProfileForm({ clientId }: InvestorProfileFormPro
             if (stepNumber !== 1) {
               throw new Error("Please complete Step 1 to create a profile before saving other steps.");
             }
-            const response = await createProfile(payload, effectiveClientId);
+            const response = await createProfile(payload, effectiveClientId || undefined);
             responseData = response.data;
             const newProfileId = response.data.id;
             setProfileId(newProfileId);

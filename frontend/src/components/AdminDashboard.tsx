@@ -15,7 +15,7 @@ export default function AdminDashboard({ onCreateClient, onClientClick }: AdminD
   const [analytics, setAnalytics] = useState<DashboardAnalyticsType | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Use ref to store showToast to avoid dependency issues
   const showToastRef = useRef(showToast);
@@ -239,5 +239,6 @@ export default function AdminDashboard({ onCreateClient, onClientClick }: AdminD
     </div>
   );
 }
+
 
 

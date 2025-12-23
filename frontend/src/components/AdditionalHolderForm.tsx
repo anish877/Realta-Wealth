@@ -64,6 +64,7 @@ export default function AdditionalHolderForm({ clientId }: AdditionalHolderFormP
   const [hasLoadedHolder, setHasLoadedHolder] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSavingNext, setIsSavingNext] = useState(false);
   const [saveState, setSaveState] = useState<SaveState>({ status: "idle" });
   const [completedPages, setCompletedPages] = useState<Set<number>>(new Set());
 
@@ -179,7 +180,7 @@ export default function AdditionalHolderForm({ clientId }: AdditionalHolderFormP
           if (currentPage !== 1) {
             throw new Error("Please complete Page 1 to create an additional holder before saving other pages.");
           }
-          const response = await createAdditionalHolder(stepData, effectiveClientId);
+          const response = await createAdditionalHolder(stepData, effectiveClientId || undefined);
           responseData = response.data;
           const newHolderId = response.data.id;
           setHolderId(newHolderId);

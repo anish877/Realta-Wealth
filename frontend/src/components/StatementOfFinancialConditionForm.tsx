@@ -286,7 +286,7 @@ export default function StatementOfFinancialConditionForm({ clientId }: Statemen
             if (pageIndex !== 0) {
               throw new Error("Please complete Page 1 to create a statement before saving other pages.");
             }
-            const response = await createStatement(payload, effectiveClientId);
+            const response = await createStatement(payload, effectiveClientId || undefined);
             responseData = response.data;
             const newStatementId = response.data.id;
             setStatementId(newStatementId);
@@ -405,7 +405,7 @@ export default function StatementOfFinancialConditionForm({ clientId }: Statemen
       if (currentStatementId) {
         await updateStatementStep(currentStatementId, 1, step1Payload);
       } else {
-        const response = await createStatement(step1Payload, effectiveClientId);
+        const response = await createStatement(step1Payload, effectiveClientId || undefined);
         currentStatementId = response.data.id;
         setStatementId(currentStatementId);
         // Ensure URL reflects the created statement

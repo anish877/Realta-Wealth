@@ -167,7 +167,7 @@ export default function AccreditationForm({ clientId }: AccreditationFormProps =
           const response = await updateAccreditation(accreditationId, accreditationData);
           responseData = response.data;
         } else {
-          const response = await createAccreditation(accreditationData, effectiveClientId);
+          const response = await createAccreditation(accreditationData, effectiveClientId || undefined);
           responseData = response.data;
           const newAccreditationId = response.data.id;
           setAccreditationId(newAccreditationId);

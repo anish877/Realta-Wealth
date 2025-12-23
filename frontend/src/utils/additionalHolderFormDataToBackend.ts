@@ -23,8 +23,8 @@ const investmentLabelToEnum: Record<string, string> = {
   "Other": "other",
 };
 
-const normalizeInvestmentType = (label: string | undefined, fallbackOtherLabel?: string) => {
-  if (!label) return undefined;
+const normalizeInvestmentType = (label: string | undefined, fallbackOtherLabel?: string): string => {
+  if (!label) return "other";
   const mapped = investmentLabelToEnum[label] || investmentLabelToEnum[fallbackOtherLabel || ""] || investmentLabelToEnum["Other"];
   return mapped || "other";
 };

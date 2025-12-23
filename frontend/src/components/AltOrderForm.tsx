@@ -182,7 +182,7 @@ export default function AltOrderForm({ clientId }: AltOrderFormProps = {}) {
           const response = await updateAltOrder(orderId, orderData);
           responseData = response.data;
         } else {
-          const response = await createAltOrder(orderData, effectiveClientId);
+          const response = await createAltOrder(orderData, effectiveClientId || undefined);
           responseData = response.data;
           const newOrderId = response.data.id;
           setOrderId(newOrderId);
