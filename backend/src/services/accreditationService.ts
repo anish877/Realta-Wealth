@@ -107,15 +107,15 @@ export class AccreditationService {
       where: { id: profileId },
       include: includeRelations
         ? {
-            user: {
-              select: {
-                id: true,
-                email: true,
-                fullName: true,
-                role: true,
-              },
+          user: {
+            select: {
+              id: true,
+              email: true,
+              fullName: true,
+              role: true,
             },
-          }
+          },
+        }
         : undefined,
     });
 
@@ -266,9 +266,37 @@ export class AccreditationService {
       }
     };
 
-    // Add all accreditation fields - basic structure
-    // Handle checkbox fields with sub-values similar to other forms
-    // When checkbox array includes "Other", set checkbox_name_other: true and include sub-value separately
+    // Add all accreditation fields
+    result.fields = {
+      rr_name: profile.rrName,
+      rr_no: profile.rrNo,
+      customer_names: profile.customerNames,
+
+      // Signatures - Account Owner
+      account_owner_signature: profile.accountOwnerSignature,
+      account_owner_printed_name: profile.accountOwnerPrintedName,
+      account_owner_date: formatDate(profile.accountOwnerDate),
+
+      // Signatures - Joint Account Owner
+      joint_account_owner_signature: profile.jointAccountOwnerSignature,
+      joint_account_owner_printed_name: profile.jointAccountOwnerPrintedName,
+      joint_account_owner_date: formatDate(profile.jointAccountOwnerDate),
+
+      // Signatures - Financial Professional
+      financial_professional_signature: profile.financialProfessionalSignature,
+      financial_professional_printed_name: profile.financialProfessionalPrintedName,
+      financial_professional_date: formatDate(profile.financialProfessionalDate),
+
+      // Signatures - Registered Principal
+      registered_principal_signature: profile.registeredPrincipalSignature,
+      registered_principal_printed_name: profile.registeredPrincipalPrintedName,
+      registered_principal_date: formatDate(profile.registeredPrincipalDate),
+    };
+
+    // Add conditional fields / derived data
+    result.conditional_fields = {
+      has_joint_owner: profile.hasJointOwner
+    };
 
     return result;
   }
@@ -278,6 +306,8 @@ export class AccreditationService {
 
     // Format the profile data for n8n
     const formattedData = this.formatAccreditationForN8N(profile);
+
+    console.log("Sending payload to n8n:", JSON.stringify(formattedData, null, 2));
 
     const webhookUrl = "https://n8n.srv891599.hstgr.cloud/webhook/b47bbb12-d35c-4329-9973-45aa0b851913";
 

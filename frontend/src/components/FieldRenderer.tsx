@@ -48,6 +48,7 @@ interface FieldRendererProps {
   disabled?: boolean;
   error?: string;
   onBlur?: () => void;
+  getFieldError?: (fieldId: string) => string | undefined;
 }
 
 export function FieldRenderer({
@@ -62,7 +63,9 @@ export function FieldRenderer({
   disabled = false,
   error,
   onBlur,
+  getFieldError,
 }: FieldRendererProps) {
+
   const fieldId = prefix ? `${prefix}.${field.id}` : field.id;
   
   // Check if field should be visible based on conditional rules
@@ -116,6 +119,13 @@ export function FieldRenderer({
         mailingSameAsLegal={mailingSameAsLegal}
         onMailingSameAsLegalChange={isMailing && updateField ? (checked) => {
           updateField(sameAsLegalFieldId!, checked);
+        } : undefined}
+        errors={getFieldError ? {
+          address: getFieldError(addressFieldName),
+          city: getFieldError(`${addressPrefix}_city`),
+          stateProvince: getFieldError(`${addressPrefix}_state_province`),
+          zipPostalCode: getFieldError(`${addressPrefix}_zip_postal_code`),
+          country: getFieldError(`${addressPrefix}_country`),
         } : undefined}
       />
     );
@@ -267,7 +277,7 @@ export function FieldRenderer({
 
   // Special handling for Step 1 account registration section - render as two-table layout
   if (field.id === "type_of_account" && !prefix) {
-    const trustBlock = (formData["trust_block"] as Record<string, any>) || {};
+    // Use flat field storage for trust fields to match validator expectations
     return (
       <AccountTypeSection
         retailChecked={(formData["retail_checkbox"] as boolean) || false}
@@ -276,17 +286,17 @@ export function FieldRenderer({
         onTypeOfAccountChange={(val) => updateField?.("type_of_account", val)}
         additionalDesignationValue={(formData["additional_designation_left"] as string[]) || []}
         onAdditionalDesignationChange={(val) => updateField?.("additional_designation_left", val)}
-        trustChecked={trustBlock.trust_checkbox || false}
+        trustChecked={(formData["trust_checkbox"] as boolean) || false}
         onTrustChange={(val) => {
-          updateField?.("trust_block", { ...trustBlock, trust_checkbox: val });
+          updateField?.("trust_checkbox", val);
         }}
-        trustEstablishmentDate={trustBlock.trust_establishment_date || ""}
+        trustEstablishmentDate={(formData["trust_establishment_date"] as string) || ""}
         onTrustEstablishmentDateChange={(val) => {
-          updateField?.("trust_block", { ...trustBlock, trust_establishment_date: val });
+          updateField?.("trust_establishment_date", val);
         }}
-        trustTypeValue={trustBlock.trust_type || []}
+        trustTypeValue={(formData["trust_type"] as string[]) || []}
         onTrustTypeChange={(val) => {
-          updateField?.("trust_block", { ...trustBlock, trust_type: val });
+          updateField?.("trust_type", val);
         }}
         typeOfAccountRightValue={(formData["type_of_account_right"] as string[]) || []}
         onTypeOfAccountRightChange={(val) => updateField?.("type_of_account_right", val)}
@@ -296,6 +306,46 @@ export function FieldRenderer({
         updateField={updateField || (() => {})}
         disabled={disabled}
       />
+    );
+  }
+
+  // Special handling for Joint Accounts Only group - flatten fields to top level
+  if (field.id === "joint_accounts_only" && !prefix && formData && updateField) {
+    return (
+      <div className="space-y-4">
+        <h4 className="text-sm font-medium text-slate-700">{field.label}</h4>
+        {field.fields?.map((subField) => (
+          <FieldRenderer
+            key={subField.id}
+            field={subField}
+            value={formData[subField.id]}
+            onChange={(val) => updateField(subField.id, val)}
+            formData={formData}
+            updateField={updateField}
+            disabled={disabled}
+          />
+        ))}
+      </div>
+    );
+  }
+
+  // Special handling for Custodial Accounts Only group - flatten fields to top level
+  if (field.id === "for_custodial_accounts_only" && !prefix && formData && updateField) {
+    return (
+      <div className="space-y-4">
+        <h4 className="text-sm font-medium text-slate-700">{field.label}</h4>
+        {field.fields?.map((subField) => (
+          <FieldRenderer
+            key={subField.id}
+            field={subField}
+            value={formData[subField.id]}
+            onChange={(val) => updateField(subField.id, val)}
+            formData={formData}
+            updateField={updateField}
+            disabled={disabled}
+          />
+        ))}
+      </div>
     );
   }
 

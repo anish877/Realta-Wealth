@@ -107,6 +107,7 @@ enum InvestmentType {
   equities
   etf
   fixed_annuities
+  fixed_income
   fixed_insurance
   mutual_funds
   options

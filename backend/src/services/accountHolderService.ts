@@ -9,7 +9,8 @@ export class AccountHolderService {
    * Create account holder (Primary or Secondary)
    */
   async createAccountHolder(profileId: string, holderType: AccountHolderType, data: any) {
-    return await prisma.$transaction(async (tx) => {
+    // Increase transaction timeout to 30 seconds since we create many related records
+    const accountHolderId = await prisma.$transaction(async (tx) => {
       // Validate data
       await validationService.validateConditionalFields(data, {});
 
@@ -226,8 +227,12 @@ export class AccountHolderService {
         });
       }
 
-      return this.getAccountHolderById(accountHolder.id);
+      return accountHolder.id;
+    }, {
+      timeout: 30000, // 30 seconds - extended due to many related records
     });
+
+    return this.getAccountHolderById(accountHolderId);
   }
 
   /**
@@ -269,7 +274,7 @@ export class AccountHolderService {
    */
   async updateAccountHolder(holderId: string, updates: any) {
     const accountHolder = await this.getAccountHolderById(holderId);
-    
+
     // Check profile status and reset to draft if needed
     const profile = await prisma.investorProfile.findUnique({
       where: { id: accountHolder.profileId },
@@ -587,8 +592,11 @@ export class AccountHolderService {
         });
       }
 
-      return this.getAccountHolderById(holderId);
+    }, {
+      timeout: 30000, // 30 seconds - extended due to many related records
     });
+
+    return this.getAccountHolderById(holderId);
   }
 
   /**

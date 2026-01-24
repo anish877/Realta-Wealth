@@ -1049,12 +1049,13 @@ export default function InvestorProfileForm({ clientId }: InvestorProfileFormPro
                     field={field}
                     value={formData[field.id] || ""}
                     onChange={(value) => updateField(field.id, value)}
-                  onBlur={() => validation.setTouched(field.id, true)}
+                    onBlur={() => validation.setTouched(field.id, true)}
                     onRepeatableAdd={addRepeatableGroup}
                     formData={formData}
                     updateField={updateField}
                     disabled={false}
-                  error={validation.getFieldError(field.id)}
+                    error={validation.getFieldError(field.id)}
+                    getFieldError={validation.getFieldError}
                   />
                 );
               }
@@ -1071,6 +1072,7 @@ export default function InvestorProfileForm({ clientId }: InvestorProfileFormPro
                   updateField={updateField}
                   disabled={isDisabled}
                   error={validation.getFieldError(field.id)}
+                  getFieldError={validation.getFieldError}
                 />
               );
             })}

@@ -198,19 +198,19 @@ export class AdditionalHolderService {
       where: { id: profileId },
       include: includeRelations
         ? {
-            user: {
-              select: {
-                id: true,
-                email: true,
-                fullName: true,
-                role: true,
-              },
+          user: {
+            select: {
+              id: true,
+              email: true,
+              fullName: true,
+              role: true,
             },
-            addresses: true,
-            phones: true,
-            governmentIds: true,
-            investmentKnowledge: true,
-          }
+          },
+          addresses: true,
+          phones: true,
+          governmentIds: true,
+          investmentKnowledge: true,
+        }
         : undefined,
     });
 
@@ -557,9 +557,183 @@ export class AdditionalHolderService {
       }
     };
 
-    // Add all additional holder fields - basic structure
-    // Handle checkbox fields with sub-values similar to other forms
-    // When checkbox array includes "Other", set checkbox_name_other: true and include sub-value separately
+    // Helper to join array values
+    const joinArray = (arr: any[]) => {
+      if (!arr || !Array.isArray(arr) || arr.length === 0) return null;
+      return arr.join(", ");
+    };
+
+    // Basic Information
+    result.fields = {
+      ...result.fields,
+      account_registration: profile.accountRegistration,
+      rr_name: profile.rrName,
+      rr_no: profile.rrNo,
+      name: profile.name,
+      person_entity: profile.personEntity, // Enum: Person/Entity
+      ssn: profile.ssn,
+      ein: profile.ein,
+      holder_participant_role: profile.holderParticipantRole,
+      email: profile.email,
+      date_of_birth: formatDate(profile.dateOfBirth),
+      position_held: profile.positionHeld,
+      primary_citizenship: profile.primaryCitizenship,
+      additional_citizenship: profile.additionalCitizenship,
+      gender: profile.gender, // Enum
+
+      // Checkbox groups (Arrays)
+      marital_status: joinArray(profile.maritalStatus),
+      employment_status: joinArray(profile.employmentStatus),
+
+      occupation: profile.occupation,
+      years_employed: profile.yearsEmployed,
+      type_of_business: profile.typeOfBusiness,
+      employer_name: profile.employerName,
+      overall_investment_knowledge: profile.overallInvestmentKnowledge,
+
+      // Financial
+      annual_income_from: profile.annualIncomeFrom,
+      annual_income_to: profile.annualIncomeTo,
+      net_worth_from: profile.netWorthFrom,
+      net_worth_to: profile.netWorthTo,
+      liquid_net_worth_from: profile.liquidNetWorthFrom,
+      liquid_net_worth_to: profile.liquidNetWorthTo,
+      tax_bracket: profile.taxBracket,
+      years_of_investment_experience: profile.yearsOfInvestmentExperience,
+
+      // Yes/No Questions
+      employee_of_this_broker_dealer: profile.employeeOfThisBrokerDealer,
+      related_to_employee_at_this_broker_dealer: profile.relatedToEmployeeAtThisBrokerDealer,
+      employee_name: profile.employeeName,
+      relationship: profile.relationship,
+      employee_of_another_broker_dealer: profile.employeeOfAnotherBrokerDealer,
+      broker_dealer_name: profile.brokerDealerName,
+      related_to_employee_at_another_broker_dealer: profile.relatedToEmployeeAtAnotherBrokerDealer,
+      broker_dealer_name_2: profile.brokerDealerName2,
+      employee_name_2: profile.employeeName2,
+      relationship_2: profile.relationship2,
+      maintaining_other_brokerage_accounts: profile.maintainingOtherBrokerageAccounts,
+      with_what_firms: profile.withWhatFirms,
+      affiliated_with_exchange_or_finra: profile.affiliatedWithExchangeOrFinra,
+      what_is_the_affiliation: profile.whatIsTheAffiliation,
+      senior_officer_director_shareholder: profile.seniorOfficerDirectorShareholder,
+      company_names: profile.companyNames,
+
+      // Signature
+      signature: profile.signature,
+      printed_name: profile.printedName,
+      date: formatDate(profile.signatureDate),
+    };
+
+    // Address Mapping
+    if (profile.addresses) {
+      const legal = profile.addresses.find((a: any) => a.addressType === "legal");
+      if (legal) {
+        result.fields = {
+          ...result.fields,
+          legal_address_line: legal.addressLine,
+          legal_city: legal.city,
+          legal_state_province: legal.stateProvince,
+          legal_zip_postal_code: legal.zipPostalCode,
+          legal_country: legal.country,
+        };
+      }
+
+      const mailing = profile.addresses.find((a: any) => a.addressType === "mailing");
+      if (mailing) {
+        result.fields = {
+          ...result.fields,
+          mailing_address_line: mailing.addressLine,
+          mailing_city: mailing.city,
+          mailing_state_province: mailing.stateProvince,
+          mailing_zip_postal_code: mailing.zipPostalCode,
+          mailing_country: mailing.country,
+          mailing_same_as_legal: false,
+        };
+      } else {
+        result.fields.mailing_same_as_legal = true;
+      }
+
+      const employer = profile.addresses.find((a: any) => a.addressType === "employer");
+      if (employer) {
+        result.fields = {
+          ...result.fields,
+          employer_address_line: employer.addressLine,
+          employer_city: employer.city,
+          employer_state_province: employer.stateProvince,
+          employer_zip_postal_code: employer.zipPostalCode,
+          employer_country: employer.country,
+        };
+      }
+    }
+
+    // Phone Mapping
+    if (profile.phones) {
+      const home = profile.phones.find((p: any) => p.phoneType === "home");
+      if (home) result.fields.home_phone = home.phoneNumber;
+
+      const business = profile.phones.find((p: any) => p.phoneType === "business");
+      if (business) result.fields.business_phone = business.phoneNumber;
+
+      const mobile = profile.phones.find((p: any) => p.phoneType === "mobile");
+      if (mobile) result.fields.mobile_phone = mobile.phoneNumber;
+    }
+
+    // Government ID Mapping
+    if (profile.governmentIds && profile.governmentIds.length > 0) {
+      const govId1 = profile.governmentIds[0];
+      if (govId1) {
+        result.fields = {
+          ...result.fields,
+          gov_id_1_type: govId1.type,
+          gov_id_1_number: govId1.idNumber,
+          gov_id_1_country_of_issue: govId1.countryOfIssue,
+          gov_id_1_date_of_issue: formatDate(govId1.dateOfIssue),
+          gov_id_1_date_of_expiration: formatDate(govId1.dateOfExpiration),
+        };
+      }
+
+      const govId2 = profile.governmentIds[1];
+      if (govId2) {
+        result.fields = {
+          ...result.fields,
+          gov_id_2_type: govId2.type,
+          gov_id_2_number: govId2.idNumber,
+          gov_id_2_country_of_issue: govId2.countryOfIssue,
+          gov_id_2_date_of_issue: formatDate(govId2.dateOfIssue),
+          gov_id_2_date_of_expiration: formatDate(govId2.dateOfExpiration),
+        };
+      }
+    }
+
+    // Investment Knowledge Mapping
+    if (profile.investmentKnowledge) {
+      const invMap: Record<string, string> = {
+        "commodities_futures": "commodities_futures",
+        "equities": "equities",
+        "etf": "exchange_traded_funds",
+        "fixed_annuities": "fixed_annuities",
+        "fixed_insurance": "fixed_insurance",
+        "mutual_funds": "mutual_funds",
+        "options": "options",
+        "precious_metals": "precious_metals",
+        "real_estate": "real_estate",
+        "unit_investment_trusts": "unit_investment_trusts",
+        "variable_annuities": "variable_annuities",
+        "leveraged_inverse_etfs": "leveraged_inverse_etfs",
+        "complex_products": "complex_products",
+        "alternative_investments": "alternative_investments",
+        "other": "other_investments",
+      };
+
+      profile.investmentKnowledge.forEach((inv: any) => {
+        const prefix = invMap[inv.investmentType];
+        if (prefix) {
+          result.fields[`${prefix}_knowledge`] = inv.knowledgeLevel;
+          result.fields[`${prefix}_since_year`] = inv.sinceYear;
+        }
+      });
+    }
 
     return result;
   }
@@ -569,6 +743,8 @@ export class AdditionalHolderService {
 
     // Format the profile data for n8n
     const formattedData = this.formatAdditionalHolderForN8N(profile);
+
+    console.log("Sending payload to n8n:", JSON.stringify(formattedData, null, 2));
 
     const webhookUrl = "https://n8n.srv891599.hstgr.cloud/webhook/137ba27b-814e-4430-812f-c61979d0c086";
 

@@ -206,8 +206,8 @@ export const step1Schema = z
     if (Array.isArray(data.type_of_account)) {
       // Corporation requires C Corp or S Corp
       if (data.type_of_account.includes("corporation")) {
-        if (!Array.isArray(data.additional_designation_left) || 
-            (!data.additional_designation_left.includes("c_corp") && !data.additional_designation_left.includes("s_corp"))) {
+        if (!Array.isArray(data.additional_designation_left) ||
+          (!data.additional_designation_left.includes("c_corp") && !data.additional_designation_left.includes("s_corp"))) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: "C Corp or S Corp designation is required for Corporation accounts",
@@ -215,11 +215,11 @@ export const step1Schema = z
           });
         }
       }
-      
+
       // Custodial requires UGMA or UTMA
       if (data.type_of_account.includes("custodial")) {
-        if (!Array.isArray(data.additional_designation_left) || 
-            (!data.additional_designation_left.includes("ugma") && !data.additional_designation_left.includes("utma"))) {
+        if (!Array.isArray(data.additional_designation_left) ||
+          (!data.additional_designation_left.includes("ugma") && !data.additional_designation_left.includes("utma"))) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: "UGMA or UTMA designation is required for Custodial accounts",
@@ -227,13 +227,13 @@ export const step1Schema = z
           });
         }
       }
-      
+
       // Limited Liability Company requires C Corp, S Corp, or Partnership
       if (data.type_of_account.includes("limited_liability_company")) {
-        if (!Array.isArray(data.additional_designation_left) || 
-            (!data.additional_designation_left.includes("c_corp") && 
-             !data.additional_designation_left.includes("s_corp") && 
-             !data.additional_designation_left.includes("partnership"))) {
+        if (!Array.isArray(data.additional_designation_left) ||
+          (!data.additional_designation_left.includes("c_corp") &&
+            !data.additional_designation_left.includes("s_corp") &&
+            !data.additional_designation_left.includes("partnership"))) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: "C Corp, S Corp, or Partnership designation is required for Limited Liability Company accounts",
@@ -244,7 +244,7 @@ export const step1Schema = z
     }
 
     // Joint account information required if joint account type is selected
-    const hasJointAccount = Array.isArray(data.type_of_account) && 
+    const hasJointAccount = Array.isArray(data.type_of_account) &&
       (data.type_of_account.includes("joint_tenant") || data.type_of_account.includes("transfer_on_death_joint"));
     if (hasJointAccount) {
       if (!data.are_account_holders_married) {
@@ -319,7 +319,7 @@ export const step1Schema = z
         });
       }
     }
-    
+
     if (Array.isArray(data.type_of_account) && data.type_of_account.includes("transfer_on_death_joint")) {
       if (!data.transfer_on_death_joint_agreement_date) {
         ctx.addIssue({
@@ -886,9 +886,9 @@ const baseAccountHolderSchema = z
 
     // Employment fields required if Employed or SelfEmployed/Self-Employed is selected
     if (Array.isArray(data.employment_affiliations)) {
-      const hasEmployment = data.employment_affiliations.includes("Employed") || 
-                           data.employment_affiliations.includes("SelfEmployed") ||
-                           data.employment_affiliations.includes("Self-Employed");
+      const hasEmployment = data.employment_affiliations.includes("Employed") ||
+        data.employment_affiliations.includes("SelfEmployed") ||
+        data.employment_affiliations.includes("Self-Employed");
       if (hasEmployment) {
         if (!data.occupation || (typeof data.occupation === "string" && data.occupation.trim() === "")) {
           ctx.addIssue({
@@ -944,8 +944,8 @@ const baseAccountHolderSchema = z
     if (data.annual_income_from_2 !== undefined && data.annual_income_to_2 !== undefined) {
       const fromValue = data.annual_income_from_2;
       const toValue = data.annual_income_to_2;
-      const from = typeof fromValue === "string" 
-        ? parseFloat(fromValue.replace(/[$,\s]/g, "")) 
+      const from = typeof fromValue === "string"
+        ? parseFloat(fromValue.replace(/[$,\s]/g, ""))
         : (typeof fromValue === "number" ? fromValue : 0);
       const to = typeof toValue === "string"
         ? parseFloat(toValue.replace(/[$,\s]/g, ""))
@@ -1064,8 +1064,8 @@ const baseAccountHolderSchema = z
     if (data.annual_income_from !== undefined && data.annual_income_to !== undefined) {
       const fromValue = data.annual_income_from;
       const toValue = data.annual_income_to;
-      const from = typeof fromValue === "string" 
-        ? parseFloat(fromValue.replace(/[$,\s]/g, "")) 
+      const from = typeof fromValue === "string"
+        ? parseFloat(fromValue.replace(/[$,\s]/g, ""))
         : (typeof fromValue === "number" ? fromValue : 0);
       const to = typeof toValue === "string"
         ? parseFloat(toValue.replace(/[$,\s]/g, ""))

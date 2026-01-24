@@ -12,39 +12,130 @@
       "title": "STEP 1. ADDITIONAL HOLDER/PARTICIPANT INFORMATION (Joint Holder #3, Trustee #2, Entity Manager #2)",
       "page": 1,
       "fields": [
-        { "id": "account_registration", "label": "Account Registration", "type": "text", "page": 1 },
-        { "id": "rr_name", "label": "RR Name", "type": "text", "page": 1 },
-        { "id": "name", "label": "Name", "type": "text", "page": 1 },
+        {
+          "id": "account_registration",
+          "label": "Account Registration",
+          "type": "text",
+          "page": 1
+        },
+        {
+          "id": "rr_name",
+          "label": "RR Name",
+          "type": "text",
+          "page": 1
+        },
+        {
+          "id": "name",
+          "label": "Name",
+          "type": "text",
+          "page": 1
+        },
         {
           "id": "person_entity",
           "label": "Person / Entity",
           "type": "multicheck",
           "page": 1,
           "options": [
-            { "key": "Person", "label": "Person" },
-            { "key": "Entity", "label": "Entity" }
+            {
+              "key": "Person",
+              "label": "Person"
+            },
+            {
+              "key": "Entity",
+              "label": "Entity"
+            }
           ]
         },
-        { "id": "ssn", "label": "Social Security (SSN)", "type": "text", "page": 1 },
-        { "id": "ein", "label": "Employer Identification Number (EIN)", "type": "text", "page": 1 },
-        { "id": "holder_participant_role", "label": "Holder/Participant Role", "type": "text", "page": 1 },
-        { "id": "email", "label": "Email", "type": "text", "page": 1 },
-        { "id": "dob", "label": "Date of Birth", "type": "date", "page": 1 },
-        { "id": "position_held", "label": "Position Held", "type": "text", "page": 1 },
-        { "id": "home_phone", "label": "Home Phone", "type": "text", "page": 1 },
-        { "id": "business_phone", "label": "Business Phone", "type": "text", "page": 1 },
-        { "id": "mobile_phone", "label": "Mobile Phone", "type": "text", "page": 1 },
+        {
+          "id": "ssn",
+          "label": "Social Security (SSN)",
+          "type": "text",
+          "page": 1
+        },
+        {
+          "id": "ein",
+          "label": "Employer Identification Number (EIN)",
+          "type": "text",
+          "page": 1
+        },
+        {
+          "id": "holder_participant_role",
+          "label": "Holder/Participant Role",
+          "type": "text",
+          "page": 1
+        },
+        {
+          "id": "email",
+          "label": "Email",
+          "type": "text",
+          "page": 1
+        },
+        {
+          "id": "dob",
+          "label": "Date of Birth",
+          "type": "date",
+          "page": 1
+        },
+        {
+          "id": "position_held",
+          "label": "Position Held",
+          "type": "text",
+          "page": 1
+        },
+        {
+          "id": "home_phone",
+          "label": "Home Phone",
+          "type": "text",
+          "page": 1
+        },
+        {
+          "id": "business_phone",
+          "label": "Business Phone",
+          "type": "text",
+          "page": 1
+        },
+        {
+          "id": "mobile_phone",
+          "label": "Mobile Phone",
+          "type": "text",
+          "page": 1
+        },
         {
           "id": "legal_address",
           "label": "Legal Address (no P.O. Box)",
           "type": "group",
           "page": 1,
           "fields": [
-            { "id": "legal_address_line", "label": "Street/Address Line", "type": "text", "page": 1 },
-            { "id": "legal_city", "label": "City", "type": "text", "page": 1 },
-            { "id": "legal_state_province", "label": "State/Province", "type": "text", "page": 1 },
-            { "id": "legal_zip_postal_code", "label": "Zip/Postal code", "type": "text", "page": 1 },
-            { "id": "legal_country", "label": "Country", "type": "text", "page": 1 }
+            {
+              "id": "legal_address_line",
+              "label": "Street/Address Line",
+              "type": "text",
+              "page": 1
+            },
+            {
+              "id": "legal_city",
+              "label": "City",
+              "type": "text",
+              "page": 1
+            },
+            {
+              "id": "legal_state_province",
+              "label": "State/Province",
+              "type": "text",
+              "page": 1
+            },
+            {
+              "id": "legal_zip_postal_code",
+              "label": "Zip/Postal code",
+              "type": "text",
+              "page": 1
+            },
+            {
+              "id": "legal_country",
+              "label": "Country",
+              "type": "text",
+              "page": 1
+            }
           ],
           "notes": "no P.O. Box"
         },
@@ -54,24 +145,65 @@
           "type": "group",
           "page": 1,
           "fields": [
-            { "id": "mailing_address_line", "label": "Street/Address Line", "type": "text", "page": 1 },
-            { "id": "mailing_city", "label": "City", "type": "text", "page": 1 },
-            { "id": "mailing_state_province", "label": "State/Province", "type": "text", "page": 1 },
-            { "id": "mailing_zip_postal_code", "label": "Zip/Postal code", "type": "text", "page": 1 },
-            { "id": "mailing_country", "label": "Country", "type": "text", "page": 1 }
+            {
+              "id": "mailing_address_line",
+              "label": "Street/Address Line",
+              "type": "text",
+              "page": 1
+            },
+            {
+              "id": "mailing_city",
+              "label": "City",
+              "type": "text",
+              "page": 1
+            },
+            {
+              "id": "mailing_state_province",
+              "label": "State/Province",
+              "type": "text",
+              "page": 1
+            },
+            {
+              "id": "mailing_zip_postal_code",
+              "label": "Zip/Postal code",
+              "type": "text",
+              "page": 1
+            },
+            {
+              "id": "mailing_country",
+              "label": "Country",
+              "type": "text",
+              "page": 1
+            }
           ],
           "notes": "Only if different from legal address"
         },
-        { "id": "primary_citizenship", "label": "Primary Citizenship(s)", "type": "text", "page": 1 },
-        { "id": "additional_citizenship", "label": "Additional Citizenship(s)", "type": "text", "page": 1 },
+        {
+          "id": "primary_citizenship",
+          "label": "Primary Citizenship(s)",
+          "type": "text",
+          "page": 1
+        },
+        {
+          "id": "additional_citizenship",
+          "label": "Additional Citizenship(s)",
+          "type": "text",
+          "page": 1
+        },
         {
           "id": "gender",
           "label": "Gender",
           "type": "multicheck",
           "page": 1,
           "options": [
-            { "key": "Male", "label": "Male" },
-            { "key": "Female", "label": "Female" }
+            {
+              "key": "Male",
+              "label": "Male"
+            },
+            {
+              "key": "Female",
+              "label": "Female"
+            }
           ]
         },
         {
@@ -80,11 +212,26 @@
           "type": "multicheck",
           "page": 1,
           "options": [
-            { "key": "Single", "label": "Single" },
-            { "key": "Married", "label": "Married" },
-            { "key": "Divorced", "label": "Divorced" },
-            { "key": "Domestic_Partner", "label": "Domestic Partner" },
-            { "key": "Widow_er", "label": "Widow(er)" }
+            {
+              "key": "Single",
+              "label": "Single"
+            },
+            {
+              "key": "Married",
+              "label": "Married"
+            },
+            {
+              "key": "Divorced",
+              "label": "Divorced"
+            },
+            {
+              "key": "Domestic_Partner",
+              "label": "Domestic Partner"
+            },
+            {
+              "key": "Widow_er",
+              "label": "Widow(er)"
+            }
           ]
         },
         {
@@ -99,28 +246,88 @@
               "type": "multicheck",
               "page": 1,
               "options": [
-                { "key": "Employed", "label": "Employed" },
-                { "key": "Self-Employed", "label": "Self-Employed" },
-                { "key": "Retired", "label": "Retired" },
-                { "key": "Unemployed", "label": "Unemployed" },
-                { "key": "Student", "label": "Student" }
+                {
+                  "key": "Employed",
+                  "label": "Employed"
+                },
+                {
+                  "key": "Self-Employed",
+                  "label": "Self-Employed"
+                },
+                {
+                  "key": "Retired",
+                  "label": "Retired"
+                },
+                {
+                  "key": "Unemployed",
+                  "label": "Unemployed"
+                },
+                {
+                  "key": "Student",
+                  "label": "Student"
+                }
               ]
             },
-            { "id": "occupation", "label": "Occupation", "type": "text", "page": 1 },
-            { "id": "years_employed", "label": "Years Employed", "type": "text", "page": 1 },
-            { "id": "type_of_business", "label": "Type of Business", "type": "text", "page": 1 },
-            { "id": "employer_name", "label": "Employer Name", "type": "text", "page": 1 },
+            {
+              "id": "occupation",
+              "label": "Occupation",
+              "type": "text",
+              "page": 1
+            },
+            {
+              "id": "years_employed",
+              "label": "Years Employed",
+              "type": "text",
+              "page": 1
+            },
+            {
+              "id": "type_of_business",
+              "label": "Type of Business",
+              "type": "text",
+              "page": 1
+            },
+            {
+              "id": "employer_name",
+              "label": "Employer Name",
+              "type": "text",
+              "page": 1
+            },
             {
               "id": "employer_address",
               "label": "Employer's Address",
               "type": "group",
               "page": 1,
               "fields": [
-                { "id": "employer_address_line", "label": "Street/Address Line", "type": "text", "page": 1 },
-                { "id": "employer_city", "label": "City", "type": "text", "page": 1 },
-                { "id": "employer_state_province", "label": "State/Province", "type": "text", "page": 1 },
-                { "id": "employer_zip_postal_code", "label": "Zip/Postal Code", "type": "text", "page": 1 },
-                { "id": "employer_country", "label": "Country", "type": "text", "page": 1 }
+                {
+                  "id": "employer_address_line",
+                  "label": "Street/Address Line",
+                  "type": "text",
+                  "page": 1
+                },
+                {
+                  "id": "employer_city",
+                  "label": "City",
+                  "type": "text",
+                  "page": 1
+                },
+                {
+                  "id": "employer_state_province",
+                  "label": "State/Province",
+                  "type": "text",
+                  "page": 1
+                },
+                {
+                  "id": "employer_zip_postal_code",
+                  "label": "Zip/Postal Code",
+                  "type": "text",
+                  "page": 1
+                },
+                {
+                  "id": "employer_country",
+                  "label": "Country",
+                  "type": "text",
+                  "page": 1
+                }
               ]
             }
           ]
@@ -137,10 +344,22 @@
               "type": "multicheck",
               "page": 1,
               "options": [
-                { "key": "Limited", "label": "Limited" },
-                { "key": "Moderate", "label": "Moderate" },
-                { "key": "Extensive", "label": "Extensive" },
-                { "key": "None", "label": "None" }
+                {
+                  "key": "Limited",
+                  "label": "Limited"
+                },
+                {
+                  "key": "Moderate",
+                  "label": "Moderate"
+                },
+                {
+                  "key": "Extensive",
+                  "label": "Extensive"
+                },
+                {
+                  "key": "None",
+                  "label": "None"
+                }
               ]
             },
             {
@@ -155,78 +374,180 @@
                   "type": "multicheck",
                   "page": 1,
                   "options": [
-                    { "key": "Limited", "label": "Limited" },
-                    { "key": "Moderate", "label": "Moderate" },
-                    { "key": "Extensive", "label": "Extensive" },
-                    { "key": "None", "label": "None" }
+                    {
+                      "key": "Limited",
+                      "label": "Limited"
+                    },
+                    {
+                      "key": "Moderate",
+                      "label": "Moderate"
+                    },
+                    {
+                      "key": "Extensive",
+                      "label": "Extensive"
+                    },
+                    {
+                      "key": "None",
+                      "label": "None"
+                    }
                   ]
                 },
-                { "id": "commodities_futures_since_year", "label": "Commodities, Futures - Since Year", "type": "text", "page": 1 },
+                {
+                  "id": "commodities_futures_since_year",
+                  "label": "Commodities, Futures - Since Year",
+                  "type": "text",
+                  "page": 1
+                },
                 {
                   "id": "equities_knowledge",
                   "label": "Equities - Knowledge",
                   "type": "multicheck",
                   "page": 1,
                   "options": [
-                    { "key": "Limited", "label": "Limited" },
-                    { "key": "Moderate", "label": "Moderate" },
-                    { "key": "Extensive", "label": "Extensive" },
-                    { "key": "None", "label": "None" }
+                    {
+                      "key": "Limited",
+                      "label": "Limited"
+                    },
+                    {
+                      "key": "Moderate",
+                      "label": "Moderate"
+                    },
+                    {
+                      "key": "Extensive",
+                      "label": "Extensive"
+                    },
+                    {
+                      "key": "None",
+                      "label": "None"
+                    }
                   ]
                 },
-                { "id": "equities_since_year", "label": "Equities - Since Year", "type": "text", "page": 1 },
+                {
+                  "id": "equities_since_year",
+                  "label": "Equities - Since Year",
+                  "type": "text",
+                  "page": 1
+                },
                 {
                   "id": "exchange_traded_funds_knowledge",
                   "label": "Exchange Traded Funds - Knowledge",
                   "type": "multicheck",
                   "page": 1,
                   "options": [
-                    { "key": "Limited", "label": "Limited" },
-                    { "key": "Moderate", "label": "Moderate" },
-                    { "key": "Extensive", "label": "Extensive" },
-                    { "key": "None", "label": "None" }
+                    {
+                      "key": "Limited",
+                      "label": "Limited"
+                    },
+                    {
+                      "key": "Moderate",
+                      "label": "Moderate"
+                    },
+                    {
+                      "key": "Extensive",
+                      "label": "Extensive"
+                    },
+                    {
+                      "key": "None",
+                      "label": "None"
+                    }
                   ]
                 },
-                { "id": "exchange_traded_funds_since_year", "label": "Exchange Traded Funds - Since Year", "type": "text", "page": 1 },
+                {
+                  "id": "exchange_traded_funds_since_year",
+                  "label": "Exchange Traded Funds - Since Year",
+                  "type": "text",
+                  "page": 1
+                },
                 {
                   "id": "fixed_annuities_knowledge",
                   "label": "Fixed Annuities - Knowledge",
                   "type": "multicheck",
                   "page": 1,
                   "options": [
-                    { "key": "Limited", "label": "Limited" },
-                    { "key": "Moderate", "label": "Moderate" },
-                    { "key": "Extensive", "label": "Extensive" },
-                    { "key": "None", "label": "None" }
+                    {
+                      "key": "Limited",
+                      "label": "Limited"
+                    },
+                    {
+                      "key": "Moderate",
+                      "label": "Moderate"
+                    },
+                    {
+                      "key": "Extensive",
+                      "label": "Extensive"
+                    },
+                    {
+                      "key": "None",
+                      "label": "None"
+                    }
                   ]
                 },
-                { "id": "fixed_annuities_since_year", "label": "Fixed Annuities - Since Year", "type": "text", "page": 1 },
+                {
+                  "id": "fixed_annuities_since_year",
+                  "label": "Fixed Annuities - Since Year",
+                  "type": "text",
+                  "page": 1
+                },
                 {
                   "id": "fixed_insurance_knowledge",
                   "label": "Fixed Insurance - Knowledge",
                   "type": "multicheck",
                   "page": 1,
                   "options": [
-                    { "key": "Limited", "label": "Limited" },
-                    { "key": "Moderate", "label": "Moderate" },
-                    { "key": "Extensive", "label": "Extensive" },
-                    { "key": "None", "label": "None" }
+                    {
+                      "key": "Limited",
+                      "label": "Limited"
+                    },
+                    {
+                      "key": "Moderate",
+                      "label": "Moderate"
+                    },
+                    {
+                      "key": "Extensive",
+                      "label": "Extensive"
+                    },
+                    {
+                      "key": "None",
+                      "label": "None"
+                    }
                   ]
                 },
-                { "id": "fixed_insurance_since_year", "label": "Fixed Insurance - Since Year", "type": "text", "page": 1 },
+                {
+                  "id": "fixed_insurance_since_year",
+                  "label": "Fixed Insurance - Since Year",
+                  "type": "text",
+                  "page": 1
+                },
                 {
                   "id": "mutual_funds_knowledge",
                   "label": "Mutual Funds - Knowledge",
                   "type": "multicheck",
                   "page": 1,
                   "options": [
-                    { "key": "Limited", "label": "Limited" },
-                    { "key": "Moderate", "label": "Moderate" },
-                    { "key": "Extensive", "label": "Extensive" },
-                    { "key": "None", "label": "None" }
+                    {
+                      "key": "Limited",
+                      "label": "Limited"
+                    },
+                    {
+                      "key": "Moderate",
+                      "label": "Moderate"
+                    },
+                    {
+                      "key": "Extensive",
+                      "label": "Extensive"
+                    },
+                    {
+                      "key": "None",
+                      "label": "None"
+                    }
                   ]
                 },
-                { "id": "mutual_funds_since_year", "label": "Mutual Funds - Since Year", "type": "text", "page": 1 }
+                {
+                  "id": "mutual_funds_since_year",
+                  "label": "Mutual Funds - Since Year",
+                  "type": "text",
+                  "page": 1
+                }
               ]
             }
           ]
@@ -250,118 +571,276 @@
               "type": "multicheck",
               "page": 2,
               "options": [
-                { "key": "Limited", "label": "Limited" },
-                { "key": "Moderate", "label": "Moderate" },
-                { "key": "Extensive", "label": "Extensive" },
-                { "key": "None", "label": "None" }
+                {
+                  "key": "Limited",
+                  "label": "Limited"
+                },
+                {
+                  "key": "Moderate",
+                  "label": "Moderate"
+                },
+                {
+                  "key": "Extensive",
+                  "label": "Extensive"
+                },
+                {
+                  "key": "None",
+                  "label": "None"
+                }
               ]
             },
-            { "id": "options_since_year", "label": "Options - Since Year", "type": "text", "page": 2 },
+            {
+              "id": "options_since_year",
+              "label": "Options - Since Year",
+              "type": "text",
+              "page": 2
+            },
             {
               "id": "precious_metals_knowledge",
               "label": "Precious Metals - Knowledge",
               "type": "multicheck",
               "page": 2,
               "options": [
-                { "key": "Limited", "label": "Limited" },
-                { "key": "Moderate", "label": "Moderate" },
-                { "key": "Extensive", "label": "Extensive" },
-                { "key": "None", "label": "None" }
+                {
+                  "key": "Limited",
+                  "label": "Limited"
+                },
+                {
+                  "key": "Moderate",
+                  "label": "Moderate"
+                },
+                {
+                  "key": "Extensive",
+                  "label": "Extensive"
+                },
+                {
+                  "key": "None",
+                  "label": "None"
+                }
               ]
             },
-            { "id": "precious_metals_since_year", "label": "Precious Metals - Since Year", "type": "text", "page": 2 },
+            {
+              "id": "precious_metals_since_year",
+              "label": "Precious Metals - Since Year",
+              "type": "text",
+              "page": 2
+            },
             {
               "id": "real_estate_knowledge",
               "label": "Real Estate - Knowledge",
               "type": "multicheck",
               "page": 2,
               "options": [
-                { "key": "Limited", "label": "Limited" },
-                { "key": "Moderate", "label": "Moderate" },
-                { "key": "Extensive", "label": "Extensive" },
-                { "key": "None", "label": "None" }
+                {
+                  "key": "Limited",
+                  "label": "Limited"
+                },
+                {
+                  "key": "Moderate",
+                  "label": "Moderate"
+                },
+                {
+                  "key": "Extensive",
+                  "label": "Extensive"
+                },
+                {
+                  "key": "None",
+                  "label": "None"
+                }
               ]
             },
-            { "id": "real_estate_since_year", "label": "Real Estate - Since Year", "type": "text", "page": 2 },
+            {
+              "id": "real_estate_since_year",
+              "label": "Real Estate - Since Year",
+              "type": "text",
+              "page": 2
+            },
             {
               "id": "unit_investment_trusts_knowledge",
               "label": "Unit Investment Trusts - Knowledge",
               "type": "multicheck",
               "page": 2,
               "options": [
-                { "key": "Limited", "label": "Limited" },
-                { "key": "Moderate", "label": "Moderate" },
-                { "key": "Extensive", "label": "Extensive" },
-                { "key": "None", "label": "None" }
+                {
+                  "key": "Limited",
+                  "label": "Limited"
+                },
+                {
+                  "key": "Moderate",
+                  "label": "Moderate"
+                },
+                {
+                  "key": "Extensive",
+                  "label": "Extensive"
+                },
+                {
+                  "key": "None",
+                  "label": "None"
+                }
               ]
             },
-            { "id": "unit_investment_trusts_since_year", "label": "Unit Investment Trusts - Since Year", "type": "text", "page": 2 },
+            {
+              "id": "unit_investment_trusts_since_year",
+              "label": "Unit Investment Trusts - Since Year",
+              "type": "text",
+              "page": 2
+            },
             {
               "id": "variable_annuities_knowledge",
               "label": "Variable Annuities - Knowledge",
               "type": "multicheck",
               "page": 2,
               "options": [
-                { "key": "Limited", "label": "Limited" },
-                { "key": "Moderate", "label": "Moderate" },
-                { "key": "Extensive", "label": "Extensive" },
-                { "key": "None", "label": "None" }
+                {
+                  "key": "Limited",
+                  "label": "Limited"
+                },
+                {
+                  "key": "Moderate",
+                  "label": "Moderate"
+                },
+                {
+                  "key": "Extensive",
+                  "label": "Extensive"
+                },
+                {
+                  "key": "None",
+                  "label": "None"
+                }
               ]
             },
-            { "id": "variable_annuities_since_year", "label": "Variable Annuities - Since Year", "type": "text", "page": 2 },
+            {
+              "id": "variable_annuities_since_year",
+              "label": "Variable Annuities - Since Year",
+              "type": "text",
+              "page": 2
+            },
             {
               "id": "leveraged_inverse_etfs_knowledge",
               "label": "Leveraged/Inverse ETF's - Knowledge",
               "type": "multicheck",
               "page": 2,
               "options": [
-                { "key": "Limited", "label": "Limited" },
-                { "key": "Moderate", "label": "Moderate" },
-                { "key": "Extensive", "label": "Extensive" },
-                { "key": "None", "label": "None" }
+                {
+                  "key": "Limited",
+                  "label": "Limited"
+                },
+                {
+                  "key": "Moderate",
+                  "label": "Moderate"
+                },
+                {
+                  "key": "Extensive",
+                  "label": "Extensive"
+                },
+                {
+                  "key": "None",
+                  "label": "None"
+                }
               ]
             },
-            { "id": "leveraged_inverse_etfs_since_year", "label": "Leveraged/Inverse ETF's - Since Year", "type": "text", "page": 2 },
+            {
+              "id": "leveraged_inverse_etfs_since_year",
+              "label": "Leveraged/Inverse ETF's - Since Year",
+              "type": "text",
+              "page": 2
+            },
             {
               "id": "complex_products_knowledge",
               "label": "Complex Products - Knowledge",
               "type": "multicheck",
               "page": 2,
               "options": [
-                { "key": "Limited", "label": "Limited" },
-                { "key": "Moderate", "label": "Moderate" },
-                { "key": "Extensive", "label": "Extensive" },
-                { "key": "None", "label": "None" }
+                {
+                  "key": "Limited",
+                  "label": "Limited"
+                },
+                {
+                  "key": "Moderate",
+                  "label": "Moderate"
+                },
+                {
+                  "key": "Extensive",
+                  "label": "Extensive"
+                },
+                {
+                  "key": "None",
+                  "label": "None"
+                }
               ]
             },
-            { "id": "complex_products_since_year", "label": "Complex Products - Since Year", "type": "text", "page": 2 },
+            {
+              "id": "complex_products_since_year",
+              "label": "Complex Products - Since Year",
+              "type": "text",
+              "page": 2
+            },
             {
               "id": "alternative_investments_knowledge",
               "label": "Alternative Investments - Knowledge",
               "type": "multicheck",
               "page": 2,
               "options": [
-                { "key": "Limited", "label": "Limited" },
-                { "key": "Moderate", "label": "Moderate" },
-                { "key": "Extensive", "label": "Extensive" },
-                { "key": "None", "label": "None" }
+                {
+                  "key": "Limited",
+                  "label": "Limited"
+                },
+                {
+                  "key": "Moderate",
+                  "label": "Moderate"
+                },
+                {
+                  "key": "Extensive",
+                  "label": "Extensive"
+                },
+                {
+                  "key": "None",
+                  "label": "None"
+                }
               ]
             },
-            { "id": "alternative_investments_since_year", "label": "Alternative Investments - Since Year", "type": "text", "page": 2 },
+            {
+              "id": "alternative_investments_since_year",
+              "label": "Alternative Investments - Since Year",
+              "type": "text",
+              "page": 2
+            },
             {
               "id": "other_investments_knowledge",
               "label": "Other - Knowledge",
               "type": "multicheck",
               "page": 2,
               "options": [
-                { "key": "Limited", "label": "Limited" },
-                { "key": "Moderate", "label": "Moderate" },
-                { "key": "Extensive", "label": "Extensive" },
-                { "key": "None", "label": "None" }
+                {
+                  "key": "Limited",
+                  "label": "Limited"
+                },
+                {
+                  "key": "Moderate",
+                  "label": "Moderate"
+                },
+                {
+                  "key": "Extensive",
+                  "label": "Extensive"
+                },
+                {
+                  "key": "None",
+                  "label": "None"
+                }
               ]
             },
-            { "id": "other_investments_since_year", "label": "Other - Since Year", "type": "text", "page": 2 },
-            { "id": "other_investments_label", "label": "Specify investment type", "type": "text", "page": 2 }
+            {
+              "id": "other_investments_since_year",
+              "label": "Other - Since Year",
+              "type": "text",
+              "page": 2
+            },
+            {
+              "id": "other_investments_label",
+              "label": "Specify investment type",
+              "type": "text",
+              "page": 2
+            }
           ]
         },
         {
@@ -375,14 +854,20 @@
               "label": "Annual Income",
               "type": "range_currency",
               "page": 2,
-              "range_labels": ["From $", "To $"]
+              "range_labels": [
+                "From $",
+                "To $"
+              ]
             },
             {
               "id": "net_worth",
               "label": "Net Worth (excluding primary residence)",
               "type": "range_currency",
               "page": 2,
-              "range_labels": ["From $", "To $"],
+              "range_labels": [
+                "From $",
+                "To $"
+              ],
               "notes": "excluding primary residence"
             },
             {
@@ -390,7 +875,10 @@
               "label": "Liquid Net Worth",
               "type": "range_currency",
               "page": 2,
-              "range_labels": ["From $", "To $"]
+              "range_labels": [
+                "From $",
+                "To $"
+              ]
             },
             {
               "id": "tax_bracket",
@@ -398,10 +886,22 @@
               "type": "multicheck",
               "page": 2,
               "options": [
-                { "key": "≤15%", "label": "≤15%" },
-                { "key": "15% - 32%", "label": "15% - 32%" },
-                { "key": "33% - 50%", "label": "33% - 50%" },
-                { "key": "> 50% +", "label": "> 50% +" }
+                {
+                  "key": "≤15%",
+                  "label": "≤15%"
+                },
+                {
+                  "key": "15% - 32%",
+                  "label": "15% - 32%"
+                },
+                {
+                  "key": "33% - 50%",
+                  "label": "33% - 50%"
+                },
+                {
+                  "key": "> 50% +",
+                  "label": "> 50% +"
+                }
               ]
             }
           ]
@@ -418,11 +918,36 @@
               "type": "group",
               "page": 2,
               "fields": [
-                { "id": "gov_id_1_type", "label": "Type of Unexpired Photo ID", "type": "text", "page": 2 },
-                { "id": "gov_id_1_number", "label": "ID Number", "type": "text", "page": 2 },
-                { "id": "gov_id_1_country_of_issue", "label": "Country of Issue", "type": "text", "page": 2 },
-                { "id": "gov_id_1_date_of_issue", "label": "Date of Issue", "type": "date", "page": 2 },
-                { "id": "gov_id_1_date_of_expiration", "label": "Date of Expiration", "type": "date", "page": 2 }
+                {
+                  "id": "gov_id_1_type",
+                  "label": "Type of Unexpired Photo ID",
+                  "type": "text",
+                  "page": 2
+                },
+                {
+                  "id": "gov_id_1_number",
+                  "label": "ID Number",
+                  "type": "text",
+                  "page": 2
+                },
+                {
+                  "id": "gov_id_1_country_of_issue",
+                  "label": "Country of Issue",
+                  "type": "text",
+                  "page": 2
+                },
+                {
+                  "id": "gov_id_1_date_of_issue",
+                  "label": "Date of Issue",
+                  "type": "date",
+                  "page": 2
+                },
+                {
+                  "id": "gov_id_1_date_of_expiration",
+                  "label": "Date of Expiration",
+                  "type": "date",
+                  "page": 2
+                }
               ]
             },
             {
@@ -431,11 +956,36 @@
               "type": "group",
               "page": 2,
               "fields": [
-                { "id": "gov_id_2_type", "label": "Type of Unexpired Photo ID", "type": "text", "page": 2 },
-                { "id": "gov_id_2_number", "label": "ID Number", "type": "text", "page": 2 },
-                { "id": "gov_id_2_country_of_issue", "label": "Country of Issue", "type": "text", "page": 2 },
-                { "id": "gov_id_2_date_of_issue", "label": "Date of Issue", "type": "date", "page": 2 },
-                { "id": "gov_id_2_date_of_expiration", "label": "Date of Expiration", "type": "date", "page": 2 }
+                {
+                  "id": "gov_id_2_type",
+                  "label": "Type of Unexpired Photo ID",
+                  "type": "text",
+                  "page": 2
+                },
+                {
+                  "id": "gov_id_2_number",
+                  "label": "ID Number",
+                  "type": "text",
+                  "page": 2
+                },
+                {
+                  "id": "gov_id_2_country_of_issue",
+                  "label": "Country of Issue",
+                  "type": "text",
+                  "page": 2
+                },
+                {
+                  "id": "gov_id_2_date_of_issue",
+                  "label": "Date of Issue",
+                  "type": "date",
+                  "page": 2
+                },
+                {
+                  "id": "gov_id_2_date_of_expiration",
+                  "label": "Date of Expiration",
+                  "type": "date",
+                  "page": 2
+                }
               ]
             }
           ],
@@ -460,8 +1010,16 @@
               "type": "conditional_yes_no",
               "page": 2,
               "follow_up_fields": [
-                { "id": "employee_name", "label": "Employee Name", "type": "text" },
-                { "id": "relationship", "label": "Relationship", "type": "text" }
+                {
+                  "id": "employee_name",
+                  "label": "Employee Name",
+                  "type": "text"
+                },
+                {
+                  "id": "relationship",
+                  "label": "Relationship",
+                  "type": "text"
+                }
               ]
             },
             {
@@ -470,7 +1028,11 @@
               "type": "conditional_yes_no",
               "page": 2,
               "follow_up_fields": [
-                { "id": "broker_dealer_name", "label": "Broker Dealer Name", "type": "text" }
+                {
+                  "id": "broker_dealer_name",
+                  "label": "Broker Dealer Name",
+                  "type": "text"
+                }
               ]
             },
             {
@@ -479,9 +1041,21 @@
               "type": "conditional_yes_no",
               "page": 2,
               "follow_up_fields": [
-                { "id": "broker_dealer_name_2", "label": "Broker Dealer Name", "type": "text" },
-                { "id": "employee_name_2", "label": "Employee Name", "type": "text" },
-                { "id": "relationship_2", "label": "Relationship", "type": "text" }
+                {
+                  "id": "broker_dealer_name_2",
+                  "label": "Broker Dealer Name",
+                  "type": "text"
+                },
+                {
+                  "id": "employee_name_2",
+                  "label": "Employee Name",
+                  "type": "text"
+                },
+                {
+                  "id": "relationship_2",
+                  "label": "Relationship",
+                  "type": "text"
+                }
               ]
             },
             {
@@ -490,8 +1064,16 @@
               "type": "conditional_yes_no",
               "page": 2,
               "follow_up_fields": [
-                { "id": "with_what_firms", "label": "With what firm(s) are you maintaining other brokerage accounts?", "type": "text" },
-                { "id": "years_of_investment_experience", "label": "Years of Investment Experience", "type": "text" }
+                {
+                  "id": "with_what_firms",
+                  "label": "With what firm(s) are you maintaining other brokerage accounts?",
+                  "type": "text"
+                },
+                {
+                  "id": "years_of_investment_experience",
+                  "label": "Years of Investment Experience",
+                  "type": "text"
+                }
               ]
             },
             {
@@ -500,7 +1082,11 @@
               "type": "conditional_yes_no",
               "page": 2,
               "follow_up_fields": [
-                { "id": "what_is_the_affiliation", "label": "What is the affiliation?", "type": "text" }
+                {
+                  "id": "what_is_the_affiliation",
+                  "label": "What is the affiliation?",
+                  "type": "text"
+                }
               ],
               "notes": "Employer authorization is required."
             },
@@ -510,7 +1096,11 @@
               "type": "conditional_yes_no",
               "page": 2,
               "follow_up_fields": [
-                { "id": "company_names", "label": "Company Name(s)", "type": "text" }
+                {
+                  "id": "company_names",
+                  "label": "Company Name(s)",
+                  "type": "text"
+                }
               ]
             }
           ]
@@ -521,9 +1111,24 @@
           "type": "group",
           "page": 2,
           "fields": [
-            { "id": "signature", "label": "Additional Account Holder/Participant Signature", "type": "signature", "page": 2 },
-            { "id": "printed_name", "label": "Printed Name", "type": "text", "page": 2 },
-            { "id": "date", "label": "Date", "type": "date", "page": 2 }
+            {
+              "id": "signature",
+              "label": "Additional Account Holder/Participant Signature",
+              "type": "signature",
+              "page": 2
+            },
+            {
+              "id": "printed_name",
+              "label": "Printed Name",
+              "type": "text",
+              "page": 2
+            },
+            {
+              "id": "date",
+              "label": "Date",
+              "type": "date",
+              "page": 2
+            }
           ],
           "notes": "I attest that the data above are accurate and complete based on information I have provided to my financial professional."
         }
@@ -531,4 +1136,3 @@
     }
   ]
 }
-

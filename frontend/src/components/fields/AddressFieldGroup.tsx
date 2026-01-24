@@ -17,6 +17,13 @@ interface AddressFieldGroupProps {
   showMailingSameAsLegal?: boolean;
   mailingSameAsLegal?: boolean;
   onMailingSameAsLegalChange?: (checked: boolean) => void;
+  errors?: {
+    address?: string;
+    city?: string;
+    stateProvince?: string;
+    zipPostalCode?: string;
+    country?: string;
+  };
 }
 
 export function AddressFieldGroup({
@@ -28,6 +35,7 @@ export function AddressFieldGroup({
   showMailingSameAsLegal = false,
   mailingSameAsLegal = false,
   onMailingSameAsLegalChange,
+  errors = {},
 }: AddressFieldGroupProps) {
   const shouldHideFields = showMailingSameAsLegal && mailingSameAsLegal;
   const addressId = addressFieldId || `${prefix}_address`;
@@ -53,6 +61,7 @@ export function AddressFieldGroup({
             value={values.address}
             onChange={(val) => onChange("address", val)}
             rows={3}
+            error={errors.address}
           />
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -61,18 +70,21 @@ export function AddressFieldGroup({
               label="City"
               value={values.city}
               onChange={(val) => onChange("city", val)}
+              error={errors.city}
             />
             <TextField
               id={`${prefix}_state_province`}
               label="State/Province"
               value={values.stateProvince}
               onChange={(val) => onChange("stateProvince", val)}
+              error={errors.stateProvince}
             />
             <TextField
               id={`${prefix}_zip_postal_code`}
               label="Zip/Postal Code"
               value={values.zipPostalCode}
               onChange={(val) => onChange("zipPostalCode", val)}
+              error={errors.zipPostalCode}
             />
           </div>
           
@@ -81,6 +93,7 @@ export function AddressFieldGroup({
             label="Country"
             value={values.country}
             onChange={(val) => onChange("country", val)}
+            error={errors.country}
           />
         </>
       )}

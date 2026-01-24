@@ -40,10 +40,13 @@ export class ValidationService {
    * Validate Step 3 data (Primary Account Holder)
    */
   async validateStep3(data: unknown): Promise<void> {
+    console.log("[DEBUG validateStep3] Received data:", JSON.stringify(data, null, 2));
     const result = accountHolderSchema.safeParse(data);
     if (!result.success) {
+      console.log("[DEBUG validateStep3] Validation errors:", JSON.stringify(result.error.errors, null, 2));
       throw new ValidationError("Step 3 validation failed", result.error.errors);
     }
+    console.log("[DEBUG validateStep3] Validation passed!");
   }
 
   /**
@@ -110,6 +113,10 @@ export class ValidationService {
     if (!profile) {
       throw new NotFoundError("Profile", profileId);
     }
+
+    console.log("[DEBUG validateCompleteProfile] Profile found:", profileId);
+    console.log("[DEBUG validateCompleteProfile] Account holders:", profile.accountHolders?.length, profile.accountHolders?.map(h => ({ type: h.holderType, name: h.name })));
+    console.log("[DEBUG validateCompleteProfile] Investment objectives:", !!profile.investmentObjectives);
 
     const errors: string[] = [];
 
@@ -195,8 +202,8 @@ export class ValidationService {
     }
 
     // Validate employment fields
-    if (stepData.employmentAffiliations?.includes("Employed") || 
-        stepData.employmentAffiliations?.includes("SelfEmployed")) {
+    if (stepData.employmentAffiliations?.includes("Employed") ||
+      stepData.employmentAffiliations?.includes("SelfEmployed")) {
       if (!stepData.employment?.occupation) {
         throw new ValidationError("Occupation is required when Employed or Self-Employed", undefined, "occupation");
       }

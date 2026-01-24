@@ -58,7 +58,7 @@ export function transformAdditionalHolderToBackend(formData: FormData) {
     knowledgeLevel?: string;
     sinceYear?: number;
   }> = [];
-  
+
   // Page 1 investments
   const page1Investments = [
     { knowledge: formData.commodities_futures_knowledge, since: formData.commodities_futures_since_year, type: "Commodities, Futures" },
@@ -94,7 +94,7 @@ export function transformAdditionalHolderToBackend(formData: FormData) {
 
   // Transform government IDs
   const governmentIds = [];
-  
+
   if (formData.gov_id_1_type || formData.gov_id_1_number) {
     governmentIds.push({
       type: toOptional(formData.gov_id_1_type),
@@ -168,7 +168,7 @@ export function transformAdditionalHolderToBackend(formData: FormData) {
     // Employment
     employmentStatus: formData.employment_status || [],
     occupation: toOptional(formData.occupation),
-    yearsEmployed: formData.years_employed ? Number(formData.years_employed) : undefined,
+    yearsEmployed: formData.years_employed && !isNaN(Number(formData.years_employed)) ? Number(formData.years_employed) : undefined,
     typeOfBusiness: toOptional(formData.type_of_business),
     employerName: toOptional(formData.employer_name),
     employerAddress: {
@@ -187,10 +187,10 @@ export function transformAdditionalHolderToBackend(formData: FormData) {
     annualIncome: transformRangeCurrency(formData.annual_income),
     netWorth: transformRangeCurrency(formData.net_worth),
     liquidNetWorth: transformRangeCurrency(formData.liquid_net_worth),
-  taxBracket:
-    Array.isArray(formData.tax_bracket) && formData.tax_bracket.length > 0
-      ? taxBracketLabelToEnum[formData.tax_bracket[0]] || taxBracketLabelToEnum["≤15%"]
-      : undefined,
+    taxBracket:
+      Array.isArray(formData.tax_bracket) && formData.tax_bracket.length > 0
+        ? taxBracketLabelToEnum[formData.tax_bracket[0]] || taxBracketLabelToEnum["≤15%"]
+        : undefined,
 
     // Government IDs
     governmentIds,
@@ -208,7 +208,7 @@ export function transformAdditionalHolderToBackend(formData: FormData) {
     relationship2: toOptional(formData.relationship_2),
     maintainingOtherBrokerageAccounts: toOptional(formData.maintaining_other_brokerage_accounts),
     withWhatFirms: toOptional(formData.with_what_firms),
-    yearsOfInvestmentExperience: formData.years_of_investment_experience ? Number(formData.years_of_investment_experience) : undefined,
+    yearsOfInvestmentExperience: formData.years_of_investment_experience && !isNaN(Number(formData.years_of_investment_experience)) ? Number(formData.years_of_investment_experience) : undefined,
     affiliatedWithExchangeOrFinra: toOptional(formData.affiliated_with_exchange_or_finra),
     whatIsTheAffiliation: toOptional(formData.what_is_the_affiliation),
     seniorOfficerDirectorShareholder: toOptional(formData.senior_officer_director_shareholder),

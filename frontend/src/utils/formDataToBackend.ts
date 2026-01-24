@@ -25,7 +25,7 @@ function removeNulls<T>(obj: T): any {
   if (obj === null || obj === undefined) {
     return undefined;
   }
-  
+
   // Handle arrays - filter out nulls and clean each element
   if (Array.isArray(obj)) {
     const cleaned = obj
@@ -33,7 +33,7 @@ function removeNulls<T>(obj: T): any {
       .map(item => removeNulls(item));
     return cleaned.length > 0 ? cleaned : undefined;
   }
-  
+
   // Handle objects - recursively clean and skip null/undefined values
   if (typeof obj === "object" && obj.constructor === Object) {
     const cleaned: any = {};
@@ -52,7 +52,7 @@ function removeNulls<T>(obj: T): any {
     // Return undefined for empty objects (so they're omitted)
     return Object.keys(cleaned).length > 0 ? cleaned : undefined;
   }
-  
+
   // Return primitives as-is
   return obj;
 }
@@ -73,45 +73,45 @@ export function transformStep1(formData: FormData) {
     otherAccountTypeText: toOptional(formData.other_account_type_text),
     trustInformation: formData.trust_checkbox
       ? {
-          establishmentDate: formData.trust_establishment_date
-            ? new Date(formData.trust_establishment_date).toISOString()
-            : undefined,
-          trustTypes: formData.trust_type || [],
-        }
+        establishmentDate: formData.trust_establishment_date
+          ? new Date(formData.trust_establishment_date).toISOString()
+          : undefined,
+        trustTypes: formData.trust_type || [],
+      }
       : undefined,
     jointAccountInformation:
       formData.type_of_account?.includes("joint_tenant") ||
-      formData.type_of_account?.includes("transfer_on_death_joint")
+        formData.type_of_account?.includes("transfer_on_death_joint")
         ? {
-            areAccountHoldersMarried: toOptional(formData.are_account_holders_married),
-            tenancyState: toOptional(formData.tenancy_state),
-            numberOfTenants: formData.number_of_tenants ? Number(formData.number_of_tenants) : undefined,
-            tenancyClauses: formData.tenancy_clause || [],
-          }
+          areAccountHoldersMarried: toOptional(formData.are_account_holders_married),
+          tenancyState: toOptional(formData.tenancy_state),
+          numberOfTenants: formData.number_of_tenants ? Number(formData.number_of_tenants) : undefined,
+          tenancyClauses: formData.tenancy_clause || [],
+        }
         : undefined,
     custodialAccountInformation: formData.type_of_account?.includes("custodial")
       ? {
-          stateGiftGiven1: toOptional(formData.state_in_which_gift_was_given_1),
-          dateGiftGiven1: formData.date_gift_was_given_1
-            ? new Date(formData.date_gift_was_given_1).toISOString()
-            : undefined,
-          stateGiftGiven2: toOptional(formData.state_in_which_gift_was_given_2),
-          dateGiftGiven2: formData.date_gift_was_given_2
-            ? new Date(formData.date_gift_was_given_2).toISOString()
-            : undefined,
-        }
+        stateGiftGiven1: toOptional(formData.state_in_which_gift_was_given_1),
+        dateGiftGiven1: formData.date_gift_was_given_1
+          ? new Date(formData.date_gift_was_given_1).toISOString()
+          : undefined,
+        stateGiftGiven2: toOptional(formData.state_in_which_gift_was_given_2),
+        dateGiftGiven2: formData.date_gift_was_given_2
+          ? new Date(formData.date_gift_was_given_2).toISOString()
+          : undefined,
+      }
       : undefined,
     transferOnDeathInformation:
       formData.type_of_account?.includes("transfer_on_death_individual") ||
-      formData.type_of_account?.includes("transfer_on_death_joint")
+        formData.type_of_account?.includes("transfer_on_death_joint")
         ? {
-            individualAgreementDate: formData.transfer_on_death_individual_agreement_date
-              ? new Date(formData.transfer_on_death_individual_agreement_date).toISOString()
-              : undefined,
-            jointAgreementDate: formData.transfer_on_death_joint_agreement_date
-              ? new Date(formData.transfer_on_death_joint_agreement_date).toISOString()
-              : undefined,
-          }
+          individualAgreementDate: formData.transfer_on_death_individual_agreement_date
+            ? new Date(formData.transfer_on_death_individual_agreement_date).toISOString()
+            : undefined,
+          jointAgreementDate: formData.transfer_on_death_joint_agreement_date
+            ? new Date(formData.transfer_on_death_joint_agreement_date).toISOString()
+            : undefined,
+        }
         : undefined,
   };
   // Clean nulls recursively, then use JSON serialization to ensure all nulls are removed
@@ -152,7 +152,7 @@ export function transformStep2(formData: FormData) {
  */
 export function transformStep3(formData: FormData) {
   const addresses = [];
-  
+
   // Legal address
   if (formData.primary_legal_address || formData.primary_city) {
     addresses.push({
@@ -279,13 +279,13 @@ export function transformStep3(formData: FormData) {
   ) {
     const employerAddress = formData.primary_employer_address
       ? {
-          addressType: "employer" as const,
-          address: formData.primary_employer_address || null,
-          city: formData.primary_employer_city || null,
-          stateProvince: formData.primary_employer_state_province || null,
-          zipPostalCode: formData.primary_employer_zip_postal_code || null,
-          country: formData.primary_employer_country || null,
-        }
+        addressType: "employer" as const,
+        address: formData.primary_employer_address || null,
+        city: formData.primary_employer_city || null,
+        stateProvince: formData.primary_employer_state_province || null,
+        zipPostalCode: formData.primary_employer_zip_postal_code || null,
+        country: formData.primary_employer_country || null,
+      }
       : undefined;
 
     employment = {
@@ -297,7 +297,7 @@ export function transformStep3(formData: FormData) {
     };
   }
 
-  return {
+  const result = {
     name: formData.primary_name || null,
     email: formData.primary_email || null,
     personEntity: formData.primary_person_entity || null,
@@ -320,57 +320,58 @@ export function transformStep3(formData: FormData) {
     investmentKnowledge: investmentKnowledge.length > 0 ? investmentKnowledge : undefined,
     financialInformation: formData.annual_income_from || formData.net_worth_from
       ? {
-          annualIncomeFrom: formData.annual_income_from || null,
-          annualIncomeTo: formData.annual_income_to || null,
-          netWorthFrom: formData.net_worth_from || null,
-          netWorthTo: formData.net_worth_to || null,
-          liquidNetWorthFrom: formData.liquid_net_worth_from || null,
-          liquidNetWorthTo: formData.liquid_net_worth_to || null,
-          taxBracket: formData.tax_bracket || null,
-        }
+        annualIncomeFrom: formData.annual_income_from || null,
+        annualIncomeTo: formData.annual_income_to || null,
+        netWorthFrom: formData.net_worth_from || null,
+        netWorthTo: formData.net_worth_to || null,
+        liquidNetWorthFrom: formData.liquid_net_worth_from || null,
+        liquidNetWorthTo: formData.liquid_net_worth_to || null,
+        taxBracket: formData.tax_bracket || null,
+      }
       : undefined,
     governmentIdentifications:
       governmentIdentifications.length > 0 ? governmentIdentifications : undefined,
     advisoryFirmInformation:
       formData.primary_employee_of_advisory_firm || formData.primary_related_to_employee_advisory
         ? {
-            employeeOfAdvisoryFirm: formData.primary_employee_of_advisory_firm || null,
-            relatedToEmployeeAdvisory: formData.primary_related_to_employee_advisory || null,
-            employeeNameAndRelationship: formData.primary_employee_name_and_relationship || null,
-          }
+          employeeOfAdvisoryFirm: formData.primary_employee_of_advisory_firm || null,
+          relatedToEmployeeAdvisory: formData.primary_related_to_employee_advisory || null,
+          employeeNameAndRelationship: formData.primary_employee_name_and_relationship || null,
+        }
         : undefined,
     brokerDealerInformation:
       formData.primary_employee_of_broker_dealer ||
-      formData.primary_related_to_employee_broker_dealer
+        formData.primary_related_to_employee_broker_dealer
         ? {
-            employeeOfBrokerDealer: formData.primary_employee_of_broker_dealer || null,
-            brokerDealerName: formData.primary_broker_dealer_name || null,
-            relatedToEmployeeBrokerDealer: formData.primary_related_to_employee_broker_dealer || null,
-            brokerDealerEmployeeName: formData.primary_broker_dealer_employee_name || null,
-            brokerDealerEmployeeRelationship:
-              formData.primary_broker_dealer_employee_relationship || null,
-          }
+          employeeOfBrokerDealer: formData.primary_employee_of_broker_dealer || null,
+          brokerDealerName: formData.primary_broker_dealer_name || null,
+          relatedToEmployeeBrokerDealer: formData.primary_related_to_employee_broker_dealer || null,
+          brokerDealerEmployeeName: formData.primary_broker_dealer_employee_name || null,
+          brokerDealerEmployeeRelationship:
+            formData.primary_broker_dealer_employee_relationship || null,
+        }
         : undefined,
     otherBrokerageAccounts: formData.primary_maintaining_other_brokerage_accounts
       ? {
-          maintainingOtherAccounts: formData.primary_maintaining_other_brokerage_accounts || null,
-          withWhatFirms: formData.primary_with_what_firms || null,
-          yearsOfInvestmentExperience: formData.primary_years_of_investment_experience || null,
-        }
+        maintainingOtherAccounts: formData.primary_maintaining_other_brokerage_accounts || null,
+        withWhatFirms: formData.primary_with_what_firms || null,
+        yearsOfInvestmentExperience: formData.primary_years_of_investment_experience || null,
+      }
       : undefined,
     exchangeFinraAffiliation: formData.primary_affiliated_with_exchange_or_finra
       ? {
-          affiliatedWithExchangeOrFinra: formData.primary_affiliated_with_exchange_or_finra || null,
-          affiliationDetails: formData.primary_affiliation_employer_authorization_required || null,
-        }
+        affiliatedWithExchangeOrFinra: formData.primary_affiliated_with_exchange_or_finra || null,
+        affiliationDetails: formData.primary_affiliation_employer_authorization_required || null,
+      }
       : undefined,
     publicCompanyInformation: formData.primary_senior_officer_or_10pct_shareholder
       ? {
-          seniorOfficerOr10PctShareholder: formData.primary_senior_officer_or_10pct_shareholder || null,
-          companyNames: formData.primary_company_names || null,
-        }
+        seniorOfficerOr10PctShareholder: formData.primary_senior_officer_or_10pct_shareholder || null,
+        companyNames: formData.primary_company_names || null,
+      }
       : undefined,
   };
+  return removeNulls(result);
 }
 
 /**
@@ -379,7 +380,7 @@ export function transformStep3(formData: FormData) {
 export function transformStep4(formData: FormData) {
   // Similar structure to Step 3 but with "secondary_" prefix
   const addresses = [];
-  
+
   if (formData.secondary_legal_address || formData.secondary_city) {
     addresses.push({
       addressType: "legal",
@@ -490,13 +491,13 @@ export function transformStep4(formData: FormData) {
   ) {
     const employerAddress = formData.secondary_employer_address
       ? {
-          addressType: "employer" as const,
-          address: formData.secondary_employer_address || null,
-          city: formData.secondary_employer_city || null,
-          stateProvince: formData.secondary_employer_state_province || null,
-          zipPostalCode: formData.secondary_employer_zip_postal_code || null,
-          country: formData.secondary_employer_country || null,
-        }
+        addressType: "employer" as const,
+        address: formData.secondary_employer_address || null,
+        city: formData.secondary_employer_city || null,
+        stateProvince: formData.secondary_employer_state_province || null,
+        zipPostalCode: formData.secondary_employer_zip_postal_code || null,
+        country: formData.secondary_employer_country || null,
+      }
       : undefined;
 
     employment = {
@@ -508,7 +509,7 @@ export function transformStep4(formData: FormData) {
     };
   }
 
-  return {
+  const result = {
     name: formData.secondary_name || null,
     email: formData.secondary_email || null,
     personEntity: formData.secondary_person_entity || null,
@@ -531,56 +532,57 @@ export function transformStep4(formData: FormData) {
     investmentKnowledge: investmentKnowledge.length > 0 ? investmentKnowledge : undefined,
     financialInformation: formData.annual_income_from_2 || formData.net_worth_from_2
       ? {
-          annualIncomeFrom: formData.annual_income_from_2 || null,
-          annualIncomeTo: formData.annual_income_to_2 || null,
-          netWorthFrom: formData.net_worth_from_2 || null,
-          netWorthTo: formData.net_worth_to_2 || null,
-          liquidNetWorthFrom: formData.liquid_net_worth_from_2 || null,
-          liquidNetWorthTo: formData.liquid_net_worth_to_2 || null,
-          taxBracket: formData.tax_bracket_2 || null,
-        }
+        annualIncomeFrom: formData.annual_income_from_2 || null,
+        annualIncomeTo: formData.annual_income_to_2 || null,
+        netWorthFrom: formData.net_worth_from_2 || null,
+        netWorthTo: formData.net_worth_to_2 || null,
+        liquidNetWorthFrom: formData.liquid_net_worth_from_2 || null,
+        liquidNetWorthTo: formData.liquid_net_worth_to_2 || null,
+        taxBracket: formData.tax_bracket_2 || null,
+      }
       : undefined,
     governmentIdentifications:
       governmentIdentifications.length > 0 ? governmentIdentifications : undefined,
     advisoryFirmInformation:
       formData.secondary_employee_of_advisory_firm || formData.secondary_related_to_employee_advisory
         ? {
-            employeeOfAdvisoryFirm: formData.secondary_employee_of_advisory_firm || null,
-            relatedToEmployeeAdvisory: formData.secondary_related_to_employee_advisory || null,
-            employeeNameAndRelationship: formData.secondary_employee_name || null,
-          }
+          employeeOfAdvisoryFirm: formData.secondary_employee_of_advisory_firm || null,
+          relatedToEmployeeAdvisory: formData.secondary_related_to_employee_advisory || null,
+          employeeNameAndRelationship: formData.secondary_employee_name || null,
+        }
         : undefined,
     brokerDealerInformation:
       formData.secondary_employee_of_broker_dealer ||
-      formData.secondary_related_to_employee_broker_dealer
+        formData.secondary_related_to_employee_broker_dealer
         ? {
-            employeeOfBrokerDealer: formData.secondary_employee_of_broker_dealer || null,
-            brokerDealerName: formData.secondary_broker_dealer_name || null,
-            relatedToEmployeeBrokerDealer: formData.secondary_related_to_employee_broker_dealer || null,
-            brokerDealerEmployeeName: formData.secondary_broker_dealer_employee_name || null,
-            brokerDealerEmployeeRelationship: formData.secondary_broker_dealer_employee_relationship || null,
-          }
+          employeeOfBrokerDealer: formData.secondary_employee_of_broker_dealer || null,
+          brokerDealerName: formData.secondary_broker_dealer_name || null,
+          relatedToEmployeeBrokerDealer: formData.secondary_related_to_employee_broker_dealer || null,
+          brokerDealerEmployeeName: formData.secondary_broker_dealer_employee_name || null,
+          brokerDealerEmployeeRelationship: formData.secondary_broker_dealer_employee_relationship || null,
+        }
         : undefined,
     otherBrokerageAccounts: formData.secondary_maintaining_other_brokerage_accounts
       ? {
-          maintainingOtherAccounts: formData.secondary_maintaining_other_brokerage_accounts || null,
-          withWhatFirms: formData.secondary_with_what_firms || null,
-          yearsOfInvestmentExperience: formData.secondary_years_investment_experience || null,
-        }
+        maintainingOtherAccounts: formData.secondary_maintaining_other_brokerage_accounts || null,
+        withWhatFirms: formData.secondary_with_what_firms || null,
+        yearsOfInvestmentExperience: formData.secondary_years_investment_experience || null,
+      }
       : undefined,
     exchangeFinraAffiliation: formData.secondary_affiliated_with_exchange_or_finra
       ? {
-          affiliatedWithExchangeOrFinra: formData.secondary_affiliated_with_exchange_or_finra || null,
-          affiliationDetails: formData.secondary_affiliation_details || null,
-        }
+        affiliatedWithExchangeOrFinra: formData.secondary_affiliated_with_exchange_or_finra || null,
+        affiliationDetails: formData.secondary_affiliation_details || null,
+      }
       : undefined,
     publicCompanyInformation: formData.secondary_senior_officer_or_10pct_shareholder
       ? {
-          seniorOfficerOr10PctShareholder: formData.secondary_senior_officer_or_10pct_shareholder || null,
-          companyNames: formData.secondary_company_names || null,
-        }
+        seniorOfficerOr10PctShareholder: formData.secondary_senior_officer_or_10pct_shareholder || null,
+        companyNames: formData.secondary_company_names || null,
+      }
       : undefined,
   };
+  return removeNulls(result);
 }
 
 /**
@@ -588,7 +590,7 @@ export function transformStep4(formData: FormData) {
  */
 export function transformStep5(formData: FormData) {
   const investmentValues: Array<{ investmentType: string; value: number }> = [];
-  
+
   const valueFields = [
     { field: "investment_equities_value", type: "equities" },
     { field: "investment_fixed_annuities_value", type: "fixed_annuities" },
@@ -617,7 +619,7 @@ export function transformStep5(formData: FormData) {
     }
   });
 
-  return {
+  const result = {
     riskExposure: formData.risk_exposure || [],
     accountInvestmentObjectives: formData.account_investment_objectives || [],
     seeAttachedStatement: formData.other_investments_see_attached === true,
@@ -626,13 +628,14 @@ export function transformStep5(formData: FormData) {
     liquidityNeeds: formData.liquidity_needs || [],
     investmentValues: investmentValues.length > 0 ? investmentValues : undefined,
   };
+  return removeNulls(result);
 }
 
 /**
  * Transform Step 6 data
  */
 export function transformStep6(formData: FormData) {
-  return {
+  const result = {
     declineToProvide: formData.trusted_contact_decline_to_provide === true,
     name: formData.trusted_contact_name || null,
     email: formData.trusted_contact_email || null,
@@ -645,6 +648,7 @@ export function transformStep6(formData: FormData) {
     zipPostalCode: formData.trusted_contact_zip_postal_code || null,
     country: formData.trusted_contact_country || null,
   };
+  return removeNulls(result);
 }
 
 /**

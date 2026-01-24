@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo } from "react";
 import { ZodError } from "zod";
 import { validateStep } from "../validators/investorProfileValidators";
+import { ConditionalFieldManager } from "../components/ConditionalFieldManager";
 import type { FormData } from "../types/form";
 
 export interface ValidationErrors {
@@ -166,6 +167,11 @@ export function useFormValidation({
 
       // Validate each step
       for (let step = 1; step <= 7; step++) {
+        // Skip Step 4 validation if not a joint/trust account
+        if (step === 4 && !ConditionalFieldManager.shouldShowStep(4, formData)) {
+          continue;
+        }
+
         const result = validateStep(step, formData);
 
         // Map errors to field IDs
