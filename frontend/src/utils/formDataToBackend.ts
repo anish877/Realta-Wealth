@@ -16,30 +16,30 @@ function toOptional<T>(value: T | null | undefined | ""): T | undefined {
 }
 
 /**
- * Recursively remove null and undefined values from an object
- * This ensures Zod validators don't receive null for optional fields
+ * Recursively remove null, undefined, and empty string values from an object
+ * This ensures Zod validators don't receive null or empty strings for optional enum fields
  * Uses JSON serialization to properly handle nested structures
  */
 function removeNulls<T>(obj: T): any {
-  // Handle null/undefined at top level
-  if (obj === null || obj === undefined) {
+  // Handle null/undefined/empty string at top level
+  if (obj === null || obj === undefined || obj === "") {
     return undefined;
   }
 
-  // Handle arrays - filter out nulls and clean each element
+  // Handle arrays - filter out nulls, undefined, and empty strings, then clean each element
   if (Array.isArray(obj)) {
     const cleaned = obj
-      .filter(item => item !== null && item !== undefined)
+      .filter(item => item !== null && item !== undefined && item !== "")
       .map(item => removeNulls(item));
     return cleaned.length > 0 ? cleaned : undefined;
   }
 
-  // Handle objects - recursively clean and skip null/undefined values
+  // Handle objects - recursively clean and skip null/undefined/empty string values
   if (typeof obj === "object" && obj.constructor === Object) {
     const cleaned: any = {};
     for (const [key, value] of Object.entries(obj)) {
-      // Skip null and undefined values entirely
-      if (value === null || value === undefined) {
+      // Skip null, undefined, and empty string values entirely
+      if (value === null || value === undefined || value === "") {
         continue;
       }
       // Recursively clean nested structures
@@ -609,15 +609,28 @@ export function transformStep5(formData: FormData) {
     { field: "investment_variable_annuities_value", type: "variable_annuities" },
   ];
 
+  // Get investment table data - the frontend stores this in a nested object
+  const investmentTableData = (formData.other_investments_table as Record<string, any>) || {};
+
   valueFields.forEach(({ field, type }) => {
-    const value = formData[field];
+    // Check both nested object (new structure) and flat key (legacy/fallback)
+    const value = investmentTableData[field] ?? formData[field];
+
     if (value !== undefined && value !== null && value !== "") {
-      investmentValues.push({
-        investmentType: type,
-        value: parseFloat(value) || 0,
-      });
+      // Remove currency symbols, commas, spaces before parsing
+      const cleanedValue = value.toString().replace(/[$,\s]/g, "");
+      const parsedValue = parseFloat(cleanedValue);
+
+      if (!isNaN(parsedValue)) {
+        investmentValues.push({
+          investmentType: type,
+          value: parsedValue,
+        });
+      }
     }
   });
+
+  console.log('[transformStep5] Generated investmentValues:', JSON.stringify(investmentValues, null, 2));
 
   const result = {
     riskExposure: formData.risk_exposure || [],

@@ -414,7 +414,10 @@ export const step2Schema = z
 
 export const personEntitySchema = z.enum(["Person", "Entity"]);
 
-export const genderSchema = z.enum(["Male", "Female"]);
+export const genderSchema = z.preprocess(
+  (val) => (val === "" ? undefined : val),
+  z.enum(["Male", "Female"]).optional()
+);
 
 export const maritalStatusSchema = z.enum([
   "Single",
@@ -468,7 +471,10 @@ export const taxBracketSchema = z.enum([
   "50.1% +",
 ]);
 
-export const yesNoSchema = z.enum(["Yes", "No"]);
+export const yesNoSchema = z.preprocess(
+  (val) => (val === "" ? undefined : val),
+  z.enum(["Yes", "No"]).optional()
+);
 
 // Base account holder schema (used for both primary and secondary)
 const baseAccountHolderSchema = z
@@ -1142,8 +1148,14 @@ export const step5Schema = z
     risk_exposure: arrayFieldSchema(riskExposureSchema).optional(),
     account_investment_objectives: arrayFieldSchema(accountInvestmentObjectiveSchema).optional(),
     other_investments_see_attached: booleanFieldSchema,
-    investment_time_horizon_from: generalTextFieldSchema.max(100, "Time horizon from must be no more than 100 characters").optional(),
-    investment_time_horizon_to: generalTextFieldSchema.max(100, "Time horizon to must be no more than 100 characters").optional(),
+    investment_time_horizon_from: z.preprocess(
+      (val) => (val === "" ? undefined : val),
+      z.string().max(100, "Time horizon from must be no more than 100 characters").optional()
+    ),
+    investment_time_horizon_to: z.preprocess(
+      (val) => (val === "" ? undefined : val),
+      z.string().max(100, "Time horizon to must be no more than 100 characters").optional()
+    ),
     liquidity_needs: arrayFieldSchema(liquidityNeedSchema).optional(),
     // Investment value fields - all currency with reasonable max
     investment_equities_value: currencyFieldSchema().optional(),

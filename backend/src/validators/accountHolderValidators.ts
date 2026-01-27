@@ -38,6 +38,7 @@ export const investmentTypeSchema = z.enum([
     "equities",
     "etf",
     "fixed_annuities",
+    "fixed_income",
     "fixed_insurance",
     "mutual_funds",
     "options",

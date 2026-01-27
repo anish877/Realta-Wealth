@@ -958,7 +958,6 @@ model InvestmentValue {
   
   profile           InvestorProfile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
   
-  @@unique([profileId, investmentType])
   @@index([profileId])
   @@index([investmentType])
   @@map("investment_values")

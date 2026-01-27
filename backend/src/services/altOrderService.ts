@@ -131,15 +131,15 @@ export class AltOrderService {
       where: { id: orderId },
       include: includeRelations
         ? {
-            user: {
-              select: {
-                id: true,
-                email: true,
-                fullName: true,
-                role: true,
-              },
+          user: {
+            select: {
+              id: true,
+              email: true,
+              fullName: true,
+              role: true,
             },
-          }
+          },
+        }
         : undefined,
     });
 
@@ -171,7 +171,7 @@ export class AltOrderService {
     // Build update data object, only including defined fields (omitting undefined)
     // Prisma will omit fields with undefined values, but we explicitly exclude them to be safe
     const updateData: any = {};
-    
+
     if (orderData.rrName !== undefined) updateData.rrName = orderData.rrName;
     if (orderData.rrNo !== undefined) updateData.rrNo = orderData.rrNo;
     if (orderData.customerNames !== undefined) updateData.customerNames = orderData.customerNames;
@@ -334,19 +334,19 @@ export class AltOrderService {
     result.fields.rr_name = { value: order.rrName || null, label: "RR Name", type: "text" };
     result.fields.rr_no = { value: order.rrNo || null, label: "RR No.", type: "text" };
     result.fields.customer_names = { value: order.customerNames || null, label: "Customer Names(s)", type: "text" };
-    result.fields.proposed_principal_amount = { 
-      value: order.proposedPrincipalAmount ? formatCurrency(order.proposedPrincipalAmount) : null, 
-      label: "Proposed Principal Amount", 
+    result.fields.proposed_principal_amount = {
+      value: order.proposedPrincipalAmount ? formatCurrency(order.proposedPrincipalAmount) : null,
+      label: "Proposed Principal Amount",
       type: "currency",
       raw_value: order.proposedPrincipalAmount
     };
-    result.fields.qualified_account = { 
+    result.fields.qualified_account = {
       value: order.qualifiedAccount === "Yes" ? true : (order.qualifiedAccount === "No" ? false : null),
-      label: "Qualified Account", 
+      label: "Qualified Account",
       type: "yes_no",
       is_yes: order.qualifiedAccount === "Yes"
     };
-    
+
     // Sub-field: qualified_account_certification_text (always include when qualified_account is Yes)
     if (order.qualifiedAccount === "Yes") {
       result.fields.qualified_account_certification_text = {
@@ -356,16 +356,16 @@ export class AltOrderService {
         notes: "If purchasing this product in a qualified account, I certify that I have other sufficient qualified funds available to meet my required minimum distributions pursuant to IRS requirements until this product matures."
       };
     }
-    
-    result.fields.solicited_trade = { 
-      value: order.solicitedTrade || null, 
-      label: "Solicited Trade", 
+
+    result.fields.solicited_trade = {
+      value: order.solicitedTrade || null,
+      label: "Solicited Trade",
       type: "yes_no",
       is_yes: order.solicitedTrade === "Yes"
     };
-    result.fields.tax_advantage_purchase = { 
-      value: order.taxAdvantagePurchase || null, 
-      label: "Tax Advantage Purchase", 
+    result.fields.tax_advantage_purchase = {
+      value: order.taxAdvantagePurchase || null,
+      label: "Tax Advantage Purchase",
       type: "yes_no",
       is_yes: order.taxAdvantagePurchase === "Yes"
     };
@@ -376,73 +376,73 @@ export class AltOrderService {
     result.fields.sponsor_issuer = { value: order.sponsorIssuer || null, label: "Sponsor/Issuer", type: "text" };
     result.fields.date_of_ppm = { value: formatDate(order.dateOfPpm), label: "Date of PPM", type: "date", raw_value: order.dateOfPpm };
     result.fields.date_ppm_sent = { value: formatDate(order.datePpmSent), label: "Date PPM Sent", type: "date", raw_value: order.datePpmSent };
-    result.fields.existing_illiquid_alt_positions = { 
-      value: order.existingIlliquidAltPositions ? formatCurrency(order.existingIlliquidAltPositions) : null, 
-      label: "Existing Illiquid Alt Positions", 
+    result.fields.existing_illiquid_alt_positions = {
+      value: order.existingIlliquidAltPositions ? formatCurrency(order.existingIlliquidAltPositions) : null,
+      label: "Existing Illiquid Alt Positions",
       type: "currency",
       raw_value: order.existingIlliquidAltPositions
     };
-    result.fields.existing_illiquid_alt_concentration = { 
-      value: order.existingIlliquidAltConcentration ? formatPercentage(order.existingIlliquidAltConcentration) : null, 
-      label: "Existing Illiquid Alt Concentration", 
+    result.fields.existing_illiquid_alt_concentration = {
+      value: order.existingIlliquidAltConcentration ? formatPercentage(order.existingIlliquidAltConcentration) : null,
+      label: "Existing Illiquid Alt Concentration",
       type: "percentage",
       raw_value: order.existingIlliquidAltConcentration
     };
-    result.fields.existing_semi_liquid_alt_positions = { 
-      value: order.existingSemiLiquidAltPositions ? formatCurrency(order.existingSemiLiquidAltPositions) : null, 
-      label: "Existing Semi-liquid Alt Positions", 
+    result.fields.existing_semi_liquid_alt_positions = {
+      value: order.existingSemiLiquidAltPositions ? formatCurrency(order.existingSemiLiquidAltPositions) : null,
+      label: "Existing Semi-liquid Alt Positions",
       type: "currency",
       raw_value: order.existingSemiLiquidAltPositions
     };
-    result.fields.existing_semi_liquid_alt_concentration = { 
-      value: order.existingSemiLiquidAltConcentration ? formatPercentage(order.existingSemiLiquidAltConcentration) : null, 
-      label: "Existing Semi-liquid Alt Concentration", 
+    result.fields.existing_semi_liquid_alt_concentration = {
+      value: order.existingSemiLiquidAltConcentration ? formatPercentage(order.existingSemiLiquidAltConcentration) : null,
+      label: "Existing Semi-liquid Alt Concentration",
       type: "percentage",
       raw_value: order.existingSemiLiquidAltConcentration
     };
-    result.fields.existing_tax_advantage_alt_positions = { 
-      value: order.existingTaxAdvantageAltPositions ? formatCurrency(order.existingTaxAdvantageAltPositions) : null, 
-      label: "Existing Tax Advantage Alt Positions", 
+    result.fields.existing_tax_advantage_alt_positions = {
+      value: order.existingTaxAdvantageAltPositions ? formatCurrency(order.existingTaxAdvantageAltPositions) : null,
+      label: "Existing Tax Advantage Alt Positions",
       type: "currency",
       raw_value: order.existingTaxAdvantageAltPositions
     };
-    result.fields.existing_tax_advantage_alt_concentration = { 
-      value: order.existingTaxAdvantageAltConcentration ? formatPercentage(order.existingTaxAdvantageAltConcentration) : null, 
-      label: "Existing Tax Advantage Alt Concentration", 
+    result.fields.existing_tax_advantage_alt_concentration = {
+      value: order.existingTaxAdvantageAltConcentration ? formatPercentage(order.existingTaxAdvantageAltConcentration) : null,
+      label: "Existing Tax Advantage Alt Concentration",
       type: "percentage",
       raw_value: order.existingTaxAdvantageAltConcentration
     };
-    result.fields.total_net_worth = { 
-      value: order.totalNetWorth ? formatCurrency(order.totalNetWorth) : null, 
-      label: "Total Net Worth", 
+    result.fields.total_net_worth = {
+      value: order.totalNetWorth ? formatCurrency(order.totalNetWorth) : null,
+      label: "Total Net Worth",
       type: "currency",
       raw_value: order.totalNetWorth
     };
-    result.fields.liquid_net_worth = { 
-      value: order.liquidNetWorth ? formatCurrency(order.liquidNetWorth) : null, 
-      label: "Liquid Net Worth*", 
+    result.fields.liquid_net_worth = {
+      value: order.liquidNetWorth ? formatCurrency(order.liquidNetWorth) : null,
+      label: "Liquid Net Worth*",
       type: "currency",
       raw_value: order.liquidNetWorth,
       notes: "*Excluding home and auto"
     };
-    result.fields.total_concentration = { 
-      value: order.totalConcentration ? formatPercentage(order.totalConcentration) : null, 
-      label: "Total Concentration*", 
+    result.fields.total_concentration = {
+      value: order.totalConcentration ? formatPercentage(order.totalConcentration) : null,
+      label: "Total Concentration*",
       type: "percentage",
       raw_value: order.totalConcentration,
       notes: "*Concentration = Proposed and Existing (Illiquid and Semi-liquid Alts) / Total Net Worth"
     };
 
     // Signatures
-    result.fields.account_owner_signature = { 
-      value: order.accountOwnerSignature || null, 
-      label: "Account Owner Signature", 
+    result.fields.account_owner_signature = {
+      value: order.accountOwnerSignature || null,
+      label: "Account Owner Signature",
       type: "signature",
       has_signature: !!order.accountOwnerSignature
     };
     result.fields.account_owner_printed_name = { value: order.accountOwnerPrintedName || null, label: "Account Owner Printed Name", type: "text" };
     result.fields.account_owner_date = { value: formatDate(order.accountOwnerDate), label: "Account Owner Date", type: "date", raw_value: order.accountOwnerDate };
-    
+
     // Conditional sub-fields: joint_account_owner fields (shown when customer_names contains multiple names or has joint owner)
     const hasJointOwner = order.customerNames && (order.customerNames.includes('&') || order.customerNames.includes('and') || order.jointAccountOwnerSignature);
     if (hasJointOwner || order.jointAccountOwnerSignature) {
@@ -468,18 +468,18 @@ export class AltOrderService {
         conditional_on: "customer_names"
       };
     }
-    
-    result.fields.financial_professional_signature = { 
-      value: order.financialProfessionalSignature || null, 
-      label: "Financial Professional Signature", 
+
+    result.fields.financial_professional_signature = {
+      value: order.financialProfessionalSignature || null,
+      label: "Financial Professional Signature",
       type: "signature",
       has_signature: !!order.financialProfessionalSignature
     };
     result.fields.financial_professional_printed_name = { value: order.financialProfessionalPrintedName || null, label: "Financial Professional Printed Name", type: "text" };
     result.fields.financial_professional_date = { value: formatDate(order.financialProfessionalDate), label: "Financial Professional Date", type: "date", raw_value: order.financialProfessionalDate };
-    result.fields.registered_principal_signature = { 
-      value: order.registeredPrincipalSignature || null, 
-      label: "Registered Principal Signature", 
+    result.fields.registered_principal_signature = {
+      value: order.registeredPrincipalSignature || null,
+      label: "Registered Principal Signature",
       type: "signature",
       has_signature: !!order.registeredPrincipalSignature
     };
@@ -488,40 +488,40 @@ export class AltOrderService {
 
     // Internal Use Only - Checkboxes (show sub-fields when true)
     result.fields.notes = { value: order.notes || null, label: "Notes", type: "textarea" };
-    
-    result.fields.reg_bi_delivery = { 
-      value: order.regBiDelivery || false, 
-      label: "Reg BI Delivery", 
+
+    result.fields.reg_bi_delivery = {
+      value: !!order.regBiDelivery,
+      label: "Reg BI Delivery",
       type: "checkbox",
-      checked: order.regBiDelivery === true
+      checked: !!order.regBiDelivery
     };
-    
-    result.fields.state_registration = { 
-      value: order.stateRegistration || false, 
-      label: "State Registration", 
+
+    result.fields.state_registration = {
+      value: !!order.stateRegistration,
+      label: "State Registration",
       type: "checkbox",
-      checked: order.stateRegistration === true
+      checked: !!order.stateRegistration
     };
-    
-    result.fields.ai_insight = { 
-      value: order.aiInsight || false, 
-      label: "AI Insight", 
+
+    result.fields.ai_insight = {
+      value: !!order.aiInsight,
+      label: "AI Insight",
       type: "checkbox",
-      checked: order.aiInsight === true
+      checked: !!order.aiInsight
     };
-    
-    result.fields.statement_of_financial_condition = { 
-      value: order.statementOfFinancialCondition || false, 
-      label: "Statement of Financial Condition", 
+
+    result.fields.statement_of_financial_condition = {
+      value: !!order.statementOfFinancialCondition,
+      label: "Statement of Financial Condition",
       type: "checkbox",
-      checked: order.statementOfFinancialCondition === true
+      checked: !!order.statementOfFinancialCondition
     };
-    
-    result.fields.suitability_received = { 
-      value: order.suitabilityReceived || false, 
-      label: "Suitability Received", 
+
+    result.fields.suitability_received = {
+      value: !!order.suitabilityReceived,
+      label: "Suitability Received",
       type: "checkbox",
-      checked: order.suitabilityReceived === true
+      checked: !!order.suitabilityReceived
     };
 
     // Add metadata for all fields
@@ -553,11 +553,16 @@ export class AltOrderService {
    */
   async generatePdf(orderId: string) {
     const order = await this.getAltOrderById(orderId, true);
-    
+
     // Format the order data for n8n with all fields and conditional sub-fields
     const formattedData = this.formatAltOrderForN8N(order);
 
     const webhookUrl = "https://n8n.srv891599.hstgr.cloud/webhook/cbe7fd24-f355-450d-86cb-5306101e8a82";
+
+    console.log("----------------------------------------");
+    console.log("SENDING ALT ORDER DATA TO N8N:");
+    console.log(JSON.stringify(formattedData, null, 2));
+    console.log("----------------------------------------");
 
     const response = await fetch(webhookUrl, {
       method: "POST",

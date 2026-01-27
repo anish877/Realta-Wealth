@@ -99,11 +99,28 @@ export function transformProfileToFormData(profile: BackendProfile): Record<stri
   }
 
   // Investment values
+  // Investment values
   if (profile?.investmentValues && profile.investmentValues.length > 0) {
+    formData["other_investments_table"] = {};
+    const investmentTable = formData["other_investments_table"];
+    let otherCount = 0;
+
     profile.investmentValues.forEach((iv: any) => {
       const fieldName = mapInvestmentValueToField(iv.investmentType);
       if (fieldName) {
         formData[fieldName] = iv.value;
+        investmentTable[fieldName] = iv.value;
+      } else if (iv.investmentType === "other") {
+        otherCount++;
+        let otherField = "";
+        if (otherCount === 1) otherField = "investment_other_1_value";
+        else if (otherCount === 2) otherField = "investment_other_2_value";
+        else if (otherCount === 3) otherField = "investment_other_3_value";
+
+        if (otherField) {
+          formData[otherField] = iv.value;
+          investmentTable[otherField] = iv.value;
+        }
       }
     });
   }
@@ -295,7 +312,7 @@ function transformAccountHolderToFormData(
     formData[`${fieldPrefix}_related_to_employee_advisory`] =
       holder.advisoryFirmInformation.relatedToEmployeeAdvisory || "";
     // Secondary uses "employee_name" instead of "employee_name_and_relationship"
-    const employeeNameField = prefix === "secondary" 
+    const employeeNameField = prefix === "secondary"
       ? `${fieldPrefix}_employee_name`
       : `${fieldPrefix}_employee_name_and_relationship`;
     formData[employeeNameField] =

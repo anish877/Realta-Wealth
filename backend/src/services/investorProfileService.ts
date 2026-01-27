@@ -1076,10 +1076,22 @@ export class InvestorProfileService {
     }
 
     // Investment Values
+    console.log('[formatProfileForN8N] profile.investmentValues:', JSON.stringify(profile.investmentValues, null, 2));
     const investmentValues = profile.investmentValues || [];
+    console.log('[formatProfileForN8N] investmentValues array length:', investmentValues.length);
+
+    let otherCount = 0;
     investmentValues.forEach((iv: any) => {
       const investmentType = iv.investmentType;
-      result.fields[`investment_${investmentType}_value`] = formatCurrency(iv.value);
+      let fieldName = `investment_${investmentType}_value`;
+
+      if (investmentType === 'other') {
+        otherCount++;
+        fieldName = `investment_other_${otherCount}_value`;
+      }
+
+      console.log(`[formatProfileForN8N] Adding investment value: ${fieldName} = ${iv.value}`);
+      result.fields[fieldName] = formatCurrency(iv.value);
     });
 
     // ============================================

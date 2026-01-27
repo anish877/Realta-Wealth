@@ -52,6 +52,7 @@ export function ObjectivesSection({
     { label: "Real Estate", key: "investment_real_estate_value" },
     { label: "Insurance", key: "investment_insurance_value" },
     { label: "Fixed Annuities", key: "investment_fixed_annuities_value" },
+    { label: "Variable Annuities", key: "investment_variable_annuities_value" },
     { label: "Precious Metals", key: "investment_precious_metals_value" },
     { label: "Commodities/Futures", key: "investment_commodities_futures_value" },
     { label: "Other", key: "investment_other_1_value" },
